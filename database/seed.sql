@@ -1,339 +1,195 @@
--- MySQL dump 10.13  Distrib 8.0.44, for macos12.7 (arm64)
---
--- Host: localhost    Database: nextgen
--- ------------------------------------------------------
--- Server version	8.0.44
+-- ============================================================
+-- Seed data for CyberNext schema
+-- Run this after database/schema.sql
+-- ============================================================
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+SET NAMES utf8mb4;
+SET time_zone = '+00:00';
 
---
--- Table structure for table `certificates`
---
+START TRANSACTION;
 
-DROP TABLE IF EXISTS `certificates`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `certificates` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` char(36) DEFAULT NULL,
-  `course_id` int DEFAULT NULL,
-  `certificate_code` varchar(100) DEFAULT NULL,
-  `issued_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `pdf_path` text,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `certificate_code` (`certificate_code`),
-  UNIQUE KEY `uniq_user_course_cert` (`user_id`,`course_id`),
-  KEY `course_id` (`course_id`),
-  CONSTRAINT `certificates_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-  CONSTRAINT `certificates_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+SET FOREIGN_KEY_CHECKS = 0;
 
---
--- Table structure for table `code_submissions`
---
+-- Clear child tables first
+DELETE FROM quiz_answers;
+DELETE FROM quiz_attempts;
+DELETE FROM quiz_options;
+DELETE FROM quiz_questions;
+DELETE FROM exercise_submissions;
+DELETE FROM exercise_test_cases;
+DELETE FROM exercises;
+DELETE FROM lesson_progress;
+DELETE FROM lessons;
+DELETE FROM modules;
+DELETE FROM enrollments;
+DELETE FROM certificates;
+DELETE FROM courses;
+DELETE FROM domains;
+DELETE FROM users;
+DELETE FROM roles;
 
-DROP TABLE IF EXISTS `code_submissions`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `code_submissions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `exercise_id` int DEFAULT NULL,
-  `user_id` char(36) DEFAULT NULL,
-  `code` text,
-  `stdout` text,
-  `stderr` text,
-  `execution_time_ms` int DEFAULT NULL,
-  `memory_used_mb` int DEFAULT NULL,
-  `passed` tinyint(1) DEFAULT NULL,
-  `score` int DEFAULT NULL,
-  `submitted_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `idx_user_id` (`user_id`),
-  KEY `idx_exercise_id` (`exercise_id`),
-  KEY `idx_submitted_at` (`submitted_at`),
-  CONSTRAINT `code_submissions_ibfk_1` FOREIGN KEY (`exercise_id`) REFERENCES `exercises` (`id`),
-  CONSTRAINT `code_submissions_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+SET FOREIGN_KEY_CHECKS = 1;
 
---
--- Table structure for table `courses`
---
+-- ------------------------------------------------------------
+-- 1) roles
+-- ------------------------------------------------------------
+INSERT INTO roles (id, name) VALUES
+	(1, 'student'),
+	(2, 'instructor'),
+	(3, 'admin');
 
-DROP TABLE IF EXISTS `courses`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `courses` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `title` varchar(200) DEFAULT NULL,
-  `description` text,
-  `track_id` int DEFAULT NULL,
-  `level` varchar(50) DEFAULT NULL,
-  `created_by` char(36) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `track_id` (`track_id`),
-  KEY `idx_created_by` (`created_by`),
-  CONSTRAINT `courses_ibfk_1` FOREIGN KEY (`track_id`) REFERENCES `tracks` (`id`),
-  CONSTRAINT `courses_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- ------------------------------------------------------------
+-- 2) users
+-- password_hash below is a sample bcrypt hash for demo only.
+-- ------------------------------------------------------------
+SET @admin_user_id      = UUID();
+SET @instructor_user_id = UUID();
+SET @nimal_user_id      = UUID();
+SET @kavya_user_id      = UUID();
 
---
--- Table structure for table `enrollments`
---
+INSERT INTO users (id, full_name, email, password_hash, role_id, is_active) VALUES
+	(@admin_user_id,      'Admin User',       'admin@cybernext.local', '$2a$10$7EqJtq98hPqEX7fNZaFWoOHi6M9M0Wn4R7iT7W6h4x8b5Q8G7wW7S', 3, 1),
+	(@instructor_user_id, 'Aisha Instructor', 'aisha@cybernext.local', '$2a$10$7EqJtq98hPqEX7fNZaFWoOHi6M9M0Wn4R7iT7W6h4x8b5Q8G7wW7S', 2, 1),
+	(@nimal_user_id,      'Nimal Student',    'nimal@cybernext.local', '$2a$10$7EqJtq98hPqEX7fNZaFWoOHi6M9M0Wn4R7iT7W6h4x8b5Q8G7wW7S', 1, 1),
+	(@kavya_user_id,      'Kavya Student',    'kavya@cybernext.local', '$2a$10$7EqJtq98hPqEX7fNZaFWoOHi6M9M0Wn4R7iT7W6h4x8b5Q8G7wW7S', 1, 1);
 
-DROP TABLE IF EXISTS `enrollments`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `enrollments` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` char(36) DEFAULT NULL,
-  `course_id` int DEFAULT NULL,
-  `enrolled_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_user_course` (`user_id`,`course_id`),
-  KEY `idx_user_id` (`user_id`),
-  KEY `idx_course_id` (`course_id`),
-  CONSTRAINT `enrollments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-  CONSTRAINT `enrollments_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- ------------------------------------------------------------
+-- 3) domains
+-- ------------------------------------------------------------
+INSERT INTO domains (id, name, description) VALUES
+	(1, 'Cybersecurity Fundamentals', 'Core security concepts for beginners.'),
+	(2, 'Ethical Hacking',            'Offensive security basics and safe lab practice.');
 
---
--- Table structure for table `exercise_test_cases`
---
+-- ------------------------------------------------------------
+-- 4) courses
+-- ------------------------------------------------------------
+INSERT INTO courses (id, domain_id, title, description, level, duration_hrs, is_published, created_by) VALUES
+	(1, 1, 'Introduction to Cybersecurity', 'Starter course on threats, CIA triad, and cyber hygiene.', 'beginner', 12, 1, @instructor_user_id),
+	(2, 2, 'Ethical Hacking Essentials',    'Introductory ethical hacking methodology and tooling.',      'intermediate', 20, 1, @instructor_user_id);
 
-DROP TABLE IF EXISTS `exercise_test_cases`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `exercise_test_cases` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `exercise_id` int DEFAULT NULL,
-  `input` text,
-  `expected_output` text,
-  `is_hidden` tinyint(1) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `exercise_id` (`exercise_id`),
-  CONSTRAINT `exercise_test_cases_ibfk_1` FOREIGN KEY (`exercise_id`) REFERENCES `exercises` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- ------------------------------------------------------------
+-- 5) enrollments
+-- ------------------------------------------------------------
+INSERT INTO enrollments (id, user_id, course_id, enrolled_at) VALUES
+	(1, @nimal_user_id, 1, '2026-03-01 09:00:00'),
+	(2, @kavya_user_id, 1, '2026-03-01 09:30:00'),
+	(3, @nimal_user_id, 2, '2026-03-02 10:00:00');
 
---
--- Table structure for table `exercises`
---
+-- ------------------------------------------------------------
+-- 6) modules
+-- ------------------------------------------------------------
+INSERT INTO modules (id, course_id, title, module_order) VALUES
+	(1, 1, 'Foundations of Security', 1),
+	(2, 1, 'Safe Digital Behavior',   2),
+	(3, 2, 'Reconnaissance Basics',   1);
 
-DROP TABLE IF EXISTS `exercises`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `exercises` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `lesson_id` int DEFAULT NULL,
-  `title` varchar(200) DEFAULT NULL,
-  `instructions_md` text,
-  `starter_code` text,
-  `language_id` int DEFAULT NULL,
-  `time_limit_ms` int DEFAULT NULL,
-  `memory_limit_mb` int DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `lesson_id` (`lesson_id`),
-  KEY `language_id` (`language_id`),
-  CONSTRAINT `exercises_ibfk_1` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`),
-  CONSTRAINT `exercises_ibfk_2` FOREIGN KEY (`language_id`) REFERENCES `tracks` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- ------------------------------------------------------------
+-- 7) lessons
+-- ------------------------------------------------------------
+INSERT INTO lessons (id, module_id, title, content_md, lesson_order) VALUES
+	(1, 1, 'Introduction to Cybersecurity',               'upload/lesson/intro-to-cyber-course/module-1-introduction-to-cybersecurity.md',                         1),
+	(2, 1, 'Common Cyber Threats',                        'upload/lesson/intro-to-cyber-course/module-2-common-cyber-threats.md',                                   2),
+	(3, 2, 'CIA Triad and Core Security Principles',      'upload/lesson/intro-to-cyber-course/module-3-cia-triad-and-core-security-principles.md',                1),
+	(4, 2, 'Passwords, Authentication, and Access Control','upload/lesson/intro-to-cyber-course/module-4-passwords-authentication-and-access-control.md',            2),
+	(5, 3, 'Safe Browsing, Email, and Cyber Hygiene',     'upload/lesson/intro-to-cyber-course/module-5-safe-browsing-email-and-cyber-hygiene.md',                 1);
 
---
--- Table structure for table `lesson_progress`
---
+-- ------------------------------------------------------------
+-- 8) lesson_progress
+-- ------------------------------------------------------------
+INSERT INTO lesson_progress (id, user_id, lesson_id, status, completed_at) VALUES
+	(1, @nimal_user_id, 1, 'completed',  '2026-03-03 08:00:00'),
+	(2, @nimal_user_id, 2, 'in_progress', NULL),
+	(3, @kavya_user_id, 1, 'completed',  '2026-03-03 10:00:00'),
+	(4, @kavya_user_id, 3, 'not_started', NULL);
 
-DROP TABLE IF EXISTS `lesson_progress`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `lesson_progress` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `lesson_id` int DEFAULT NULL,
-  `user_id` char(36) DEFAULT NULL,
-  `status` varchar(30) DEFAULT NULL,
-  `completed_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_user_lesson_progress` (`user_id`,`lesson_id`),
-  KEY `lesson_id` (`lesson_id`),
-  CONSTRAINT `lesson_progress_ibfk_1` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`),
-  CONSTRAINT `lesson_progress_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- ------------------------------------------------------------
+-- 9) quiz_questions
+-- ------------------------------------------------------------
+INSERT INTO quiz_questions (id, lesson_id, question_text, question_order) VALUES
+	(1, 1, 'Which of the following best defines cybersecurity?', 1),
+	(2, 2, 'In the CIA triad, which pillar ensures data is accurate and unaltered?', 1),
+	(3, 4, 'Which sign most strongly indicates a phishing email?', 1);
 
---
--- Table structure for table `lessons`
---
+-- ------------------------------------------------------------
+-- 10) quiz_options
+-- ------------------------------------------------------------
+INSERT INTO quiz_options (id, question_id, option_text, is_correct) VALUES
+	(1, 1, 'Protecting digital systems and data from unauthorized access and attacks', 1),
+	(2, 1, 'Only installing antivirus software', 0),
+	(3, 1, 'Creating social media accounts securely', 0),
+	(4, 1, 'Turning off all internet connections', 0),
 
-DROP TABLE IF EXISTS `lessons`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `lessons` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `course_id` int DEFAULT NULL,
-  `title` varchar(200) DEFAULT NULL,
-  `content_md` varchar(255) DEFAULT NULL,
-  `lesson_order` int DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_course_lesson_order` (`course_id`,`lesson_order`),
-  CONSTRAINT `lessons_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+	(5, 2, 'Availability', 0),
+	(6, 2, 'Integrity', 1),
+	(7, 2, 'Confidentiality', 0),
+	(8, 2, 'Authentication', 0),
 
---
--- Table structure for table `quiz_answers`
---
+	(9,  3, 'Unexpected urgent request with suspicious link', 1),
+	(10, 3, 'A scheduled weekly newsletter', 0),
+	(11, 3, 'Email from your own verified domain', 0),
+	(12, 3, 'Meeting invite from your team calendar', 0);
 
-DROP TABLE IF EXISTS `quiz_answers`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `quiz_answers` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `attempt_id` int DEFAULT NULL,
-  `question_id` int DEFAULT NULL,
-  `selected_option_id` int DEFAULT NULL,
-  `is_correct` tinyint(1) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `attempt_id` (`attempt_id`),
-  KEY `question_id` (`question_id`),
-  KEY `selected_option_id` (`selected_option_id`),
-  CONSTRAINT `quiz_answers_ibfk_1` FOREIGN KEY (`attempt_id`) REFERENCES `quiz_attempts` (`id`),
-  CONSTRAINT `quiz_answers_ibfk_2` FOREIGN KEY (`question_id`) REFERENCES `quiz_questions` (`id`),
-  CONSTRAINT `quiz_answers_ibfk_3` FOREIGN KEY (`selected_option_id`) REFERENCES `quiz_options` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- ------------------------------------------------------------
+-- 11) quiz_attempts
+-- ------------------------------------------------------------
+INSERT INTO quiz_attempts (id, user_id, lesson_id, attempt_no, score, passed, submitted_at) VALUES
+	(1, @nimal_user_id, 1, 1, 100, 1, '2026-03-03 08:10:00'),
+	(2, @nimal_user_id, 2, 1,  50, 0, '2026-03-03 08:20:00'),
+	(3, @nimal_user_id, 2, 2, 100, 1, '2026-03-03 08:35:00'),
+	(4, @kavya_user_id, 1, 1, 100, 1, '2026-03-03 10:10:00');
 
---
--- Table structure for table `quiz_attempts`
---
+-- ------------------------------------------------------------
+-- 12) quiz_answers
+-- ------------------------------------------------------------
+INSERT INTO quiz_answers (id, attempt_id, question_id, selected_option_id, is_correct) VALUES
+	(1, 1, 1, 1, 1),
+	(2, 2, 2, 5, 0),
+	(3, 3, 2, 6, 1),
+	(4, 4, 1, 1, 1);
 
-DROP TABLE IF EXISTS `quiz_attempts`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `quiz_attempts` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `lesson_id` int DEFAULT NULL,
-  `user_id` char(36) DEFAULT NULL,
-  `score` int DEFAULT NULL,
-  `attempt_no` int DEFAULT NULL,
-  `submitted_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_user_lesson` (`user_id`,`lesson_id`),
-  KEY `lesson_id` (`lesson_id`),
-  CONSTRAINT `quiz_attempts_ibfk_1` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`),
-  CONSTRAINT `quiz_attempts_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- ------------------------------------------------------------
+-- 13) exercises
+-- ------------------------------------------------------------
+INSERT INTO exercises (id, lesson_id, title, instructions_md, starter_code, language, time_limit_ms, memory_limit_mb) VALUES
+	(1, 3, 'Password Strength Checker',
+	 'Write a Python function that classifies a password as weak/medium/strong.',
+	 'def classify_password(pw: str) -> str:\n    # TODO\n    return "weak"\n',
+	 'python', 5000, 128),
 
---
--- Table structure for table `quiz_options`
---
+	(2, 5, 'Basic Port Scan Parser',
+	 'Parse scan output and return only open ports as integers in ascending order.',
+	 'def open_ports(scan_output: str) -> list[int]:\n    # TODO\n    return []\n',
+	 'python', 7000, 128);
 
-DROP TABLE IF EXISTS `quiz_options`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `quiz_options` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `question_id` int DEFAULT NULL,
-  `option_text` text,
-  `is_correct` tinyint(1) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `question_id` (`question_id`),
-  CONSTRAINT `quiz_options_ibfk_1` FOREIGN KEY (`question_id`) REFERENCES `quiz_questions` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- ------------------------------------------------------------
+-- 14) exercise_test_cases
+-- ------------------------------------------------------------
+INSERT INTO exercise_test_cases (id, exercise_id, input, expected_output, is_hidden) VALUES
+	(1, 1, 'P@ssw0rd123!', 'strong', 0),
+	(2, 1, 'abc123',       'weak',   1),
+	(3, 2, '22/open\n80/closed\n443/open', '[22,443]', 0),
+	(4, 2, '21/open\n25/open\n110/closed', '[21,25]', 1);
 
---
--- Table structure for table `quiz_questions`
---
+-- ------------------------------------------------------------
+-- 15) exercise_submissions
+-- ------------------------------------------------------------
+INSERT INTO exercise_submissions (id, exercise_id, user_id, code, stdout, stderr, execution_time_ms, memory_used_mb, passed, score, submitted_at) VALUES
+	(1, 1, @nimal_user_id,
+	 'def classify_password(pw):\n    return "strong" if len(pw) >= 12 else "weak"',
+	 'strong', '', 19, 12, 1, 100, '2026-03-03 09:00:00'),
 
-DROP TABLE IF EXISTS `quiz_questions`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `quiz_questions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `lesson_id` int DEFAULT NULL,
-  `question_text` text,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `lesson_id` (`lesson_id`),
-  CONSTRAINT `quiz_questions_ibfk_1` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+	(2, 2, @nimal_user_id,
+	 'def open_ports(scan_output):\n    return [22,443]',
+	 '[22,443]', '', 23, 14, 1, 100, '2026-03-04 09:30:00'),
 
---
--- Table structure for table `roles`
---
+	(3, 1, @kavya_user_id,
+	 'def classify_password(pw):\n    return "weak"',
+	 'weak', '', 11, 10, 0, 30, '2026-03-04 11:00:00');
 
-DROP TABLE IF EXISTS `roles`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `roles` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- ------------------------------------------------------------
+-- 16) certificates
+-- ------------------------------------------------------------
+INSERT INTO certificates (id, user_id, course_id, certificate_code, issued_at, pdf_path) VALUES
+	(1, @nimal_user_id, 1, 'CYBER-2026-A1B2', '2026-03-05 12:00:00', '/certs/CYBER-2026-A1B2.pdf');
 
---
--- Table structure for table `tracks`
---
-
-DROP TABLE IF EXISTS `tracks`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `tracks` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `users`
---
-
-DROP TABLE IF EXISTS `users`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `users` (
-  `id` char(36) NOT NULL,
-  `full_name` varchar(120) DEFAULT NULL,
-  `email` varchar(150) NOT NULL,
-  `password_hash` text NOT NULL,
-  `role_id` int DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`),
-  KEY `role_id` (`role_id`),
-  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2026-03-07 10:43:20
+COMMIT;
