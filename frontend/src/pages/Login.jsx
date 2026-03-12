@@ -1,166 +1,164 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-export default function Login() {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState(null);
-  const [errors, setErrors] = useState({});
+const API_URL = "http://localhost:5000/api/auth";
+
+function Login() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const togglePassword = () => {
+    setShowPassword(!showPassword);
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required.";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required.";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setAlert(null);
 
-    if (!validateForm()) {
+    // Validation
+    if (!formData.email || !formData.password) {
+      setError("Email and password are required");
       return;
     }
 
     setLoading(true);
-
     try {
-      const response = await axios.post("/api/auth/login", {
-        email: formData.email.trim(),
-        password: formData.password,
+      const response = await fetch(`${API_URL}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
       });
 
-      setAlert({ type: "success", message: "Login successful!" });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Login failed");
+        return;
+      }
 
       // Store token in localStorage
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1200);
-    } catch (error) {
-      const message =
-        error.response?.data?.message ||
-        error.message ||
-        "Login failed. Please try again.";
-      setAlert({ type: "error", message });
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Failed to connect to server. Make sure backend is running.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cadtSky via-white to-slate-100 px-4 py-10">
-      <main className="flex min-h-screen items-center justify-center">
-        <div className="w-full max-w-md rounded-3xl border border-cadtLine bg-white p-8 shadow-card">
-          <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-cadtBlue text-2xl font-bold text-white shadow-lg">
-              KC
-            </div>
-            <p className="text-sm font-medium uppercase tracking-widest text-cadtBlue">
-              Kompi-Cyber
-            </p>
-            <h1 className="mt-3 text-3xl font-bold text-cadtNavy">
-              Welcome back
-            </h1>
-            <p className="mt-2 text-sm text-slate-500">
-              Sign in to your account to continue learning
-            </p>
+    <div className="flex items-center justify-center min-h-screen bg-[#1a1a2e] text-gray-200">
+      <div className="bg-[#16213e] p-10 rounded-lg shadow-lg w-96 border border-[#0f3460]">
+        <i className="fas fa-shield-alt text-5xl text-[#00d4ff] mb-2 block text-center"></i>
+        <h1 className="text-2xl font-bold text-[#00d4ff] text-center mb-2">Kompi_Cyber</h1>
+        <p className="text-sm text-gray-400 text-center mb-6">Cybersecurity Learning Platform</p>
+
+        {error && (
+          <div className="mb-4 p-2 bg-red-900 border border-red-700 rounded text-red-200 text-sm">
+            {error}
+          </div>
+        )}
+
+        <form autoComplete="off" onSubmit={handleSubmit} className="space-y-4">
+          {/* hidden inputs to trick autofill */}
+          <input type="text" name="fakeusernameremembered" style={{display: 'none'}} />
+          <input type="password" name="fakepasswordremembered" style={{display: 'none'}} />
+          <div>
+            <label htmlFor="email" className="block text-sm font-semibold mb-1">
+              Email / Student ID
+            </label>
+            <input
+              type="text"
+              id="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="student@example.com"
+              className="w-full p-2 rounded-md border border-[#0f3460] bg-[#1a1a2e] text-gray-200 focus:outline-none focus:border-[#00d4ff]"
+            />
           </div>
 
-          {alert && (
-            <div
-              className={`mb-5 rounded-2xl border px-4 py-3 text-sm font-medium ${
-                alert.type === "success"
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                  : "border-red-200 bg-red-50 text-red-700"
-              }`}
-            >
-              {alert.message}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label
-                htmlFor="email"
-                className="mb-2 block text-sm font-semibold text-cadtNavy"
-              >
-                Email
-              </label>
+          <div>
+            <label htmlFor="password" className="block text-sm font-semibold mb-1">
+              Password
+            </label>
+            <div className="relative">
               <input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="student@example.com"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full rounded-2xl border border-cadtLine bg-white px-4 py-3 outline-none transition focus:border-cadtBlue focus:ring-4 focus:ring-blue-100"
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="mb-2 block text-sm font-semibold text-cadtNavy"
-              >
-                Password
-              </label>
-              <input
+                type={showPassword ? "text" : "password"}
                 id="password"
-                name="password"
-                type="password"
-                placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full rounded-2xl border border-cadtLine bg-white px-4 py-3 outline-none transition focus:border-cadtBlue focus:ring-4 focus:ring-blue-100"
+                placeholder="Enter your password"
+                autoComplete="off"
+                className="w-full p-2 pr-10 rounded-md border border-[#0f3460] bg-[#1a1a2e] text-gray-200 focus:outline-none focus:border-[#00d4ff]"
               />
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-              )}
+              <button
+                type="button"
+                onClick={togglePassword}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-200 bg-transparent border-0 p-0"
+              >
+                <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+              </button>
             </div>
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-2xl bg-cadtBlue px-4 py-3 text-sm font-semibold text-white transition hover:bg-cadtNavy focus:outline-none focus:ring-4 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {loading ? "Signing in..." : "Sign In"}
-            </button>
-          </form>
+          <div className="flex justify-between items-center text-sm mb-2">
+            <label className="flex items-center">
+              <input type="checkbox" className="mr-2" /> Remember me
+            </label>
+            <a href="#" className="text-[#00d4ff] hover:underline">
+              Forgot password?
+            </a>
+          </div>
 
-          <p className="mt-6 text-center text-sm text-slate-500">
-            Don't have an account?{" "}
-            <Link
-              to="/register"
-              className="font-semibold text-cadtBlue hover:text-cadtNavy"
-            >
-              Create one
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-2 rounded-md bg-[#0f3460] text-white font-semibold hover:bg-[#00d4ff] hover:text-[#16213e] transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Signing In..." : "Sign In"}
+          </button>
+
+          <div className="text-center text-gray-400 text-sm my-4">or continue with</div>
+
+          <button
+            type="button"
+            className="w-full py-2 rounded-md border border-[#0f3460] bg-[#1a1a2e] text-gray-200 flex items-center justify-center hover:border-[#00d4ff] transition"
+          >
+            <i className="fab fa-microsoft mr-2"></i> Sign in with Microsoft 365
+          </button>
+
+          <div className="text-center text-sm mt-4">
+            Don't have an account?{' '}
+            <Link to="/register" className="text-[#00d4ff] hover:underline">
+              Create Account
             </Link>
-          </p>
-        </div>
-      </main>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
+
+export default Login;
