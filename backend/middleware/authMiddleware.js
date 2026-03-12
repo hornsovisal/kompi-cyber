@@ -49,6 +49,16 @@ class AuthMiddleware {
       });
     }
   };
+
+  requireAdmin = (req, res, next) => {
+    const roleId = Number(req.user?.roleId);
+
+    if (roleId !== 3) {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+
+    next();
+  };
 }
 
 module.exports = new AuthMiddleware(process.env.JWT_SECRET || "dev_jwt_secret");
