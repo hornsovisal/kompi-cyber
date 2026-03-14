@@ -14,14 +14,18 @@ router.get("/", courseController.getCourses);
 // GET /api/courses/:id
 router.get("/:id", courseController.getCourseById);
 
-// POST /api/courses
-router.post("/", courseController.createCourse);
+// POST /api/courses (admin only)
+router.post("/", authMiddleware.requireAdmin, courseController.createCourse);
 
-// PUT /api/courses/:id
-router.put("/:id", courseController.updateCourse);
+// PUT /api/courses/:id (admin only)
+router.put("/:id", authMiddleware.requireAdmin, courseController.updateCourse);
 
-// DELETE /api/courses/:id
-router.delete("/:id", courseController.deleteCourse);
+// DELETE /api/courses/:id (admin only)
+router.delete(
+  "/:id",
+  authMiddleware.requireAdmin,
+  courseController.deleteCourse,
+);
 
 // GET /api/courses/:courseId/lessons
 router.get("/:courseId/lessons", courseController.getCourseLessons);
