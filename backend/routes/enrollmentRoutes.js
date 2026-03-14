@@ -4,6 +4,7 @@ const router = express.Router();
 const enrollmentController = require("../controller/enrollmentController");
 const authMiddleware = require("../middleware/authMiddleware");
 
+// Enrollment routes for learner-course membership management.
 router.use(authMiddleware.authenticateToken);
 
 // POST /api/enrollments — enroll in a course

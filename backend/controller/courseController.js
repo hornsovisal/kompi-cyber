@@ -1,11 +1,11 @@
 const courseModel = require("../models/courseModel");
 const enrollmentModel = require("../models/enrollmentModel");
 
+// Handles course catalog CRUD and course-level lesson access.
 class CourseController {
   constructor(model) {
     this.courseModel = model;
   }
-
   getCourses = async (_req, res) => {
     try {
       await this.courseModel.ensureSeedFromUploadIfEmpty();
@@ -37,6 +37,7 @@ class CourseController {
     }
   };
 
+  // This method is for admin use only, so it doesn't check enrollment
   createCourse = async (req, res) => {
     try {
       const {
@@ -135,6 +136,7 @@ class CourseController {
         return res.status(404).json({ message: "Course not found" });
       }
 
+      // Learners can browse courses, but lesson lists require enrollment.
       const userId = req.user?.sub;
       const enrolled = await enrollmentModel.isEnrolled(userId, courseId);
       if (!enrolled) {

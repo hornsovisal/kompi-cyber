@@ -4,6 +4,7 @@ const router = express.Router();
 const courseController = require("../controller/courseController");
 const authMiddleware = require("../middleware/authMiddleware");
 
+// Course catalog routes (all protected by JWT).
 // All course routes require a valid JWT
 router.use(authMiddleware.authenticateToken);
 
