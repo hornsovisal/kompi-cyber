@@ -1,5 +1,8 @@
 const exerciseModel = require("../models/exerciseModel");
+const lessonModel = require("../models/lessonModel");
+const enrollmentModel = require("../models/enrollmentModel");
 
+// Handles exercise CRUD and learner-facing read access checks.
 class ExerciseController {
   constructor(model) {
     this.exerciseModel = model;
@@ -10,6 +13,24 @@ class ExerciseController {
       const lessonId = Number(req.params.lessonId);
       if (!Number.isInteger(lessonId) || lessonId <= 0) {
         return res.status(400).json({ message: "Invalid lessonId" });
+      }
+
+      const lesson = await lessonModel.findById(lessonId);
+      if (!lesson) {
+        return res.status(404).json({ message: "Lesson not found" });
+      }
+
+      // Exercise content is learn-only: require enrollment in parent course.
+      const userId = req.user?.sub;
+      const enrolled = await enrollmentModel.isEnrolled(
+        userId,
+        lesson.course_id,
+      );
+      if (!enrolled) {
+        return res.status(403).json({
+          message: "You must enroll in this course to access its exercises",
+          enrolled: false,
+        });
       }
 
       const exercises = await this.exerciseModel.getByLessonId(lessonId);
@@ -30,6 +51,24 @@ class ExerciseController {
       const exercise = await this.exerciseModel.findById(id);
       if (!exercise) {
         return res.status(404).json({ message: "Exercise not found" });
+      }
+
+      const lesson = await lessonModel.findById(exercise.lesson_id);
+      if (!lesson) {
+        return res.status(404).json({ message: "Lesson not found" });
+      }
+
+      // Resolve the exercise's course through lesson and enforce enrollment.
+      const userId = req.user?.sub;
+      const enrolled = await enrollmentModel.isEnrolled(
+        userId,
+        lesson.course_id,
+      );
+      if (!enrolled) {
+        return res.status(403).json({
+          message: "You must enroll in this course to access its exercises",
+          enrolled: false,
+        });
       }
 
       return res.status(200).json({ exercise });
