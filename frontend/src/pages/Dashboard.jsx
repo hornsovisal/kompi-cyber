@@ -3,6 +3,25 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const DEFAULT_COVER = "/course-covers/default-course.svg";
+
+function getCoverUrl(course) {
+  const raw = (course?.cover_image_url || "").trim();
+
+  if (!raw) {
+    return DEFAULT_COVER;
+  }
+
+  if (/^https?:\/\//i.test(raw)) {
+    return raw;
+  }
+
+  if (raw.startsWith("/")) {
+    return `${API_BASE}${raw}`;
+  }
+
+  return `${API_BASE}/${raw}`;
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -186,7 +205,16 @@ export default function Dashboard() {
                   key={course.id}
                   className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card transition hover:shadow-lg"
                 >
-                  <div className="mb-4 h-32 rounded-xl bg-gradient-to-br from-cadtBlue to-cadtNavy"></div>
+                  <div className="mb-4 h-32 overflow-hidden rounded-xl bg-gradient-to-br from-cadtBlue to-cadtNavy">
+                    <img
+                      src={getCoverUrl(course)}
+                      alt={`${course.title} cover`}
+                      className="h-full w-full object-cover"
+                      onError={(event) => {
+                        event.currentTarget.src = DEFAULT_COVER;
+                      }}
+                    />
+                  </div>
                   <h3 className="font-semibold text-cadtNavy">
                     {course.title}
                   </h3>
