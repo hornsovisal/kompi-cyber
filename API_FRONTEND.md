@@ -442,11 +442,103 @@ Unenroll the current user from a course.
 
 ---
 
-## 4) Lesson + Exercise APIs
+## 4) Course APIs
 
 All routes below require JWT.
 
-> **Enrollment required**: `GET /api/lessons/:id` will return `403` if the user is not enrolled in the course that owns the lesson. Enroll first via `POST /api/enrollments`.
+### GET `/api/courses`
+
+Get all courses.
+
+#### Success `200`
+
+```json
+{
+  "courses": [
+    {
+      "id": 1,
+      "title": "Intro to Cybersecurity",
+      "description": "...",
+      "level": "beginner",
+      "duration_hrs": 5
+    }
+  ]
+}
+```
+
+---
+
+### GET `/api/courses/:id`
+
+Get one course by ID.
+
+#### Success `200`
+
+```json
+{
+  "course": {
+    "id": 1,
+    "title": "Intro to Cybersecurity",
+    "description": "...",
+    "level": "beginner",
+    "duration_hrs": 5
+  }
+}
+```
+
+#### Errors
+
+- `400` invalid course id
+- `404` course not found
+
+---
+
+### GET `/api/courses/:courseId/lessons`
+
+Get all lessons in one course.
+
+#### Success `200`
+
+```json
+{
+  "courseId": 1,
+  "lessons": [
+    {
+      "id": 1,
+      "module_id": 1,
+      "module_title": "Module 1",
+      "module_order": 1,
+      "course_id": 1,
+      "title": "Lesson title",
+      "content_md": "...",
+      "lesson_order": 1
+    }
+  ]
+}
+```
+
+#### Errors
+
+- `400` invalid courseId
+- `404` course not found
+- `403` not enrolled in the course
+
+Example `403` body:
+
+```json
+{
+  "message": "You must enroll in this course to access its lessons",
+  "enrolled": false
+}
+```
+
+---
+
+## 5) Lesson + Exercise APIs
+
+All routes below require JWT.
+
+> **Enrollment required**: Read endpoints (`GET /api/lessons/:id`, `GET /api/lessons/:lessonId/exercises`, `GET /api/exercises/:id`) return `403` if the user is not enrolled in the course that owns the lesson. Enroll first via `POST /api/enrollments`.
 
 ### GET `/api/lessons/:lessonId/exercises`
 
@@ -476,6 +568,16 @@ Get exercises belonging to one lesson.
 #### Errors
 
 - `400` invalid lessonId
+- `403` not enrolled in the lesson's course
+
+Example `403` body:
+
+```json
+{
+  "message": "You must enroll in this course to access its exercises",
+  "enrolled": false
+}
+```
 
 ---
 
@@ -505,6 +607,16 @@ Get one exercise.
 
 - `400` invalid id
 - `404` not found
+- `403` not enrolled in the lesson's course
+
+Example `403` body:
+
+```json
+{
+  "message": "You must enroll in this course to access its exercises",
+  "enrolled": false
+}
+```
 
 ---
 
@@ -609,7 +721,7 @@ Delete exercise.
 6. For profile update, use `full_name` key (not `fullName`) in request body.
 7. Before showing lesson content, call `GET /api/enrollments/check/:courseId`. If `enrolled: false`, show an "Enroll" button.
 8. On "Enroll" click, call `POST /api/enrollments` with `{ course_id }`. On success (`201` or `200`), proceed to load the lesson.
-9. A `403` on `GET /api/lessons/:id` with `enrolled: false` in the body means the user is not enrolled — redirect to enrollment flow.
+9. A `403` on `GET /api/lessons/:id`, `GET /api/lessons/:lessonId/exercises`, or `GET /api/exercises/:id` with `enrolled: false` in the body means the user is not enrolled. Redirect to enrollment flow.
 10. Use `GET /api/enrollments/my` to display the user's enrolled courses on the dashboard.
 
 ---
@@ -621,3 +733,4 @@ Delete exercise.
 - User object returned to frontend is sanitized by `toSafeUser()` (no password hash).
 - Enrollment is **one per user per course** — enforced at both the DB level (`INSERT IGNORE`) and the controller (returns `200` instead of `409` on duplicates).
 - `GET /api/lessons/:id` checks enrollment against the lesson's parent course. Returns `403` with `{ enrolled: false }` if not enrolled.
+- `GET /api/lessons/:lessonId/exercises` and `GET /api/exercises/:id` also enforce enrollment and return `403` with `{ enrolled: false }` when blocked.

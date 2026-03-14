@@ -1,6 +1,7 @@
 const enrollmentModel = require("../models/enrollmentModel");
 const courseModel = require("../models/courseModel");
 
+// Handles enrollment lifecycle: enroll, list, check, and unenroll.
 class EnrollmentController {
   constructor(model, cModel) {
     this.enrollmentModel = model;
@@ -21,6 +22,7 @@ class EnrollmentController {
         return res.status(404).json({ message: "Course not found" });
       }
 
+      // Keep enroll idempotent for better UX on repeated clicks.
       const alreadyEnrolled = await this.enrollmentModel.isEnrolled(
         userId,
         courseId,

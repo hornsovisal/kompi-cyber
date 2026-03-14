@@ -1,6 +1,7 @@
 const lessonModel = require("../models/lessonModel");
 const enrollmentModel = require("../models/enrollmentModel");
 
+// Handles lesson CRUD and lesson-level access control.
 class LessonController {
   constructor(model) {
     this.lessonModel = model;
@@ -18,6 +19,7 @@ class LessonController {
         return res.status(404).json({ message: "Lesson not found" });
       }
 
+      // Lesson content is only available to users enrolled in the lesson course.
       const userId = req.user?.sub;
       const enrolled = await enrollmentModel.isEnrolled(
         userId,

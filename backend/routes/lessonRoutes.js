@@ -5,7 +5,8 @@ const exerciseController = require("../controller/exerciseController");
 const lessonController = require("../controller/lessonController");
 const authMiddleware = require("../middleware/authMiddleware");
 
-// All exercise routes require a valid JWT
+// Lesson routes, including nested exercise listing by lesson.
+// All lesson routes require a valid JWT
 router.use(authMiddleware.authenticateToken);
 
 // GET /api/lessons/:lessonId/exercises

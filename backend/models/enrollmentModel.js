@@ -1,5 +1,6 @@
 const db = require("../config/db");
 
+// Data-access layer for enrollments.
 class EnrollmentModel {
   constructor(database) {
     this.db = database;
@@ -14,6 +15,7 @@ class EnrollmentModel {
   }
 
   async isEnrolled(userId, courseId) {
+    // Fast existence check used by access-control guards.
     const [rows] = await this.db.execute(
       `SELECT id FROM enrollments WHERE user_id = ? AND course_id = ? LIMIT 1`,
       [userId, courseId],
