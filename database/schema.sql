@@ -71,6 +71,7 @@ CREATE TABLE `courses` (
   `domain_id`    INT          NOT NULL,
   `title`        VARCHAR(200) NOT NULL,
   `description`  TEXT,
+  `cover_image_url` VARCHAR(500),
   `level`        ENUM('beginner','intermediate','advanced') NOT NULL DEFAULT 'beginner',
   `duration_hrs` SMALLINT     NOT NULL DEFAULT 0,    -- estimated study hours
   `is_published` TINYINT(1)   NOT NULL DEFAULT 0,

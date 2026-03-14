@@ -16,6 +16,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serve uploaded course assets like /upload/lesson/<slug>/cover.*
+app.use("/upload", express.static(path.resolve(__dirname, "../upload")));
+
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/courses", courseRoutes);
