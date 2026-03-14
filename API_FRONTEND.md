@@ -534,6 +534,91 @@ Example `403` body:
 
 ---
 
+### POST `/api/courses`
+
+Admin only. Create a new course.
+
+#### Body
+
+```json
+{
+  "domain_id": 1,
+  "title": "SOC Analyst Fundamentals",
+  "description": "Blue team basics",
+  "level": "beginner",
+  "duration_hrs": 8,
+  "is_published": 1
+}
+```
+
+Required: `domain_id`, `title`
+
+#### Success `201`
+
+```json
+{
+  "message": "Course created successfully",
+  "course": { "...": "created course" }
+}
+```
+
+#### Errors
+
+- `400` invalid payload
+- `403` admin access required
+
+---
+
+### PUT `/api/courses/:id`
+
+Admin only. Update a course.
+
+#### Body
+
+Any subset of:
+
+- `domain_id`
+- `title`
+- `description`
+- `level` (`beginner|intermediate|advanced`)
+- `duration_hrs`
+- `is_published`
+
+#### Success `200`
+
+```json
+{
+  "message": "Course updated successfully",
+  "course": { "...": "updated course" }
+}
+```
+
+#### Errors
+
+- `400` invalid course id or no valid fields
+- `403` admin access required
+- `404` course not found
+
+---
+
+### DELETE `/api/courses/:id`
+
+Admin only. Delete a course.
+
+#### Success `200`
+
+```json
+{ "message": "Course deleted successfully" }
+```
+
+#### Errors
+
+- `400` invalid course id
+- `403` admin access required
+- `404` course not found
+
+---
+
 ## 5) Lesson + Exercise APIs
 
 All routes below require JWT.

@@ -47,7 +47,6 @@ class CourseController {
         level,
         duration_hrs,
         is_published,
-        created_by,
       } = req.body;
 
       if (!domain_id || !title) {
@@ -63,7 +62,7 @@ class CourseController {
         level,
         duration_hrs,
         is_published,
-        created_by: created_by || req.user?.sub,
+        created_by: req.user?.sub,
       });
 
       const course = await this.courseModel.findById(newId);
