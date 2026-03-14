@@ -1,9 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
+
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [enrolledIds, setEnrolledIds] = useState(new Set());
+  const [enrollingId, setEnrollingId] = useState(null);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,10 +28,59 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Error parsing user:", error);
       navigate("/login");
-    } finally {
-      setLoading(false);
     }
+
+    const loadData = async () => {
+      try {
+        const headers = { Authorization: `Bearer ${token}` };
+        const [coursesRes, enrollmentsRes] = await Promise.all([
+          axios.get("/api/courses", { baseURL: API_BASE, headers }),
+          axios.get("/api/enrollments/my", { baseURL: API_BASE, headers }),
+        ]);
+        setCourses(coursesRes.data.courses || []);
+        const ids = new Set(
+          (enrollmentsRes.data.enrollments || []).map((e) => e.course_id),
+        );
+        setEnrolledIds(ids);
+      } catch (err) {
+        if (err.response?.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navigate("/login");
+          return;
+        }
+
+        if (!err.response) {
+          setError("Cannot connect to backend API (http://localhost:5000)");
+          return;
+        }
+
+        setError(err.response?.data?.message || "Failed to load courses");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, [navigate]);
+
+  const handleEnroll = async (courseId) => {
+    const token = localStorage.getItem("token");
+    setEnrollingId(courseId);
+    try {
+      await axios.post(
+        "/api/enrollments",
+        { course_id: courseId },
+        { baseURL: API_BASE, headers: { Authorization: `Bearer ${token}` } },
+      );
+      setEnrolledIds((prev) => new Set([...prev, courseId]));
+      navigate(`/learn/${courseId}`);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to enroll");
+    } finally {
+      setEnrollingId(null);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -75,28 +131,33 @@ export default function Dashboard() {
             </p>
           </div>
 
+          {error && (
+            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
+
           {/* Stats Cards */}
           <div className="mb-10 grid gap-6 md:grid-cols-4">
             <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
-              <div className="mb-3 text-3xl">📚</div>
-              <p className="text-sm text-slate-600">Courses</p>
-              <p className="mt-2 text-2xl font-bold text-cadtBlue">0</p>
+              <p className="text-sm text-slate-600">Enrolled Courses</p>
+              <p className="mt-2 text-2xl font-bold text-cadtBlue">
+                {enrolledIds.size}
+              </p>
             </div>
 
             <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
-              <div className="mb-3 text-3xl">✅</div>
               <p className="text-sm text-slate-600">Completed</p>
               <p className="mt-2 text-2xl font-bold text-cadtBlue">0</p>
             </div>
 
             <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
-              <div className="mb-3 text-3xl">🏆</div>
+              {" "}
               <p className="text-sm text-slate-600">Certificates</p>
               <p className="mt-2 text-2xl font-bold text-cadtBlue">0</p>
             </div>
 
             <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
-              <div className="mb-3 text-3xl">⏱️</div>
               <p className="text-sm text-slate-600">Hours Learned</p>
               <p className="mt-2 text-2xl font-bold text-cadtBlue">0</p>
             </div>
@@ -120,42 +181,42 @@ export default function Dashboard() {
               Available Courses
             </h2>
             <div className="grid gap-6 md:grid-cols-3">
-              <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card transition hover:shadow-lg">
-                <div className="mb-4 h-32 rounded-xl bg-gradient-to-br from-cadtBlue to-cadtNavy"></div>
-                <h3 className="font-semibold text-cadtNavy">
-                  Introduction to Cybersecurity
-                </h3>
-                <p className="mt-2 text-sm text-slate-600">
-                  Learn the fundamentals of cybersecurity
-                </p>
-                <button className="mt-4 w-full rounded-lg bg-cadtBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-cadtNavy">
-                  Enroll Now
-                </button>
-              </div>
+              {courses.map((course) => (
+                <div
+                  key={course.id}
+                  className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card transition hover:shadow-lg"
+                >
+                  <div className="mb-4 h-32 rounded-xl bg-gradient-to-br from-cadtBlue to-cadtNavy"></div>
+                  <h3 className="font-semibold text-cadtNavy">
+                    {course.title}
+                  </h3>
+                  <p className="mt-2 line-clamp-3 text-sm text-slate-600">
+                    {course.description || "No course description available."}
+                  </p>
+                  {enrolledIds.has(course.id) ? (
+                    <button
+                      onClick={() => navigate(`/learn/${course.id}`)}
+                      className="mt-4 w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
+                    >
+                      Continue Learning
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleEnroll(course.id)}
+                      disabled={enrollingId === course.id}
+                      className="mt-4 w-full rounded-lg bg-cadtBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-cadtNavy disabled:opacity-60"
+                    >
+                      {enrollingId === course.id ? "Enrolling..." : "Enroll"}
+                    </button>
+                  )}
+                </div>
+              ))}
 
-              <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card transition hover:shadow-lg">
-                <div className="mb-4 h-32 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700"></div>
-                <h3 className="font-semibold text-cadtNavy">
-                  Network Security
-                </h3>
-                <p className="mt-2 text-sm text-slate-600">
-                  Master network security concepts
-                </p>
-                <button className="mt-4 w-full rounded-lg bg-cadtBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-cadtNavy">
-                  Enroll Now
-                </button>
-              </div>
-
-              <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card transition hover:shadow-lg">
-                <div className="mb-4 h-32 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700"></div>
-                <h3 className="font-semibold text-cadtNavy">Ethical Hacking</h3>
-                <p className="mt-2 text-sm text-slate-600">
-                  Learn penetration testing techniques
-                </p>
-                <button className="mt-4 w-full rounded-lg bg-cadtBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-cadtNavy">
-                  Enroll Now
-                </button>
-              </div>
+              {courses.length === 0 && (
+                <div className="rounded-2xl border border-cadtLine bg-white p-6 text-sm text-slate-500">
+                  No courses found yet.
+                </div>
+              )}
             </div>
           </div>
         </div>

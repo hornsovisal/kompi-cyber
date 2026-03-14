@@ -35,6 +35,25 @@ class UserModel {
     return rows[0] || null;
   }
 
+  async findAllUsers() {
+    const [rows] = await this.db.execute(
+      `SELECT
+         u.id,
+         u.full_name,
+         u.email,
+         u.role_id,
+         r.name AS role_name,
+         u.is_active,
+         u.created_at,
+         u.updated_at
+       FROM users u
+       LEFT JOIN roles r ON r.id = u.role_id
+       ORDER BY u.created_at DESC`,
+    );
+
+    return rows;
+  }
+
   async updateUser(id, fields) {
     const allowed = ["full_name", "email"];
     const keys = Object.keys(fields).filter((k) => allowed.includes(k));
@@ -68,6 +87,33 @@ class UserModel {
     return rows;
   }
 
+  async updateStatus(id, isActive) {
+    const [result] = await this.db.execute(
+      "UPDATE users SET is_active = ? WHERE id = ?",
+      [isActive ? 1 : 0, id],
+    );
+
+    return result;
+  }
+
+  async updateRole(id, roleId) {
+    const [result] = await this.db.execute(
+      "UPDATE users SET role_id = ? WHERE id = ?",
+      [roleId, id],
+    );
+
+    return result;
+  }
+
+  async roleExists(roleId) {
+    const [rows] = await this.db.execute(
+      "SELECT id FROM roles WHERE id = ? LIMIT 1",
+      [roleId],
+    );
+
+    return rows.length > 0;
+  }
+
   toSafeUser(userRow) {
     if (!userRow) return null;
 
@@ -76,6 +122,7 @@ class UserModel {
       fullName: userRow.full_name,
       email: userRow.email,
       roleId: userRow.role_id,
+      roleName: userRow.role_name,
       isActive: Boolean(userRow.is_active),
       createdAt: userRow.created_at,
       updatedAt: userRow.updated_at,
