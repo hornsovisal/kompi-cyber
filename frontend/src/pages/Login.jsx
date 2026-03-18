@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -11,6 +12,12 @@ export default function Login() {
     email: "",
     password: "",
   });
+
+  useEffect(() => {
+  if (localStorage.getItem("token")) {
+    navigate("/dashboard");
+  }
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
