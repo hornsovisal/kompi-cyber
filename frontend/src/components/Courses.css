@@ -1,0 +1,122 @@
+﻿.courses {
+  @apply px-[8%] py-16 text-center;
+}
+
+  .section-title {
+    @apply mb-4 text-4xl font-bold text-primary;
+  }
+
+  .section-subtitle {
+    @apply mb-10 text-base text-gray-600;
+  }
+
+  .course-grid {
+    @apply mb-12 grid gap-7;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+
+  .course-card {
+    @apply relative cursor-pointer overflow-hidden rounded-2xl bg-white text-left shadow-sm transition-all duration-400;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.05);
+    animation: slideUp 0.6s ease;
+  }
+
+  .course-card::before {
+    content: '';
+    @apply pointer-events-none absolute opacity-0 transition-opacity duration-400 ease;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 165, 0, 0.1), transparent);
+  }
+
+  .course-card:hover {
+    @apply border-2 border-accent;
+    transform: translateY(-3.75) scale(1.05) rotateZ(1deg);
+    box-shadow: 0 20px 50px rgba(255, 165, 0, 0.3);
+  }
+
+  .course-card:hover::before {
+    @apply opacity-100;
+    animation: shimmer 1s ease;
+  }
+
+  .course-image-placeholder {
+    @apply flex h-44 w-full items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200 font-semibold text-primary transition-all duration-300 ease;
+  }
+
+  .course-card:hover .course-image-placeholder {
+    transform: scale(1.1);
+    filter: brightness(1.2);
+  }
+
+  .course-content {
+    @apply px-5 py-5;
+  }
+
+  .course-content h4 {
+    @apply mb-1 text-xs font-normal text-gray-600;
+  }
+
+  .course-content h3 {
+    @apply my-2 text-lg font-normal text-primary;
+  }
+
+  .course-info {
+    @apply mb-3 text-xs font-normal text-gray-600;
+  }
+
+  .enroll-btn {
+    @apply relative w-full cursor-pointer overflow-hidden rounded-lg border-2 border-transparent bg-primary px-3 py-3 text-center font-semibold text-white no-underline transition-all duration-300 ease;
+    font-family: 'Niradei', Arial, sans-serif;
+  }
+
+  .enroll-btn::before {
+    content: '';
+    @apply absolute top-1/2 left-1/2 h-0 w-0 rounded-full transition-[width,height] duration-600 ease;
+    background: rgba(255, 165, 0, 0.5);
+    transform: translate(-50%, -50%);
+  }
+
+  .enroll-btn:hover {
+    @apply scale-105 border-accent;
+    background: linear-gradient(135deg, #FFA500, #FF8C00);
+    transform: translateY(-1) scale(1.05);
+    box-shadow: 0 10px 30px rgba(255, 165, 0, 0.4);
+    animation: pulse 0.6s ease-in-out;
+  }
+
+  .enroll-btn:active::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  .view-all {
+    @apply mt-12;
+  }
+
+  .view-all button {
+    @apply relative cursor-pointer overflow-hidden rounded-lg border-2 border-primary bg-white px-8 py-3.5 font-bold text-primary transition-all duration-400 ease;
+    font-family: 'Niradei', Arial, sans-serif;
+  }
+
+  .view-all button::before {
+    content: '';
+    @apply absolute top-0 z-[-1] w-full h-full transition-[left] duration-400 ease;
+    left: -100%;
+    background: linear-gradient(90deg, #FFA500, #FF8C00);
+  }
+
+  .view-all button:hover {
+    @apply text-white border-accent;
+    transform: translateY(-1.25) scale(1.05);
+    box-shadow: 0 15px 40px rgba(255, 165, 0, 0.3);
+    animation: pulse 0.6s ease-in-out;
+  }
+
+  .view-all button:hover::before {
+    left: 0;
+  }
+
+

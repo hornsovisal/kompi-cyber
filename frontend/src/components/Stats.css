@@ -1,0 +1,55 @@
+﻿.stats {
+  @apply px-[8%] py-14;
+}
+
+  .stats-container {
+    @apply flex flex-wrap gap-6;
+  }
+
+  .stat-card {
+    @apply relative flex-1 cursor-pointer overflow-hidden rounded-xl bg-white px-8 py-8 shadow-sm transition-all duration-300 ease;
+    min-width: 200px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.05);
+    animation: slideUp 0.6s ease;
+  }
+
+  .stat-card::before {
+    content: '';
+    @apply pointer-events-none absolute top-0 left-[-100%] h-full w-full bg-gradient-to-r from-transparent via-accent via-opacity-10 to-transparent transition-[left] duration-600 ease;
+  }
+
+  .stat-card:hover {
+    @apply border border-accent;
+    transform: translateY(-2) scale(1.05);
+    box-shadow: 0px 15px 40px rgba(255, 165, 0, 0.2);
+    animation: pulse 0.8s ease-in-out;
+  }
+
+  .stat-card:hover::before {
+    left: 100%;
+  }
+
+  .stat-card h2 {
+    @apply text-3xl font-bold text-primary transition-all duration-300 ease;
+    animation: slideDown 0.6s ease;
+  }
+
+  .stat-card h2.orange {
+    @apply text-accent;
+  }
+
+  .stat-card h2:hover {
+    @apply text-accent;
+    text-shadow: 0 0 20px rgba(255, 165, 0, 0.4);
+  }
+
+  .stat-card p {
+    @apply mt-2 text-gray-600 transition-all duration-300 ease;
+    animation: slideUp 0.6s ease;
+  }
+
+  .stat-card:hover p {
+    @apply font-semibold text-primary;
+  }
+
+

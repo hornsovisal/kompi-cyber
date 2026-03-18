@@ -1,0 +1,65 @@
+﻿.cta {
+  @apply bg-primary px-5 py-20 text-center text-white;
+}
+
+  .cta h2 {
+    @apply mb-3.75 text-4xl font-normal;
+  }
+
+  .cta p {
+    @apply mb-10 text-lg opacity-90;
+  }
+
+  .cta-buttons {
+    @apply flex flex-wrap justify-center gap-5;
+  }
+
+  .btn {
+    @apply relative inline-block cursor-pointer overflow-hidden border-none px-7 py-3.75 font-bold text-lg tracking-wider transition-all duration-400;
+    border-radius: 8px;
+    text-decoration: none;
+    font-family: 'Niradei', Arial, sans-serif;
+  }
+
+  .btn::before {
+    content: '';
+    @apply absolute top-1/2 left-1/2 h-0 w-0 rounded-full bg-white bg-opacity-40;
+    transform: translate(-50%, -50%);
+  }
+
+  .btn.primary {
+    @apply border-2 border-accent bg-gradient-to-br from-accent to-accent-dark text-white;
+    box-shadow: 0 8px 25px rgba(255, 165, 0, 0.3);
+  }
+
+  .btn.primary:hover {
+    transform: translateY(-2) scale(1.08) rotateZ(1deg);
+    box-shadow: 0 15px 50px rgba(255, 165, 0, 0.6), 0 0 30px rgba(255, 165, 0, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.2);
+    animation: neon 1.5s ease-in-out infinite, pulse 0.8s ease-in-out;
+    letter-spacing: 1px;
+  }
+
+  .btn.secondary {
+    @apply border-2 border-primary bg-white text-primary transition-all duration-400;
+    border-radius: 8px;
+  }
+
+  .btn.secondary::after {
+    content: '';
+    @apply absolute top-0 left-[-100%] h-full w-full transition-[left] duration-500 ease;
+    background: linear-gradient(90deg, transparent, rgba(255, 165, 0, 0.2), transparent);
+  }
+
+  .btn.secondary:hover {
+    @apply border-accent bg-gradient-to-r from-primary to-primary-light text-white;
+    transform: translateY(-2) scale(1.08) rotateZ(-1deg);
+    box-shadow: 0 15px 50px rgba(255, 165, 0, 0.4), 0 0 30px rgba(255, 165, 0, 0.3);
+    animation: pulse 0.8s ease-in-out;
+    letter-spacing: 1px;
+  }
+
+  .btn.secondary:hover::after {
+    left: 100%;
+  }
+
+

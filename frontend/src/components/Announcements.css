@@ -1,0 +1,69 @@
+﻿.announcements {
+  @apply text-center px-[8%] py-20;
+}
+
+  .announcement-grid {
+    @apply mt-10 grid gap-7 grid-cols-repeat-auto-fit;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  .announcement-card {
+    @apply relative cursor-pointer overflow-hidden rounded-xl bg-white px-7 py-7 text-left shadow-sm transition-all duration-400;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.05);
+    animation: slideUp 0.6s ease;
+  }
+
+  .announcement-card::before {
+    content: '';
+    @apply pointer-events-none absolute left-0 w-full h-full transition-all duration-400 ease;
+    bottom: -100%;
+    background: linear-gradient(135deg, rgba(255, 165, 0, 0.05), rgba(255, 165, 0, 0.15));
+  }
+
+  .announcement-card:hover {
+    @apply border border-accent transform;
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 20px 50px rgba(255, 165, 0, 0.25);
+  }
+
+  .announcement-card:hover::before {
+    bottom: 0;
+  }
+
+  .tag {
+    @apply relative inline-block cursor-pointer overflow-hidden rounded-full bg-primary px-3.5 py-1.5 text-xs font-normal text-white transition-all duration-300 ease;
+  }
+
+  .tag::before {
+    content: '';
+    @apply absolute top-0 z-[-1] w-full h-full bg-accent transition-all duration-300 ease;
+    left: -100%;
+  }
+
+  .tag:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .tag:hover::before {
+    left: 0;
+  }
+
+  .announcement-card h3 {
+    @apply my-3.75 text-primary transition-all duration-300 ease;
+  }
+
+  .announcement-card:hover h3 {
+    @apply text-accent;
+    transform: translateX(1.25);
+  }
+
+  .announcement-card p {
+    @apply text-gray-500 transition-all duration-300 ease;
+  }
+
+  .announcement-card:hover p {
+    @apply text-gray-800;
+  }
+
+
