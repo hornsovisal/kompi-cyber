@@ -1,163 +1,118 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get user from localStorage
-    const storedUser = localStorage.getItem("user");
     const token = localStorage.getItem("token");
-
-    if (!storedUser || !token) {
+    if (!token) {
       navigate("/login");
       return;
     }
-
-    try {
-      setUser(JSON.parse(storedUser));
-    } catch (error) {
-      console.error("Error parsing user:", error);
-      navigate("/login");
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
   }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/");
-  };
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-cadtSky via-white to-slate-100">
-        <p className="text-cadtBlue">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-[#1E293B]">
+        <p className="text-white">Loading...</p>
       </div>
     );
   }
 
+  // Courses (IDs 1–5 match your DB table)
+  const courses = [
+    {
+      id: 1,
+      title: "Introduction to Cybersecurity",
+      desc: "Starter course on threats, CIA triad, and cyber hygiene.",
+    },
+    {
+      id: 2,
+      title: "Ethical Hacking Essentials",
+      desc: "Introductory ethical hacking methodology and tooling.",
+    },
+    {
+      id: 3,
+      title: "Network Security Basics",
+      desc: "Learn how to secure networks and detect intrusions.",
+    },
+    {
+      id: 4,
+      title: "Web Application Security",
+      desc: "Introduction to web app vulnerabilities and OWASP top 10.",
+    },
+    {
+      id: 5,
+      title: "Incident Response & Forensics",
+      desc: "Handle security incidents and perform digital forensics.",
+    },
+  ];
+
+  const handleEnroll = async (courseId) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch("http://localhost:5000/api/enrollments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ course_id: courseId }),
+      });
+
+      const data = await res.json();
+      alert(data.message);
+
+      // If enrolled successfully or already enrolled, redirect to MyLearning
+      if (data.enrolled) {
+        navigate("/mylearning");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error enrolling in course");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cadtSky via-white to-slate-100">
+    <div className="min-h-screen bg-[#1E293B] flex flex-col">
       {/* Navbar */}
-      <nav className="flex items-center justify-between border-b border-cadtLine bg-white px-6 py-4 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cadtBlue text-lg font-bold text-white">
-            KC
-          </div>
-          <p className="text-sm font-semibold uppercase tracking-wider text-cadtBlue">
-            Kompi-Cyber
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm font-medium text-cadtNavy">
-            Welcome, {user?.name || "User"}
-          </span>
-          <button
-            onClick={handleLogout}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
-          >
-            Logout
-          </button>
-        </div>
+      <nav className="flex items-center justify-between px-6 py-4 border-b border-gray-700 bg-[#1E293B]">
+        <h1 className="text-white font-bold text-lg">Kompi Cyber</h1>
+        <button
+          onClick={() => {
+            localStorage.removeItem("user");
+            localStorage.removeItem("token");
+            navigate("/login");
+          }}
+          className="text-[#FE9A00] border border-[#FE9A00] px-3 py-1 rounded-lg text-sm hover:bg-[#FE9A00] hover:text-black transition"
+        >
+          Logout
+        </button>
       </nav>
 
-      <main className="px-4 py-10">
-        <div className="mx-auto max-w-6xl">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-cadtNavy">Dashboard</h1>
-            <p className="mt-2 text-slate-600">
-              Continue your cybersecurity learning journey
-            </p>
-          </div>
+      {/* Main content */}
+      <main className="flex-1 px-6 py-10">
+        <h1 className="text-4xl font-bold text-white mb-6">My Learning Path</h1>
 
-          {/* Stats Cards */}
-          <div className="mb-10 grid gap-6 md:grid-cols-4">
-            <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
-              <div className="mb-3 text-3xl">📚</div>
-              <p className="text-sm text-slate-600">Courses</p>
-              <p className="mt-2 text-2xl font-bold text-cadtBlue">0</p>
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {courses.map((course) => (
+            <div
+              key={course.id}
+              className="bg-[#0A0F1A] rounded-xl border border-gray-800 overflow-hidden shadow-lg p-6"
+            >
+              <h3 className="text-white font-semibold mb-2">{course.title}</h3>
+              <p className="text-[#90A1B9] text-sm mb-4">{course.desc}</p>
+              <button
+                onClick={() => handleEnroll(course.id)}
+                className="w-full py-2 rounded-lg font-semibold text-white bg-[#FE9A00] hover:bg-[#ffb13b] transition"
+              >
+                Enroll
+              </button>
             </div>
-
-            <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
-              <div className="mb-3 text-3xl">✅</div>
-              <p className="text-sm text-slate-600">Completed</p>
-              <p className="mt-2 text-2xl font-bold text-cadtBlue">0</p>
-            </div>
-
-            <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
-              <div className="mb-3 text-3xl">🏆</div>
-              <p className="text-sm text-slate-600">Certificates</p>
-              <p className="mt-2 text-2xl font-bold text-cadtBlue">0</p>
-            </div>
-
-            <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
-              <div className="mb-3 text-3xl">⏱️</div>
-              <p className="text-sm text-slate-600">Hours Learned</p>
-              <p className="mt-2 text-2xl font-bold text-cadtBlue">0</p>
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="mb-10">
-            <h2 className="mb-6 text-2xl font-bold text-cadtNavy">
-              Recent Activity
-            </h2>
-            <div className="rounded-2xl border border-cadtLine bg-white p-8 shadow-card">
-              <p className="text-center text-slate-500">
-                No recent activity. Start learning now!
-              </p>
-            </div>
-          </div>
-
-          {/* Available Courses */}
-          <div>
-            <h2 className="mb-6 text-2xl font-bold text-cadtNavy">
-              Available Courses
-            </h2>
-            <div className="grid gap-6 md:grid-cols-3">
-              <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card transition hover:shadow-lg">
-                <div className="mb-4 h-32 rounded-xl bg-gradient-to-br from-cadtBlue to-cadtNavy"></div>
-                <h3 className="font-semibold text-cadtNavy">
-                  Introduction to Cybersecurity
-                </h3>
-                <p className="mt-2 text-sm text-slate-600">
-                  Learn the fundamentals of cybersecurity
-                </p>
-                <button className="mt-4 w-full rounded-lg bg-cadtBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-cadtNavy">
-                  Enroll Now
-                </button>
-              </div>
-
-              <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card transition hover:shadow-lg">
-                <div className="mb-4 h-32 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700"></div>
-                <h3 className="font-semibold text-cadtNavy">
-                  Network Security
-                </h3>
-                <p className="mt-2 text-sm text-slate-600">
-                  Master network security concepts
-                </p>
-                <button className="mt-4 w-full rounded-lg bg-cadtBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-cadtNavy">
-                  Enroll Now
-                </button>
-              </div>
-
-              <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card transition hover:shadow-lg">
-                <div className="mb-4 h-32 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700"></div>
-                <h3 className="font-semibold text-cadtNavy">Ethical Hacking</h3>
-                <p className="mt-2 text-sm text-slate-600">
-                  Learn penetration testing techniques
-                </p>
-                <button className="mt-4 w-full rounded-lg bg-cadtBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-cadtNavy">
-                  Enroll Now
-                </button>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </main>
     </div>
