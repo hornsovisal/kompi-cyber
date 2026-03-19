@@ -18,10 +18,10 @@ exports.getCourseById = (req, res) => {
   });
 };
 
-// GET courses for logged in user
+// GET courses created by the logged in user
 exports.getMyCourses = (req, res) => {
   const userId = req.user.id; // comes from token
-  db.query("SELECT * FROM courses WHERE user_id = ?", [userId], (err, results) => {
+  db.query("SELECT * FROM courses WHERE created_by = ?", [userId], (err, results) => {
     if (err) return res.status(500).json({ message: "Database error", error: err });
     res.json({ success: true, data: results });
   });
