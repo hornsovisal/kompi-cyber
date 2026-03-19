@@ -1,69 +1,72 @@
 // backend/models/courseModel.js
 
-// In-memory courses array
-const courses = [
-  { id: 1, title: "Introduction to Cybersecurity", description: "Learn the fundamentals of cybersecurity", level: "Beginner", duration_hrs: 12 },
-  { id: 2, title: "Ethical Hacking Essentials", description: "Learn the basics of ethical hacking and penetration testing", level: "Intermediate", duration_hrs: 15 },
-  { id: 3, title: "Network Security Basics", description: "Understand core network security concepts and protocols", level: "Beginner", duration_hrs: 10 },
-  { id: 4, title: "Web Application Security", description: "Protect web applications against common vulnerabilities", level: "Intermediate", duration_hrs: 14 },
-  { id: 5, title: "Incident Response & Forensics", description: "Learn how to respond to security incidents and perform digital forensics", level: "Advanced", duration_hrs: 18 },
-];
-
-let nextId = courses.length + 1;
+const db = require("../config/db");
 
 const courseModel = {
-  // Find course by ID
+  // Get one course from DB
   async findById(id) {
-    const courseId = Number(id);
-    return courses.find(c => c.id === courseId) || null;
+    const [rows] = await db.execute(
+      "SELECT * FROM courses WHERE id = ?",
+      [id]
+    );
+    return rows[0] || null;
   },
 
-  // Return all courses
+  // Get all courses from DB
   async findAll() {
-    return courses;
+    const [rows] = await db.execute("SELECT * FROM courses");
+    return rows;
   },
 
-  // Create a new course
+  // Create course
   async createCourse(data) {
-    const newCourse = { id: nextId++, ...data };
-    courses.push(newCourse);
-    return newCourse.id;
+    const {
+      title,
+      description,
+      level,
+      duration_hrs
+    } = data;
+
+    const [result] = await db.execute(
+      `INSERT INTO courses (title, description, level, duration_hrs)
+       VALUES (?, ?, ?, ?)`,
+      [title, description, level, duration_hrs]
+    );
+
+    return result.insertId;
   },
 
-  // Update an existing course
+  // Update course
   async updateCourse(id, fields) {
-    const course = courses.find(c => c.id === id);
-    if (!course) return null;
-    Object.assign(course, fields);
-    return course;
+    const keys = Object.keys(fields);
+    if (keys.length === 0) return null;
+
+    const values = Object.values(fields);
+    const setClause = keys.map(key => `${key} = ?`).join(", ");
+
+    const [result] = await db.execute(
+      `UPDATE courses SET ${setClause} WHERE id = ?`,
+      [...values, id]
+    );
+
+    return result.affectedRows > 0;
   },
 
-  // Delete a course
+  // Delete course
   async deleteCourse(id) {
-    const index = courses.findIndex(c => c.id === id);
-    if (index !== -1) courses.splice(index, 1);
+    await db.execute("DELETE FROM courses WHERE id = ?", [id]);
   },
 
-  // Return lessons for a course (dynamic IDs)
+  // Get lessons from DB (if you have lessons table)
   async getLessonsByCourse(courseId) {
-    const titles = [
-      "Introduction to Cybersecurity",
-      "Ethical Hacking Essentials",
-      "Network Security Basics",
-      "Web Application Security",
-      "Incident Response & Forensics"
-    ];
-
-    return titles.map((title, index) => ({
-      id: index + 1,
-      courseId,
-      title
-    }));
+    const [rows] = await db.execute(
+      "SELECT * FROM lessons WHERE course_id = ?",
+      [courseId]
+    );
+    return rows;
   },
 
-  // Placeholder for seeding logic
   async ensureSeedFromUploadIfEmpty() {
-    // In-memory mode: nothing to do
     return;
   }
 };
