@@ -8,7 +8,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [courses, setCourses] = useState([]);
-  const [enrolledIds, setEnrolledIds] = useState(new Set());
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [enrollingId, setEnrollingId] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -38,10 +38,7 @@ export default function Dashboard() {
           axios.get("/api/enrollments/my", { baseURL: API_BASE, headers }),
         ]);
         setCourses(coursesRes.data.courses || []);
-        const ids = new Set(
-          (enrollmentsRes.data.enrollments || []).map((e) => e.course_id),
-        );
-        setEnrolledIds(ids);
+        setEnrolledCourses(enrollmentsRes.data.enrollments || []);
       } catch (err) {
         if (err.response?.status === 401) {
           localStorage.removeItem("token");
@@ -73,7 +70,11 @@ export default function Dashboard() {
         { course_id: courseId },
         { baseURL: API_BASE, headers: { Authorization: `Bearer ${token}` } },
       );
-      setEnrolledIds((prev) => new Set([...prev, courseId]));
+      // Add to enrolled courses
+      const course = courses.find(c => c.id === courseId);
+      if (course) {
+        setEnrolledCourses(prev => [...prev, { ...course, enrolled_at: new Date() }]);
+      }
       navigate(`/learn/${courseId}`);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to enroll");
@@ -86,6 +87,12 @@ export default function Dashboard() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/");
+  };
+
+  // Calculate progress (placeholder - in real app, this would come from backend)
+  const getProgress = (courseId) => {
+    // Placeholder: random progress for demo
+    return Math.floor(Math.random() * 100);
   };
 
   if (loading) {
@@ -122,7 +129,7 @@ export default function Dashboard() {
       </nav>
 
       <main className="px-4 py-10">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-7xl">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-cadtNavy">Dashboard</h1>
@@ -142,79 +149,123 @@ export default function Dashboard() {
             <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
               <p className="text-sm text-slate-600">Enrolled Courses</p>
               <p className="mt-2 text-2xl font-bold text-cadtBlue">
-                {enrolledIds.size}
+                {enrolledCourses.length}
               </p>
             </div>
 
             <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
               <p className="text-sm text-slate-600">Completed</p>
-              <p className="mt-2 text-2xl font-bold text-cadtBlue">0</p>
+              <p className="mt-2 text-2xl font-bold text-cadtBlue">
+                {enrolledCourses.filter(c => getProgress(c.id) === 100).length}
+              </p>
             </div>
 
             <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
-              {" "}
               <p className="text-sm text-slate-600">Certificates</p>
               <p className="mt-2 text-2xl font-bold text-cadtBlue">0</p>
             </div>
 
             <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
               <p className="text-sm text-slate-600">Hours Learned</p>
-              <p className="mt-2 text-2xl font-bold text-cadtBlue">0</p>
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="mb-10">
-            <h2 className="mb-6 text-2xl font-bold text-cadtNavy">
-              Recent Activity
-            </h2>
-            <div className="rounded-2xl border border-cadtLine bg-white p-8 shadow-card">
-              <p className="text-center text-slate-500">
-                No recent activity. Start learning now!
+              <p className="mt-2 text-2xl font-bold text-cadtBlue">
+                {enrolledCourses.reduce((acc, c) => acc + Math.floor((getProgress(c.id) / 100) * (c.duration_hrs || 10)), 0)}
               </p>
             </div>
           </div>
 
-          {/* Available Courses */}
+          {/* My Courses */}
+          {enrolledCourses.length > 0 && (
+            <div className="mb-12">
+              <h2 className="mb-6 text-2xl font-bold text-cadtNavy">
+                My Courses
+              </h2>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {enrolledCourses.map((course) => {
+                  const progress = getProgress(course.id);
+                  return (
+                    <div
+                      key={course.id}
+                      className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card transition hover:shadow-lg"
+                    >
+                      <div className="mb-4 h-32 rounded-xl bg-gradient-to-br from-cadtBlue to-cadtNavy"></div>
+                      <h3 className="font-semibold text-cadtNavy">
+                        {course.title}
+                      </h3>
+                      <p className="mt-2 line-clamp-2 text-sm text-slate-600">
+                        {course.description || "No course description available."}
+                      </p>
+                      <div className="mt-4">
+                        <div className="flex justify-between text-sm text-slate-600 mb-1">
+                          <span>Progress</span>
+                          <span>{progress}%</span>
+                        </div>
+                        <div className="w-full bg-slate-200 rounded-full h-2">
+                          <div
+                            className="bg-cadtBlue h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${progress}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => navigate(`/learn/${course.id}`)}
+                        className="mt-4 w-full rounded-lg bg-cadtBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-cadtNavy"
+                      >
+                        {progress === 100 ? "Review Course" : "Continue Learning"}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Explore Courses */}
           <div>
             <h2 className="mb-6 text-2xl font-bold text-cadtNavy">
-              Available Courses
+              Explore Courses
             </h2>
-            <div className="grid gap-6 md:grid-cols-3">
-              {courses.map((course) => (
-                <div
-                  key={course.id}
-                  className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card transition hover:shadow-lg"
-                >
-                  <div className="mb-4 h-32 rounded-xl bg-gradient-to-br from-cadtBlue to-cadtNavy"></div>
-                  <h3 className="font-semibold text-cadtNavy">
-                    {course.title}
-                  </h3>
-                  <p className="mt-2 line-clamp-3 text-sm text-slate-600">
-                    {course.description || "No course description available."}
-                  </p>
-                  {enrolledIds.has(course.id) ? (
-                    <button
-                      onClick={() => navigate(`/learn/${course.id}`)}
-                      className="mt-4 w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
-                    >
-                      Continue Learning
-                    </button>
-                  ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {courses
+                .filter(course => !enrolledCourses.some(ec => ec.id === course.id))
+                .map((course) => (
+                  <div
+                    key={course.id}
+                    className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card transition hover:shadow-lg"
+                  >
+                    <div className="mb-4 h-32 rounded-xl bg-gradient-to-br from-cadtBlue to-cadtNavy"></div>
+                    <h3 className="font-semibold text-cadtNavy">
+                      {course.title}
+                    </h3>
+                    <p className="mt-2 line-clamp-3 text-sm text-slate-600">
+                      {course.description || "No course description available."}
+                    </p>
+                    <div className="mt-4 flex items-center justify-between">
+                      <span className={`rounded-full px-2 py-1 text-xs font-medium ${
+                        course.level === 'beginner' ? 'bg-green-100 text-green-800' :
+                        course.level === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {course.level}
+                      </span>
+                      <span className="text-sm text-slate-500">
+                        {course.duration_hrs} hrs
+                      </span>
+                    </div>
                     <button
                       onClick={() => handleEnroll(course.id)}
                       disabled={enrollingId === course.id}
                       className="mt-4 w-full rounded-lg bg-cadtBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-cadtNavy disabled:opacity-60"
                     >
-                      {enrollingId === course.id ? "Enrolling..." : "Enroll"}
+                      {enrollingId === course.id ? "Enrolling..." : "Enroll Now"}
                     </button>
-                  )}
-                </div>
-              ))}
+                  </div>
+                ))}
 
-              {courses.length === 0 && (
-                <div className="rounded-2xl border border-cadtLine bg-white p-6 text-sm text-slate-500">
-                  No courses found yet.
+              {courses.filter(course => !enrolledCourses.some(ec => ec.id === course.id)).length === 0 && (
+                <div className="col-span-full rounded-2xl border border-cadtLine bg-white p-8 text-center shadow-card">
+                  <p className="text-slate-500">
+                    You've enrolled in all available courses! Check back later for new content.
+                  </p>
                 </div>
               )}
             </div>
