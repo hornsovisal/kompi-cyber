@@ -1,24 +1,28 @@
-const db = require("../config/db");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+﻿const express = require('express');
+const router = express.Router();
+const db = require('../config/db');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
-exports.login = (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-  db.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
-    if (err) return res.status(500).json({ message: "Database error" });
-    if (results.length === 0) return res.status(401).json({ message: "User not found" });
+  db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
+    if (err) return res.status(500).json({ message: 'Database error' });
+    if (results.length === 0) return res.status(401).json({ message: 'User not found' });
 
     const user = results[0];
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ message: "Wrong password" });
+    const match = await bcrypt.compare(password, user.password_hash);
+    if (!match) return res.status(401).json({ message: 'Wrong password' });
 
     const token = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: '1d' }
     );
 
     res.json({ success: true, token });
   });
-};
+});
+
+module.exports = router;
