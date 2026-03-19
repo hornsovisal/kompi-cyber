@@ -1,25 +1,19 @@
-// backend/models/enrollmentModel.js
-const enrollments = [];
+const db = require("../config/db");
 
 const enrollmentModel = {
-  async isEnrolled(userId, courseId) {
-    return enrollments.some(e => e.userId === userId && e.courseId === courseId);
-  },
-
   async enroll(userId, courseId) {
-    if (await this.isEnrolled(userId, courseId)) return null;
-    const enrollment = { userId, courseId, enrolled_at: new Date() };
-    enrollments.push(enrollment);
-    return enrollment;
+    await db.execute(
+      "INSERT INTO enrollments (user_id, course_id) VALUES (?, ?)",
+      [userId, courseId]
+    );
   },
 
-  async getByUserId(userId) {
-    return enrollments.filter(e => e.userId === userId);
-  },
-
-  async unenroll(userId, courseId) {
-    const index = enrollments.findIndex(e => e.userId === userId && e.courseId === courseId);
-    if (index !== -1) enrollments.splice(index, 1);
+  async isEnrolled(userId, courseId) {
+    const [rows] = await db.execute(
+      "SELECT id FROM enrollments WHERE user_id = ? AND course_id = ?",
+      [userId, courseId]
+    );
+    return rows.length > 0;
   }
 };
 
