@@ -1,8 +1,11 @@
 ﻿const db = require('../config/db');
 
 // Fetch quiz questions and options for a lesson (without revealing correct options)
-exports.getQuizByLesson = (req, res) => {
-  const { lessonId } = req.params;
+exports.getQuizByLesson = async (req, res) => {
+  const lessonId = Number(req.params.lessonId);
+  if (!Number.isInteger(lessonId) || lessonId <= 0) {
+    return res.status(400).json({ message: 'Invalid lessonId' });
+  }
 
   const sql = `
     SELECT q.id AS question_id,
@@ -15,8 +18,8 @@ exports.getQuizByLesson = (req, res) => {
     ORDER BY q.id, o.id
   `;
 
-  db.query(sql, [lessonId], (err, results) => {
-    if (err) return res.status(500).json({ message: 'Database error', error: err });
+  try {
+    const [results] = await db.query(sql, [lessonId]);
 
     if (!results.length) {
       return res.status(404).json({ message: 'No quiz found for this lesson' });
@@ -40,14 +43,20 @@ exports.getQuizByLesson = (req, res) => {
       questionsMap.set(row.question_id, question);
     });
 
-    res.json({ success: true, data: Array.from(questionsMap.values()) });
-  });
+    return res.json({ success: true, data: Array.from(questionsMap.values()) });
+  } catch (err) {
+    return res.status(500).json({ message: 'Database error', error: err.message || err });
+  }
 };
 
 // Get the user's latest attempt for a lesson
-exports.getMyAttempt = (req, res) => {
-  const { lessonId } = req.params;
-  const userId = req.user?.id;
+exports.getMyAttempt = async (req, res) => {
+  const lessonId = Number(req.params.lessonId);
+  if (!Number.isInteger(lessonId) || lessonId <= 0) {
+    return res.status(400).json({ message: 'Invalid lessonId' });
+  }
+
+  const userId = req.user?.sub || req.user?.id;
 
   if (!userId) {
     return res.status(401).json({ message: 'Unauthorized' });
@@ -68,8 +77,8 @@ exports.getMyAttempt = (req, res) => {
     ORDER BY qa.id
   `;
 
-  db.query(sql, [lessonId, userId], (err, rows) => {
-    if (err) return res.status(500).json({ message: 'Database error', error: err });
+  try {
+    const [rows] = await db.query(sql, [lessonId, userId]);
 
     if (!rows.length) {
       return res.status(404).json({ message: 'No attempt found for this lesson' });
@@ -94,5 +103,7 @@ exports.getMyAttempt = (req, res) => {
         answers,
       },
     });
-  });
+  } catch (err) {
+    return res.status(500).json({ message: 'Database error', error: err.message || err });
+  }
 };
