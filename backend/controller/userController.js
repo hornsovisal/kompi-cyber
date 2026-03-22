@@ -19,6 +19,16 @@ class UserController {
     }
   };
 
+  getMyDashboardSummary = async (req, res) => {
+    try {
+      const summary = await this.userModel.getDashboardSummary(req.user.sub);
+      return res.status(200).json(summary);
+    } catch (error) {
+      console.error("getMyDashboardSummary error:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  };
+
   updateMe = async (req, res) => {
     try {
       const { full_name, email } = req.body;

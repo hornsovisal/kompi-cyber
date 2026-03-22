@@ -87,6 +87,108 @@ class UserModel {
     return rows;
   }
 
+  async getDashboardSummary(userId) {
+    const [enrolledRows] = await this.db.execute(
+      "SELECT COUNT(*) AS total FROM enrollments WHERE user_id = ?",
+      [userId],
+    );
+
+    const [courseProgressRows] = await this.db.execute(
+      `SELECT
+         c.id AS course_id,
+         c.duration_hrs,
+         COUNT(l.id) AS total_lessons,
+         SUM(
+           CASE
+             WHEN lp.status = 'completed' OR qa.lesson_id IS NOT NULL THEN 1
+             ELSE 0
+           END
+         ) AS completed_lessons
+       FROM enrollments e
+       INNER JOIN courses c ON c.id = e.course_id
+       INNER JOIN modules m ON m.course_id = c.id
+       INNER JOIN lessons l ON l.module_id = m.id
+       LEFT JOIN lesson_progress lp
+         ON lp.lesson_id = l.id
+        AND lp.user_id = e.user_id
+       LEFT JOIN (
+         SELECT DISTINCT user_id, lesson_id
+         FROM quiz_attempts
+       ) qa
+         ON qa.user_id = e.user_id
+        AND qa.lesson_id = l.id
+       WHERE e.user_id = ?
+       GROUP BY c.id, c.duration_hrs`,
+      [userId],
+    );
+
+    let completedCourses = 0;
+    let completedLessonsTotal = 0;
+    let hoursLearned = 0;
+    for (const row of courseProgressRows) {
+      const totalLessons = Number(row.total_lessons || 0);
+      const completedLessons = Number(row.completed_lessons || 0);
+      const durationHours = Number(row.duration_hrs || 0);
+
+      completedLessonsTotal += completedLessons;
+
+      if (totalLessons > 0 && completedLessons >= totalLessons) {
+        completedCourses += 1;
+      }
+
+      if (totalLessons > 0 && durationHours > 0) {
+        hoursLearned += (completedLessons / totalLessons) * durationHours;
+      }
+    }
+
+    const [activityRows] = await this.db.execute(
+      `SELECT *
+       FROM (
+         SELECT
+           'enrollment' AS activity_type,
+           CONCAT('Enrolled in ', c.title) AS activity_text,
+           e.enrolled_at AS occurred_at
+         FROM enrollments e
+         INNER JOIN courses c ON c.id = e.course_id
+         WHERE e.user_id = ?
+
+         UNION ALL
+
+         SELECT
+           'lesson_completed' AS activity_type,
+           CONCAT('Completed lesson: ', l.title) AS activity_text,
+           lp.completed_at AS occurred_at
+         FROM lesson_progress lp
+         INNER JOIN lessons l ON l.id = lp.lesson_id
+         WHERE lp.user_id = ?
+           AND lp.status = 'completed'
+           AND lp.completed_at IS NOT NULL
+
+         UNION ALL
+
+         SELECT
+           'practice' AS activity_type,
+           CONCAT('Practice score ', qa.score, '% on ', l.title) AS activity_text,
+           qa.submitted_at AS occurred_at
+         FROM quiz_attempts qa
+         INNER JOIN lessons l ON l.id = qa.lesson_id
+         WHERE qa.user_id = ?
+       ) activities
+       ORDER BY occurred_at DESC
+       LIMIT 8`,
+      [userId, userId, userId],
+    );
+
+    return {
+      enrolledCourses: Number(enrolledRows[0]?.total || 0),
+      // Dashboard card labeled "Completed" is lesson-oriented.
+      completedCourses: completedLessonsTotal,
+      completedCourseCount: completedCourses,
+      hoursLearned: Math.round(hoursLearned * 10) / 10,
+      recentActivity: activityRows,
+    };
+  }
+
   async updateStatus(id, isActive) {
     const [result] = await this.db.execute(
       "UPDATE users SET is_active = ? WHERE id = ?",

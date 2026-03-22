@@ -10,6 +10,9 @@ router.use(authMiddleware.authenticateToken);
 // GET  /api/users/me
 router.get("/me", userController.getMe);
 
+// GET /api/users/me/dashboard-summary
+router.get("/me/dashboard-summary", userController.getMyDashboardSummary);
+
 // PUT  /api/users/me
 router.put("/me", userController.updateMe);
 
