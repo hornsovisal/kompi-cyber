@@ -1,9 +1,10 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env'), override: true });
 
 const authRoutes = require('./routes/authRoutes');
-const courseRoutes = require('./routes/courseroutes');
+const courseRoutes = require('./routes/courseRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
 
@@ -18,7 +19,7 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/submissions', submissionRoutes);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
