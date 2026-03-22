@@ -10,6 +10,8 @@ function MarkdownBlock({ content }) {
   const lines = (content || "").split("\n");
   const elements = [];
   let listItems = [];
+  let codeBlock = null;
+  let codeLines = [];
 
   const flushList = (key) => {
     if (listItems.length > 0) {
@@ -27,65 +29,117 @@ function MarkdownBlock({ content }) {
     }
   };
 
-  lines.forEach((raw, i) => {
-    const line = raw.trim();
+  const flushCodeBlock = (key) => {
+    if (codeLines.length > 0) {
+      const code = codeLines.join("\n");
+      elements.push(
+        <pre
+          key={`code-${key}`}
+          className="mb-5 overflow-x-auto rounded-lg bg-slate-900 p-4 text-sm text-slate-100"
+        >
+          <code className="font-mono">{code}</code>
+        </pre>,
+      );
+      codeLines = [];
+      codeBlock = null;
+    }
+  };
 
-    if (!line) {
+  lines.forEach((raw, i) => {
+    const line = raw;
+    const trimmed = line.trim();
+
+    // Handle code blocks
+    if (trimmed.startsWith("```")) {
+      if (codeBlock) {
+        flushCodeBlock(i);
+      } else {
+        flushList(i);
+        codeBlock = trimmed.slice(3) || "bash"; // language identifier
+      }
+      return;
+    }
+
+    if (codeBlock) {
+      codeLines.push(line);
+      return;
+    }
+
+    if (!trimmed) {
       flushList(i);
       return;
     }
 
-    if (line.startsWith("- ")) {
-      listItems.push(line.slice(2));
+    if (trimmed.startsWith("- ")) {
+      listItems.push(trimmed.slice(2));
       return;
     }
 
     flushList(i);
 
-    if (line.startsWith("### ")) {
+    if (trimmed.startsWith("### ")) {
       elements.push(
         <h3
           key={`h3-${i}`}
           className="mb-2 mt-6 text-xl font-bold text-slate-900"
         >
-          {line.slice(4)}
+          {trimmed.slice(4)}
         </h3>,
       );
       return;
     }
 
-    if (line.startsWith("## ")) {
+    if (trimmed.startsWith("## ")) {
       elements.push(
         <h2
           key={`h2-${i}`}
           className="mb-3 mt-7 text-2xl font-bold text-slate-900"
         >
-          {line.slice(3)}
+          {trimmed.slice(3)}
         </h2>,
       );
       return;
     }
 
-    if (line.startsWith("# ")) {
+    if (trimmed.startsWith("# ")) {
       elements.push(
         <h1
           key={`h1-${i}`}
           className="mb-4 mt-2 text-3xl font-extrabold text-slate-900"
         >
-          {line.slice(2)}
+          {trimmed.slice(2)}
         </h1>,
       );
       return;
     }
 
+    // Handle inline code
+    const processInlineCode = (text) => {
+      const parts = text.split(/(`[^`]+`)/);
+      return parts.map((part, idx) => {
+        if (part.startsWith("`") && part.endsWith("`")) {
+          return (
+            <code
+              key={`inline-${idx}`}
+              className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-sm text-slate-900"
+            >
+              {part.slice(1, -1)}
+            </code>
+          );
+        }
+        return part;
+      });
+    };
+
     elements.push(
       <p key={`p-${i}`} className="mb-4 text-[19px] leading-9 text-slate-700">
-        {line}
+        {processInlineCode(trimmed)}
       </p>,
     );
   });
 
   flushList("end");
+  flushCodeBlock("end");
   return <>{elements}</>;
 }
 
