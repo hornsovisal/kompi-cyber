@@ -1,0 +1,166 @@
+// In-memory lecturer storage for demonstration
+let lecturers = [
+  {
+    id: 1,
+    name: "Dr. Sarah Johnson",
+    email: "sarah.johnson@cadt.edu.kh",
+    password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
+    department: "Cybersecurity",
+    employeeId: "LEC001",
+    isVerified: true,
+    verificationToken: null,
+    resetToken: null,
+    resetTokenExpiry: null,
+    createdAt: new Date("2024-01-15")
+  },
+  {
+    id: 2,
+    name: "Prof. Michael Chen",
+    email: "michael.chen@cadt.edu.kh",
+    password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
+    department: "Network Security",
+    employeeId: "LEC002",
+    isVerified: true,
+    verificationToken: null,
+    resetToken: null,
+    resetTokenExpiry: null,
+    createdAt: new Date("2024-02-01")
+  },
+  {
+    id: 3,
+    name: "Dr. Lisa Rodriguez",
+    email: "lisa.rodriguez@cadt.edu.kh",
+    password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
+    department: "Information Technology",
+    employeeId: "LEC003",
+    isVerified: true,
+    verificationToken: null,
+    resetToken: null,
+    resetTokenExpiry: null,
+    createdAt: new Date("2024-01-20")
+  },
+  {
+    id: 4,
+    name: "Mr. David Kim",
+    email: "david.kim@cadt.edu.kh",
+    password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
+    department: "Computer Science",
+    employeeId: "LEC004",
+    isVerified: true,
+    verificationToken: null,
+    resetToken: null,
+    resetTokenExpiry: null,
+    createdAt: new Date("2024-03-10")
+  },
+  {
+    id: 5,
+    name: "Dr. Emma Wilson",
+    email: "emma.wilson@cadt.edu.kh",
+    password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
+    department: "Digital Forensics",
+    employeeId: "LEC005",
+    isVerified: true,
+    verificationToken: null,
+    resetToken: null,
+    resetTokenExpiry: null,
+    createdAt: new Date("2024-02-15")
+  }
+];
+
+class LecturerModel {
+  // Find lecturer by email
+  async findLecturerByEmail(email) {
+    return lecturers.filter(lecturer => lecturer.email === email);
+  }
+
+  // Find lecturer by ID
+  async findLecturerById(id) {
+    return lecturers.find(lecturer => lecturer.id === parseInt(id));
+  }
+
+  // Find lecturer by verification token
+  async findLecturerByVerificationToken(token) {
+    return lecturers.find(lecturer => lecturer.verificationToken === token);
+  }
+
+  // Find lecturer by reset token
+  async findLecturerByResetToken(token) {
+    return lecturers.find(lecturer =>
+      lecturer.resetToken === token &&
+      lecturer.resetTokenExpiry > new Date()
+    );
+  }
+
+  // Create new lecturer (for future use)
+  async createLecturer(name, email, hashedPassword, department, employeeId) {
+    const newLecturer = {
+      id: lecturers.length + 1,
+      name,
+      email,
+      password: hashedPassword,
+      department,
+      employeeId,
+      isVerified: false,
+      verificationToken: null,
+      resetToken: null,
+      resetTokenExpiry: null,
+      createdAt: new Date()
+    };
+    lecturers.push(newLecturer);
+    return newLecturer;
+  }
+
+  // Update lecturer verification status
+  async updateLecturerVerification(id, isVerified, verificationToken = null) {
+    const lecturer = lecturers.find(l => l.id === parseInt(id));
+    if (lecturer) {
+      lecturer.isVerified = isVerified;
+      lecturer.verificationToken = verificationToken;
+      return lecturer;
+    }
+    return null;
+  }
+
+  // Update lecturer password
+  async updateLecturerPassword(id, hashedPassword) {
+    const lecturer = lecturers.find(l => l.id === parseInt(id));
+    if (lecturer) {
+      lecturer.password = hashedPassword;
+      lecturer.resetToken = null;
+      lecturer.resetTokenExpiry = null;
+      return lecturer;
+    }
+    return null;
+  }
+
+  // Set reset token for lecturer
+  async setLecturerResetToken(id, resetToken, expiryTime) {
+    const lecturer = lecturers.find(l => l.id === parseInt(id));
+    if (lecturer) {
+      lecturer.resetToken = resetToken;
+      lecturer.resetTokenExpiry = expiryTime;
+      return lecturer;
+    }
+    return null;
+  }
+
+  // Get all lecturers (for admin purposes)
+  async getAllLecturers() {
+    return lecturers.map(lecturer => ({
+      id: lecturer.id,
+      name: lecturer.name,
+      email: lecturer.email,
+      department: lecturer.department,
+      employeeId: lecturer.employeeId,
+      isVerified: lecturer.isVerified,
+      createdAt: lecturer.createdAt
+    }));
+  }
+
+  // Get lecturer by employee ID
+  async findLecturerByEmployeeId(employeeId) {
+    return lecturers.find(lecturer => lecturer.employeeId === employeeId);
+  }
+}
+
+module.exports = new LecturerModel();
