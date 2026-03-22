@@ -1,11 +1,12 @@
 # Instructor Feature Implementation Checklist
 
-**Developer**: You (whitecyber)  
+**Developer**: You (whitecyber)
 **Scope**: Full-stack (frontend + backend)
 
 ## 📋 Files to Create
 
 ### Frontend Pages (You'll Design)
+
 ```
 frontend/src/pages/instructor/
 ├── [ ] InstructorLogin.jsx          # Login page
@@ -24,20 +25,22 @@ frontend/src/pages/instructor/
 ```
 
 ### Frontend Components
+
 ```
 frontend/src/components/instructor/
-├── [ ] CourseCard.jsx               
-├── [ ] CourseForm.jsx               
-├── [ ] ModuleForm.jsx               
-├── [ ] LessonForm.jsx               
-├── [ ] QuizForm.jsx                 
-├── [ ] QuestionForm.jsx             
-├── [ ] StatCard.jsx                 
-├── [ ] StudentResponsesList.jsx     
-└── [ ] CourseStats.jsx              
+├── [ ] CourseCard.jsx
+├── [ ] CourseForm.jsx
+├── [ ] ModuleForm.jsx
+├── [ ] LessonForm.jsx
+├── [ ] QuizForm.jsx
+├── [ ] QuestionForm.jsx
+├── [ ] StatCard.jsx
+├── [ ] StudentResponsesList.jsx
+└── [ ] CourseStats.jsx
 ```
 
 ### Frontend Layouts & Hooks
+
 ```
 frontend/src/components/Layout/
 ├── [ ] InstructorLayout.jsx         # Main layout with sidebar
@@ -49,6 +52,7 @@ frontend/src/hooks/
 ```
 
 ### Backend Controllers
+
 ```
 backend/controller/
 ├── [ ] instructorController.js      # Instructor dashboard logic
@@ -58,6 +62,7 @@ backend/controller/
 ```
 
 ### Backend Routes
+
 ```
 backend/routes/
 ├── [ ] instructorRoutes.js          # Auth routes
@@ -67,6 +72,7 @@ backend/routes/
 ```
 
 ### Backend Middleware
+
 ```
 backend/middleware/
 ├── [ ] roleAuth.js                  # Check user role
@@ -78,34 +84,40 @@ backend/middleware/
 ## 🚀 Implementation Order (Recommended)
 
 ### Phase 1: Authentication (Week 1)
+
 - [ ] Backend: Auth validation for instructor role
 - [ ] Frontend: InstructorLogin page
 - [ ] Middleware: Role-based access control
 
 ### Phase 2: Dashboard (Week 1-2)
+
 - [ ] Backend: Fetch instructor courses & stats
 - [ ] Frontend: InstructorDashboard page (your design)
 - [ ] Frontend: InstructorLayout & Sidebar
 
 ### Phase 3: Course Management (Week 2)
+
 - [ ] Backend: Create/Read/Update/Delete courses
 - [ ] Frontend: CreateCourse & EditCourse pages
 - [ ] Frontend: ManageCourses page
 - [ ] Frontend: CourseCard & CourseForm components
 
 ### Phase 4: Module & Lesson Management (Week 3)
+
 - [ ] Backend: Module CRUD endpoints
 - [ ] Backend: Lesson CRUD endpoints
 - [ ] Frontend: CreateModule & CreateLesson pages
 - [ ] Frontend: CourseDetail page
 
 ### Phase 5: Quiz Management (Week 3-4)
+
 - [ ] Backend: Quiz CRUD endpoints
 - [ ] Backend: Question management
 - [ ] Frontend: CreateQuiz & EditQuiz pages
 - [ ] Frontend: QuizForm & QuestionForm components
 
 ### Phase 6: Analytics & Responses (Week 4)
+
 - [ ] Backend: Student response tracking
 - [ ] Frontend: ViewResponses page
 - [ ] Frontend: Analytics page
@@ -156,6 +168,7 @@ CREATE TABLE IF NOT EXISTS question_options (
 ## 🔗 API Endpoints to Implement
 
 ### Authentication
+
 ```
 POST   /api/instructor/login
 POST   /api/instructor/logout
@@ -163,6 +176,7 @@ GET    /api/instructor/me
 ```
 
 ### Courses
+
 ```
 GET    /api/instructor/courses              # List all instructor's courses
 POST   /api/instructor/courses              # Create course
@@ -173,6 +187,7 @@ GET    /api/instructor/courses/:id/stats    # Get course statistics
 ```
 
 ### Modules
+
 ```
 POST   /api/instructor/courses/:courseId/modules
 PUT    /api/instructor/modules/:id
@@ -180,6 +195,7 @@ DELETE /api/instructor/modules/:id
 ```
 
 ### Lessons
+
 ```
 POST   /api/instructor/modules/:moduleId/lessons
 PUT    /api/instructor/lessons/:id
@@ -187,6 +203,7 @@ DELETE /api/instructor/lessons/:id
 ```
 
 ### Quizzes
+
 ```
 GET    /api/instructor/quizzes                    # List all quizzes
 POST   /api/instructor/quizzes                    # Create quiz
@@ -204,6 +221,7 @@ GET    /api/instructor/quizzes/:id/responses      # Get student responses
 ## ✅Key Features Checklist
 
 ### Instructor Features Required
+
 - [ ] View all their created courses
 - [ ] Create new courses (title, description, level, duration)
 - [ ] Edit course details
