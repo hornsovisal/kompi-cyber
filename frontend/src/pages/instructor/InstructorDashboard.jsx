@@ -29,17 +29,27 @@ export default function InstructorDashboard() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Check if user is authenticated before fetching data
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+
+    if (!token || !user) {
+      // Redirect to login if not authenticated
+      navigate("/instructor/login");
+      return;
+    }
+
     fetchDashboardData();
-  }, []);
+  }, [navigate]);
 
   const fetchDashboardData = async () => {
     try {
-      const token = localStorage.getItem("token") || "test-token";
-      // TODO: Remove this after testing. Uncomment line below for production
-      // if (!token) {
-      //   navigate("/instructor/login");
-      //   return;
-      // }
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        navigate("/instructor/login");
+        return;
+      }
 
       const response = await axios.get("/api/instructor/courses", {
         headers: { Authorization: `Bearer ${token}` },
@@ -61,8 +71,8 @@ export default function InstructorDashboard() {
         (sum, course) => sum + (course.enrollmentCount || 0),
         0,
       );
-      const totalStudents = studentsEnrolled; // Total unique students or enrollments
-      const totalEarnings = studentsEnrolled * 150; // $150 per student enrollment
+      const totalStudents = studentsEnrolled;
+      const totalEarnings = studentsEnrolled * 150;
 
       setStats({
         totalCourses,
@@ -76,6 +86,15 @@ export default function InstructorDashboard() {
       setLoading(false);
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
+
+      // If unauthorized, redirect to login
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/instructor/login");
+        return;
+      }
+
       setError("Failed to load dashboard data");
       setLoading(false);
     }
@@ -86,13 +105,32 @@ export default function InstructorDashboard() {
 
     try {
       const token = localStorage.getItem("token");
+
+      if (!token) {
+        navigate("/instructor/login");
+        return;
+      }
+
       await axios.delete(`/api/instructor/courses/${courseId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      // Update courses list without the deleted course
       setCourses(courses.filter((c) => c.id !== courseId));
+
+      // Show success feedback (optional: could add a toast notification)
+      console.log("Course deleted successfully");
     } catch (err) {
       console.error("Error deleting course:", err);
-      alert("Failed to delete course");
+
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/instructor/login");
+        return;
+      }
+
+      alert("Failed to delete course. Please try again.");
     }
   };
 
