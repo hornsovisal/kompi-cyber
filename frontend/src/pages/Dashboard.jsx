@@ -2,13 +2,36 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL || "";
+const API_TARGET_LABEL = import.meta.env.VITE_API_URL || "Vite /api proxy";
+const ASSET_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\/$/, "");
+
+const COURSE_COVER_MAP = {
+  1: "/upload/lesson/intro-to-cyber-course/cover.svg",
+  2: "/upload/lesson/intro-to-linux-course/cover.svg",
+  3: "/upload/lesson/network-security/cover.svg",
+  4: "/upload/lesson/web-security/cover.svg",
+  5: "/upload/lesson/incident-response/cover.svg",
+};
+
+function getCourseCoverUrl(course) {
+  const raw = COURSE_COVER_MAP[Number(course.id)] || "";
+  if (!raw) return "";
+  if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+  return `${ASSET_BASE}${raw}`;
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [courses, setCourses] = useState([]);
   const [enrolledIds, setEnrolledIds] = useState(new Set());
+  const [summary, setSummary] = useState({
+    enrolledCourses: 0,
+    completedCourses: 0,
+    hoursLearned: 0,
+    recentActivity: [],
+  });
   const [enrollingId, setEnrollingId] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -42,6 +65,22 @@ export default function Dashboard() {
           (enrollmentsRes.data.enrollments || []).map((e) => e.course_id),
         );
         setEnrolledIds(ids);
+
+        // Keep dashboard usable even if summary endpoint fails.
+        try {
+          const summaryRes = await axios.get("/api/users/me/dashboard-summary", {
+            baseURL: API_BASE,
+            headers,
+          });
+          setSummary({
+            enrolledCourses: Number(summaryRes.data?.enrolledCourses || ids.size),
+            completedCourses: Number(summaryRes.data?.completedCourses || 0),
+            hoursLearned: Number(summaryRes.data?.hoursLearned || 0),
+            recentActivity: summaryRes.data?.recentActivity || [],
+          });
+        } catch (_summaryError) {
+          setSummary((prev) => ({ ...prev, enrolledCourses: ids.size }));
+        }
       } catch (err) {
         if (err.response?.status === 401) {
           localStorage.removeItem("token");
@@ -51,7 +90,7 @@ export default function Dashboard() {
         }
 
         if (!err.response) {
-          setError("Cannot connect to backend API (http://localhost:5000)");
+          setError(`Cannot connect to backend API (${API_TARGET_LABEL})`);
           return;
         }
 
@@ -110,7 +149,7 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm font-medium text-cadtNavy">
-            Welcome, {user?.name || "User"}
+            Welcome, {user?.fullName || user?.name || "User"}
           </span>
           <button
             onClick={handleLogout}
@@ -142,13 +181,15 @@ export default function Dashboard() {
             <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
               <p className="text-sm text-slate-600">Enrolled Courses</p>
               <p className="mt-2 text-2xl font-bold text-cadtBlue">
-                {enrolledIds.size}
+                {summary.enrolledCourses || enrolledIds.size}
               </p>
             </div>
 
             <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
               <p className="text-sm text-slate-600">Completed</p>
-              <p className="mt-2 text-2xl font-bold text-cadtBlue">0</p>
+              <p className="mt-2 text-2xl font-bold text-cadtBlue">
+                {summary.completedCourses}
+              </p>
             </div>
 
             <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
@@ -159,7 +200,9 @@ export default function Dashboard() {
 
             <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
               <p className="text-sm text-slate-600">Hours Learned</p>
-              <p className="mt-2 text-2xl font-bold text-cadtBlue">0</p>
+              <p className="mt-2 text-2xl font-bold text-cadtBlue">
+                {summary.hoursLearned}
+              </p>
             </div>
           </div>
 
@@ -169,9 +212,29 @@ export default function Dashboard() {
               Recent Activity
             </h2>
             <div className="rounded-2xl border border-cadtLine bg-white p-8 shadow-card">
-              <p className="text-center text-slate-500">
-                No recent activity. Start learning now!
-              </p>
+              {summary.recentActivity.length === 0 ? (
+                <p className="text-center text-slate-500">
+                  No recent activity. Start learning now!
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {summary.recentActivity.map((item, index) => (
+                    <div
+                      key={`${item.activity_type}-${item.occurred_at}-${index}`}
+                      className="flex items-start justify-between gap-4 border-b border-slate-100 pb-3 last:border-0 last:pb-0"
+                    >
+                      <p className="text-sm font-medium text-slate-700">
+                        {item.activity_text}
+                      </p>
+                      <p className="shrink-0 text-xs text-slate-400">
+                        {item.occurred_at
+                          ? new Date(item.occurred_at).toLocaleString()
+                          : "-"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -186,7 +249,16 @@ export default function Dashboard() {
                   key={course.id}
                   className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card transition hover:shadow-lg"
                 >
-                  <div className="mb-4 h-32 rounded-xl bg-gradient-to-br from-cadtBlue to-cadtNavy"></div>
+                  {getCourseCoverUrl(course) ? (
+                    <img
+                      src={getCourseCoverUrl(course)}
+                      alt={`${course.title} cover`}
+                      className="mb-4 h-32 w-full rounded-xl border border-cadtLine object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="mb-4 h-32 rounded-xl bg-gradient-to-br from-cadtBlue to-cadtNavy" />
+                  )}
                   <h3 className="font-semibold text-cadtNavy">
                     {course.title}
                   </h3>

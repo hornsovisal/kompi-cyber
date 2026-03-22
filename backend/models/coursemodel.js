@@ -5,16 +5,40 @@ const path = require("path");
 class CourseModel {
   constructor(database) {
     this.db = database;
+    this._hasCoverImageColumn = null;
+  }
+
+  async hasCoverImageColumn() {
+    if (this._hasCoverImageColumn !== null) {
+      return this._hasCoverImageColumn;
+    }
+
+    const [rows] = await this.db.execute(
+      `SELECT 1
+       FROM information_schema.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE()
+         AND TABLE_NAME = 'courses'
+         AND COLUMN_NAME = 'cover_image_url'
+       LIMIT 1`,
+    );
+
+    this._hasCoverImageColumn = rows.length > 0;
+    return this._hasCoverImageColumn;
   }
 
   async findAll() {
+    const hasCoverImageColumn = await this.hasCoverImageColumn();
+    const coverImageSelect = hasCoverImageColumn
+      ? "c.cover_image_url,"
+      : "NULL AS cover_image_url,";
+
     const [rows] = await this.db.execute(
       `SELECT
 				 c.id,
 				 c.domain_id,
 				 c.title,
 				 c.description,
-         c.cover_image_url,
+         ${coverImageSelect}
 				 c.level,
 				 c.duration_hrs,
 				 c.is_published,
@@ -29,13 +53,18 @@ class CourseModel {
   }
 
   async findById(id) {
+    const hasCoverImageColumn = await this.hasCoverImageColumn();
+    const coverImageSelect = hasCoverImageColumn
+      ? "c.cover_image_url,"
+      : "NULL AS cover_image_url,";
+
     const [rows] = await this.db.execute(
       `SELECT
 				 c.id,
 				 c.domain_id,
 				 c.title,
 				 c.description,
-         c.cover_image_url,
+         ${coverImageSelect}
 				 c.level,
 				 c.duration_hrs,
 				 c.is_published,
@@ -63,42 +92,73 @@ class CourseModel {
       created_by,
     } = payload;
 
-    const [result] = await this.db.execute(
-      `INSERT INTO courses (
-				domain_id,
-				title,
-				description,
-        cover_image_url,
-				level,
-				duration_hrs,
-				is_published,
-				created_by
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        domain_id,
-        title,
-        description,
-        cover_image_url,
-        level,
-        duration_hrs,
-        is_published,
-        created_by,
-      ],
-    );
+    const hasCoverImageColumn = await this.hasCoverImageColumn();
+
+    let result;
+    if (hasCoverImageColumn) {
+      [result] = await this.db.execute(
+        `INSERT INTO courses (
+				 domain_id,
+				 title,
+				 description,
+         cover_image_url,
+				 level,
+				 duration_hrs,
+				 is_published,
+				 created_by
+			 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          domain_id,
+          title,
+          description,
+          cover_image_url,
+          level,
+          duration_hrs,
+          is_published,
+          created_by,
+        ],
+      );
+    } else {
+      [result] = await this.db.execute(
+        `INSERT INTO courses (
+				 domain_id,
+				 title,
+				 description,
+				 level,
+				 duration_hrs,
+				 is_published,
+				 created_by
+			 ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          domain_id,
+          title,
+          description,
+          level,
+          duration_hrs,
+          is_published,
+          created_by,
+        ],
+      );
+    }
 
     return result.insertId;
   }
 
   async updateCourse(id, fields) {
+    const hasCoverImageColumn = await this.hasCoverImageColumn();
+
     const allowed = [
       "domain_id",
       "title",
       "description",
-      "cover_image_url",
       "level",
       "duration_hrs",
       "is_published",
     ];
+
+    if (hasCoverImageColumn) {
+      allowed.push("cover_image_url");
+    }
 
     const keys = Object.keys(fields).filter(
       (k) => allowed.includes(k) && fields[k] !== undefined,
@@ -144,7 +204,9 @@ class CourseModel {
       [courseId],
     );
 
-    return rows;
+    // Reuse lesson content resolution logic so list and detail APIs are consistent.
+    const LessonModel = require("./lessonModel");
+    return Promise.all(rows.map((row) => LessonModel.resolveLessonContent(row)));
   }
 
   async ensureSeedFromUploadIfEmpty() {
@@ -208,28 +270,54 @@ class CourseModel {
       domainId = insertDomain.insertId;
     }
 
-    const [courseInsert] = await this.db.execute(
-      `INSERT INTO courses (
-        domain_id,
-        title,
-        description,
-        cover_image_url,
-        level,
-        duration_hrs,
-        is_published,
-        created_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        domainId,
-        "Introduction to Cybersecurity",
-        "Auto-seeded course content from /upload/lesson/intro-to-cyber-course",
-        "/upload/lesson/intro-to-cyber-course/cover.svg",
-        "beginner",
-        5,
-        1,
-        creatorId,
-      ],
-    );
+    const hasCoverImageColumn = await this.hasCoverImageColumn();
+
+    let courseInsert;
+    if (hasCoverImageColumn) {
+      [courseInsert] = await this.db.execute(
+        `INSERT INTO courses (
+          domain_id,
+          title,
+          description,
+          cover_image_url,
+          level,
+          duration_hrs,
+          is_published,
+          created_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          domainId,
+          "Introduction to Cybersecurity",
+          "Auto-seeded course content from /upload/lesson/intro-to-cyber-course",
+          "/upload/lesson/intro-to-cyber-course/cover.svg",
+          "beginner",
+          5,
+          1,
+          creatorId,
+        ],
+      );
+    } else {
+      [courseInsert] = await this.db.execute(
+        `INSERT INTO courses (
+          domain_id,
+          title,
+          description,
+          level,
+          duration_hrs,
+          is_published,
+          created_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          domainId,
+          "Introduction to Cybersecurity",
+          "Auto-seeded course content from /upload/lesson/intro-to-cyber-course",
+          "beginner",
+          5,
+          1,
+          creatorId,
+        ],
+      );
+    }
 
     const courseId = courseInsert.insertId;
 
