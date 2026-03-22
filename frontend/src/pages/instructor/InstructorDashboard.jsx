@@ -142,43 +142,37 @@ export default function InstructorDashboard() {
           </div>
         )}
 
-        {/* Statistics Cards - 2x3 Grid with accent borders */}
+        {/* Statistics Cards - 2x3 Grid with professional dark theme */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           <StatCardWithAccent
             icon={BookOpen}
             title="Courses Taught"
             value={stats.totalCourses}
-            color="from-blue-100 to-blue-50"
           />
           <StatCardWithAccent
             icon={Users}
             title="Active Courses"
             value={stats.activeCourses}
-            color="from-amber-100 to-amber-50"
           />
           <StatCardWithAccent
             icon={TrendingUp}
             title="Students Enrolled"
             value={`${(stats.studentsEnrolled / 1000).toFixed(1)}k`}
-            color="from-cyan-100 to-cyan-50"
           />
           <StatCardWithAccent
             icon={BookOpen}
             title="Total Modules"
             value={stats.totalModules}
-            color="from-purple-100 to-purple-50"
           />
           <StatCardWithAccent
             icon={Users}
             title="Total Students"
             value={`${(stats.totalStudents / 1000).toFixed(1)}k`}
-            color="from-pink-100 to-pink-50"
           />
           <StatCardWithAccent
             icon={BarChart3}
             title="Total Earnings"
             value={`$${(stats.totalEarnings / 1000).toFixed(0)}k+`}
-            color="from-indigo-100 to-indigo-50"
           />
         </div>
 
@@ -304,25 +298,36 @@ export default function InstructorDashboard() {
   );
 }
 
-// Enhanced Stat Card with left accent border
-function StatCardWithAccent({ icon, title, value, color }) {
+// Professional Stat Card with dark modern theme
+function StatCardWithAccent({ icon, title, value }) {
   const Icon = icon;
   return (
-    <div
-      className={`card bg-gradient-to-br ${color} shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-orange-600`}
-    >
-      <div className="card-body">
-        <div className="flex items-start justify-between">
+    <div className="relative group overflow-hidden rounded-lg bg-slate-700 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-600 hover:border-teal-500/50">
+      {/* Subtle hover effect background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+      <div className="relative p-6">
+        {/* Header with title and icon */}
+        <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
-            <p className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
+            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
               {title}
             </p>
-            <h3 className="text-4xl font-bold text-slate-900 mt-2">{value}</h3>
           </div>
-          <div className="bg-white bg-opacity-60 rounded-lg p-3">
-            <Icon size={28} className="text-orange-600" />
+          <div className="bg-teal-600/20 rounded-lg p-3 ml-4">
+            <Icon size={22} className="text-teal-400" />
           </div>
         </div>
+
+        {/* Value display */}
+        <div>
+          <h3 className="text-4xl font-bold text-white leading-tight">
+            {value}
+          </h3>
+        </div>
+
+        {/* Top accent line */}
+        <div className="absolute top-0 left-0 h-0.5 w-full bg-gradient-to-r from-teal-500 to-transparent"></div>
       </div>
     </div>
   );
