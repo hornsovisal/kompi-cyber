@@ -13,6 +13,7 @@ const exerciseRoutes = require("./routes/exerciseRoutes");
 const enrollmentRoutes = require("./routes/enrollmentRoutes");
 const quizRoutes = require("./routes/quizRoutes");
 const submissionRoutes = require("./routes/submissionRoutes");
+const instructorRoutes = require("./routes/instructorRoutes");
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/api/exercises", exerciseRoutes);
 app.use("/api/enrollments", enrollmentRoutes);
 app.use("/api/quizzes", quizRoutes);
 app.use("/api/submissions", submissionRoutes);
+app.use("/api/instructor", instructorRoutes);
 
 const PORT = process.env.PORT || 5000;
 

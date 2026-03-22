@@ -7,6 +7,8 @@ import LearnPage from "./pages/LearnPage";
 import ForgetPassword from "./pages/ForgetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import ResetPassword from "./pages/ResetPassword";
+import InstructorLayout from "./components/Layout/InstructorLayout";
+import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 
 export default function App() {
   return (
@@ -22,6 +24,16 @@ export default function App() {
         <Route path="/dashboard/:tab" element={<Dashboard />} />
         <Route path="/learn/:courseId" element={<LearnPage />} />
         <Route path="/learn/:courseId/:lessonId" element={<LearnPage />} />
+        
+        {/* Instructor Routes */}
+        <Route 
+          path="/instructor/dashboard" 
+          element={
+            <InstructorLayout>
+              <InstructorDashboard />
+            </InstructorLayout>
+          } 
+        />
       </Routes>
     </Router>
   );
