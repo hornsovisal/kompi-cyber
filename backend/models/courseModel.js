@@ -5,46 +5,66 @@ const path = require("path");
 class CourseModel {
   constructor(database) {
     this.db = database;
+    this.hasCoverImageColumnCache = null;
+  }
+
+  async hasCoverImageColumn() {
+    if (this.hasCoverImageColumnCache !== null) {
+      return this.hasCoverImageColumnCache;
+    }
+
+    const [rows] = await this.db.execute(
+      `SELECT 1
+       FROM information_schema.columns
+       WHERE table_schema = DATABASE()
+         AND table_name = ?
+         AND column_name = ?
+       LIMIT 1`,
+      ["courses", "cover_image_url"],
+    );
+    this.hasCoverImageColumnCache = rows.length > 0;
+    return this.hasCoverImageColumnCache;
+  }
+
+  async getCourseSelectFields() {
+    const hasCoverImage = await this.hasCoverImageColumn();
+    return [
+      "c.id",
+      "c.domain_id",
+      "c.title",
+      "c.description",
+      hasCoverImage ? "c.cover_image_url" : "NULL AS cover_image_url",
+      "c.level",
+      "c.duration_hrs",
+      "c.is_published",
+      "c.created_by",
+      "c.created_at",
+      "c.updated_at",
+    ].join(",\n         ");
   }
 
   async findAll() {
+    const selectFields = await this.getCourseSelectFields();
     const [rows] = await this.db.execute(
       `SELECT
-				 c.id,
-				 c.domain_id,
-				 c.title,
-				 c.description,
-         c.cover_image_url,
-				 c.level,
-				 c.duration_hrs,
-				 c.is_published,
-				 c.created_by,
-				 c.created_at,
-				 c.updated_at
-			 FROM courses c
-			 ORDER BY c.created_at DESC`,
+         ${selectFields},
+         (SELECT COUNT(*) FROM modules m WHERE m.course_id = c.id) AS module_count
+       FROM courses c
+       ORDER BY c.created_at DESC`,
     );
 
     return rows;
   }
 
   async findById(id) {
+    const selectFields = await this.getCourseSelectFields();
     const [rows] = await this.db.execute(
       `SELECT
-				 c.id,
-				 c.domain_id,
-				 c.title,
-				 c.description,
-         c.cover_image_url,
-				 c.level,
-				 c.duration_hrs,
-				 c.is_published,
-				 c.created_by,
-				 c.created_at,
-				 c.updated_at
-			 FROM courses c
-			 WHERE c.id = ?
-			 LIMIT 1`,
+         ${selectFields},
+         (SELECT COUNT(*) FROM modules m WHERE m.course_id = c.id) AS module_count
+       FROM courses c
+       WHERE c.id = ?
+       LIMIT 1`,
       [id],
     );
 
@@ -63,42 +83,43 @@ class CourseModel {
       created_by,
     } = payload;
 
+    const hasCoverImage = await this.hasCoverImageColumn();
+    const columns = ["domain_id", "title", "description"];
+    const values = [domain_id, title, description];
+
+    if (hasCoverImage) {
+      columns.push("cover_image_url");
+      values.push(cover_image_url);
+    }
+
+    columns.push("level", "duration_hrs", "is_published", "created_by");
+    values.push(level, duration_hrs, is_published, created_by);
+
+    const placeholders = columns.map(() => "?").join(", ");
+
     const [result] = await this.db.execute(
-      `INSERT INTO courses (
-				domain_id,
-				title,
-				description,
-        cover_image_url,
-				level,
-				duration_hrs,
-				is_published,
-				created_by
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        domain_id,
-        title,
-        description,
-        cover_image_url,
-        level,
-        duration_hrs,
-        is_published,
-        created_by,
-      ],
+      `INSERT INTO courses (${columns.join(", ")}) VALUES (${placeholders})`,
+      values,
     );
 
     return result.insertId;
   }
 
   async updateCourse(id, fields) {
+    const hasCoverImage = await this.hasCoverImageColumn();
+
     const allowed = [
       "domain_id",
       "title",
       "description",
-      "cover_image_url",
       "level",
       "duration_hrs",
       "is_published",
     ];
+
+    if (hasCoverImage) {
+      allowed.push("cover_image_url");
+    }
 
     const keys = Object.keys(fields).filter(
       (k) => allowed.includes(k) && fields[k] !== undefined,
@@ -208,27 +229,26 @@ class CourseModel {
       domainId = insertDomain.insertId;
     }
 
+    const hasCoverImage = await this.hasCoverImageColumn();
+    const seedColumns = ["domain_id", "title", "description"];
+    const seedValues = [
+      domainId,
+      "Introduction to Cybersecurity",
+      "Auto-seeded course content from /upload/lesson/intro-to-cyber-course",
+    ];
+
+    if (hasCoverImage) {
+      seedColumns.push("cover_image_url");
+      seedValues.push("/upload/lesson/intro-to-cyber-course/cover.svg");
+    }
+
+    seedColumns.push("level", "duration_hrs", "is_published", "created_by");
+    seedValues.push("beginner", 5, 1, creatorId);
+
+    const seedPlaceholders = seedColumns.map(() => "?").join(", ");
     const [courseInsert] = await this.db.execute(
-      `INSERT INTO courses (
-        domain_id,
-        title,
-        description,
-        cover_image_url,
-        level,
-        duration_hrs,
-        is_published,
-        created_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        domainId,
-        "Introduction to Cybersecurity",
-        "Auto-seeded course content from /upload/lesson/intro-to-cyber-course",
-        "/upload/lesson/intro-to-cyber-course/cover.svg",
-        "beginner",
-        5,
-        1,
-        creatorId,
-      ],
+      `INSERT INTO courses (${seedColumns.join(", ")}) VALUES (${seedPlaceholders})`,
+      seedValues,
     );
 
     const courseId = courseInsert.insertId;
