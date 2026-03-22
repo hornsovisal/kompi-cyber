@@ -7,6 +7,45 @@ export default function LecturerDashboard() {
   const [lecturer, setLecturer] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Course information mapping
+  const courseDetails = {
+    'network-security': {
+      title: 'Network Security',
+      description: 'Learn about network layers, firewalls, and hardening techniques',
+      modules: 4,
+      icon: '🌐',
+      color: 'blue'
+    },
+    'web-security': {
+      title: 'Web Security',
+      description: 'Master web architecture, OWASP, secure coding, and prevent SQL/XSS attacks',
+      modules: 4,
+      icon: '💻',
+      color: 'green'
+    },
+    'incident-response': {
+      title: 'Incident Response',
+      description: 'Learn preparation, containment, evidence collection, and response tools',
+      modules: 4,
+      icon: '🚨',
+      color: 'red'
+    },
+    'intro-to-linux-course': {
+      title: 'Introduction to Linux',
+      description: 'Master Linux fundamentals, file systems, users, and basic security',
+      modules: 3,
+      icon: '🐧',
+      color: 'orange'
+    },
+    'intro-to-cyber-course': {
+      title: 'Introduction to Cybersecurity',
+      description: 'Foundation of cybersecurity, threats, CIA triad, and cyber hygiene',
+      modules: 5,
+      icon: '🛡️',
+      color: 'purple'
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('lecturerToken');
     if (!token) {
@@ -114,16 +153,50 @@ export default function LecturerDashboard() {
           </div>
         </div>
 
+        {/* Courses Managed */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-slate-800 mb-6">Courses You Manage</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {lecturer.courses && lecturer.courses.map(courseId => {
+              const course = courseDetails[courseId];
+              if (!course) return null;
+
+              return (
+                <div key={courseId} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition">
+                  <div className="flex items-center mb-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-${course.color}-100`}>
+                      {course.icon}
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-lg font-semibold text-slate-800">{course.title}</h3>
+                      <p className="text-sm text-slate-600">{course.modules} modules</p>
+                    </div>
+                  </div>
+                  <p className="text-slate-600 text-sm mb-4">{course.description}</p>
+                  <div className="flex space-x-2">
+                    <button className={`flex-1 bg-${course.color}-600 text-white py-2 px-4 rounded-lg hover:bg-${course.color}-700 transition text-sm font-medium`}>
+                      Manage Course
+                    </button>
+                    <button className="px-3 py-2 text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition text-sm">
+                      📊
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">📚</span>
             </div>
-            <h3 className="text-lg font-semibold text-slate-800 mb-2">My Courses</h3>
-            <p className="text-slate-600 text-sm">Manage your courses and lessons</p>
-            <button className="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition">
-              View Courses
+            <h3 className="text-lg font-semibold text-slate-800 mb-2">Course Content</h3>
+            <p className="text-slate-600 text-sm mb-4">Update lessons and materials</p>
+            <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition">
+              Edit Content
             </button>
           </div>
 
@@ -132,9 +205,9 @@ export default function LecturerDashboard() {
               <span className="text-2xl">📊</span>
             </div>
             <h3 className="text-lg font-semibold text-slate-800 mb-2">Student Progress</h3>
-            <p className="text-slate-600 text-sm">Track student enrollment and progress</p>
-            <button className="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition">
-              View Progress
+            <p className="text-slate-600 text-sm mb-4">Track enrollment and completion</p>
+            <button className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition">
+              View Reports
             </button>
           </div>
 
@@ -143,9 +216,20 @@ export default function LecturerDashboard() {
               <span className="text-2xl">📝</span>
             </div>
             <h3 className="text-lg font-semibold text-slate-800 mb-2">Assignments</h3>
-            <p className="text-slate-600 text-sm">Create and manage assignments</p>
-            <button className="mt-4 w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition">
+            <p className="text-slate-600 text-sm mb-4">Create and grade assignments</p>
+            <button className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition">
               Manage Assignments
+            </button>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center">
+            <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">💬</span>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-800 mb-2">Announcements</h3>
+            <p className="text-slate-600 text-sm mb-4">Post updates for students</p>
+            <button className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition">
+              Create Announcement
             </button>
           </div>
         </div>
@@ -154,12 +238,15 @@ export default function LecturerDashboard() {
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white">
           <h2 className="text-2xl font-bold mb-4">Welcome to the Lecturer Portal!</h2>
           <p className="text-blue-100 mb-6">
-            This is your central hub for managing courses, tracking student progress, and creating engaging learning experiences.
-            Use the tools above to get started with your teaching activities.
+            Manage your courses, track student progress, and create engaging learning experiences.
+            Use the tools above to access your teaching resources and student management features.
           </p>
           <div className="flex flex-wrap gap-4">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
               <span className="font-semibold">Department:</span> {lecturer.department}
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
+              <span className="font-semibold">Courses:</span> {lecturer.courses?.length || 0}
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
               <span className="font-semibold">Employee ID:</span> {lecturer.employeeId}
