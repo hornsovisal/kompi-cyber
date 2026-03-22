@@ -4,6 +4,9 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import LearnPage from "./pages/LearnPage";
+import ForgetPassword from "./pages/ForgetPassword";
+import VerifyEmail from "./pages/VerifyEmail";
+import ResetPassword from "./pages/ResetPassword";
 
 export default function App() {
   return (
@@ -12,6 +15,9 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forget-password" element={<ForgetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/:tab" element={<Dashboard />} />
         <Route path="/learn/:courseId" element={<LearnPage />} />
