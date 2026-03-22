@@ -10,8 +10,7 @@ import {
   Trash2,
   Eye,
   AlertCircle,
-  Clock,
-  TrendingUp,
+  Star,
 } from "lucide-react";
 
 export default function InstructorDashboard() {
@@ -21,7 +20,6 @@ export default function InstructorDashboard() {
     totalCourses: 0,
     totalStudents: 0,
     totalQuizzes: 0,
-    completionRate: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -59,7 +57,6 @@ export default function InstructorDashboard() {
         totalCourses: coursesList.length,
         totalStudents,
         totalQuizzes,
-        completionRate: Math.round(Math.random() * 100), // Replace with real data
       });
 
       setLoading(false);
@@ -103,11 +100,9 @@ export default function InstructorDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">
-                Instructor Dashboard
-              </h1>
-              <p className="text-slate-600 mt-1">
-                Welcome back! Manage your courses and track student progress
+              <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
+              <p className="text-slate-500 text-sm mt-1">
+                Current Session: Term 1, 2026
               </p>
             </div>
             <button
@@ -134,38 +129,41 @@ export default function InstructorDashboard() {
         )}
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <StatCard
             icon={BookOpen}
-            title="Total Courses"
+            title="Courses Taught"
             value={stats.totalCourses}
             color="blue"
           />
           <StatCard
             icon={Users}
-            title="Total Students"
+            title="Active Students"
             value={stats.totalStudents}
             color="green"
           />
           <StatCard
             icon={BarChart3}
-            title="Total Quizzes"
+            title="Active Quizzes"
             value={stats.totalQuizzes}
             color="purple"
           />
-          <StatCard
-            icon={TrendingUp}
-            title="Avg Completion"
-            value={`${stats.completionRate}%`}
-            color="orange"
-          />
         </div>
 
-        {/* Courses Section */}
+        {/* Course Performance Section */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-3">
-            <BookOpen className="text-blue-600" size={24} />
-            <h2 className="text-xl font-bold text-slate-900">Your Courses</h2>
+          <div className="px-6 py-4 border-b border-slate-200">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-slate-900">
+                Course Performance
+              </h2>
+              <button
+                onClick={() => navigate("/instructor/analytics")}
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              >
+                See All →
+              </button>
+            </div>
           </div>
 
           {courses.length === 0 ? (
@@ -184,99 +182,89 @@ export default function InstructorDashboard() {
               </button>
             </div>
           ) : (
-            <div className="divide-y divide-slate-200">
-              {courses.map((course) => (
-                <div
-                  key={course.id}
-                  className="p-6 hover:bg-slate-50 transition-colors"
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                        {course.title}
-                      </h3>
-                      <p className="text-slate-600 text-sm mb-3 line-clamp-2">
-                        {course.description}
-                      </p>
-                      <div className="flex flex-wrap gap-4 text-sm text-slate-600">
-                        <div className="flex items-center gap-1">
-                          <Users size={16} />
-                          <span>{course.enrollmentCount || 0} students</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <BarChart3 size={16} />
-                          <span>{course.quizCount || 0} quizzes</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock size={16} />
-                          <span>{course.moduleCount || 0} modules</span>
-                        </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">
+                      Course Name
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">
+                      Enrolled Students
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">
+                      Rating
+                    </th>
+                    <th className="px-6 py-4 text-right text-sm font-semibold text-slate-900">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {courses.map((course, idx) => (
+                    <tr
+                      key={course.id}
+                      className={idx % 2 === 0 ? "bg-white" : "bg-slate-50"}
+                    >
+                      <td className="px-6 py-4">
                         <div>
-                          <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                            {course.status || "Draft"}
+                          <p className="font-medium text-slate-900">
+                            {course.title}
+                          </p>
+                          <p className="text-sm text-slate-600 mt-1">
+                            {course.description?.substring(0, 50)}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-slate-700 font-medium">
+                        {course.enrollmentCount || 0}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-1">
+                          <Star
+                            size={16}
+                            className="text-yellow-400 fill-yellow-400"
+                          />
+                          <span className="text-slate-700 font-medium">
+                            4.0
                           </span>
                         </div>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex items-center gap-2 ml-4">
-                      <button
-                        onClick={() =>
-                          navigate(`/instructor/courses/${course.id}`)
-                        }
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="View details"
-                      >
-                        <Eye size={18} />
-                      </button>
-                      <button
-                        onClick={() =>
-                          navigate(`/instructor/courses/${course.id}/edit`)
-                        }
-                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                        title="Edit course"
-                      >
-                        <Edit2 size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteCourse(course.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete course"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() =>
+                              navigate(`/instructor/courses/${course.id}`)
+                            }
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="View details"
+                          >
+                            <Eye size={18} />
+                          </button>
+                          <button
+                            onClick={() =>
+                              navigate(`/instructor/courses/${course.id}/edit`)
+                            }
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Edit course"
+                          >
+                            <Edit2 size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCourse(course.id)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete course"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
-        </div>
-
-        {/* Quick Actions */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <QuickActionCard
-            title="View Student Responses"
-            description="Check quiz responses and student progress"
-            icon={BarChart3}
-            onClick={() => navigate("/instructor/responses")}
-            color="blue"
-          />
-          <QuickActionCard
-            title="Manage Quizzes"
-            description="Create, edit, or delete quizzes"
-            icon={BookOpen}
-            onClick={() => navigate("/instructor/quizzes")}
-            color="purple"
-          />
-          <QuickActionCard
-            title="View Analytics"
-            description="View course statistics and insights"
-            icon={TrendingUp}
-            onClick={() => navigate("/instructor/analytics")}
-            color="green"
-          />
         </div>
       </div>
     </div>
@@ -289,7 +277,6 @@ function StatCard({ icon: Icon, title, value, color }) {
     blue: "bg-blue-50 text-blue-600 border-blue-200",
     green: "bg-green-50 text-green-600 border-green-200",
     purple: "bg-purple-50 text-purple-600 border-purple-200",
-    orange: "bg-orange-50 text-orange-600 border-orange-200",
   };
 
   return (
@@ -300,31 +287,5 @@ function StatCard({ icon: Icon, title, value, color }) {
       </div>
       <p className="text-3xl font-bold">{value}</p>
     </div>
-  );
-}
-
-// Quick Action Card
-function QuickActionCard({ title, description, icon: Icon, onClick, color }) {
-  const colorClasses = {
-    blue: "bg-blue-50 border-blue-200 hover:border-blue-300",
-    green: "bg-green-50 border-green-200 hover:border-green-300",
-    purple: "bg-purple-50 border-purple-200 hover:border-purple-300",
-  };
-
-  const iconColorClasses = {
-    blue: "text-blue-600",
-    green: "text-green-600",
-    purple: "text-purple-600",
-  };
-
-  return (
-    <button
-      onClick={onClick}
-      className={`border-2 rounded-lg p-6 text-left transition-all hover:shadow-md ${colorClasses[color]}`}
-    >
-      <Icon className={`${iconColorClasses[color]} mb-3`} size={28} />
-      <h3 className="font-semibold text-slate-900 mb-1">{title}</h3>
-      <p className="text-slate-600 text-sm">{description}</p>
-    </button>
   );
 }
