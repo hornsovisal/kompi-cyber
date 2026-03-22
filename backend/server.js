@@ -35,14 +35,19 @@ const PORT = process.env.PORT || 5000;
 
 async function startServer() {
   try {
-    await db.query("SELECT 1");
-    console.log("Database connected successfully.");
+    // Try to connect to database, but don't fail if it doesn't work
+    try {
+      await db.query("SELECT 1");
+      console.log("Database connected successfully.");
+    } catch (dbError) {
+      console.log("Database not available, running with in-memory storage for authentication.");
+    }
 
     app.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error("Failed to connect to database:", error.message);
+    console.error("Failed to start server:", error.message);
     process.exit(1);
   }
 }
