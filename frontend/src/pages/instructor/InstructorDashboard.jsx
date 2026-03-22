@@ -30,8 +30,8 @@ export default function InstructorDashboard() {
 
   useEffect(() => {
     // Check if user is authenticated before fetching data
-    const token = localStorage.getItem("token");
-    const user = localStorage.getItem("user");
+    const token = sessionStorage.getItem("token");
+    const user = sessionStorage.getItem("user");
 
     if (!token || !user) {
       // Redirect to login if not authenticated
@@ -44,7 +44,7 @@ export default function InstructorDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       if (!token) {
         navigate("/instructor/login");
@@ -89,8 +89,8 @@ export default function InstructorDashboard() {
 
       // If unauthorized, redirect to login
       if (err.response?.status === 401) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
         navigate("/instructor/login");
         return;
       }
@@ -104,7 +104,7 @@ export default function InstructorDashboard() {
     if (!window.confirm("Are you sure you want to delete this course?")) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       if (!token) {
         navigate("/instructor/login");
@@ -124,8 +124,8 @@ export default function InstructorDashboard() {
       console.error("Error deleting course:", err);
 
       if (err.response?.status === 401) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
         navigate("/instructor/login");
         return;
       }

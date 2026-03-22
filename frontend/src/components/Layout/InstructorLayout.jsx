@@ -16,8 +16,8 @@ export default function InstructorLayout({ children }) {
   const location = useLocation();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
     navigate("/instructor/login");
   };
 
