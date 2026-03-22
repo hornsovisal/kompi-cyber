@@ -40,6 +40,8 @@ CREATE TABLE `users` (
   `password_hash` VARCHAR(255) NOT NULL,
   `role_id`       INT          NOT NULL,
   `is_active`     TINYINT(1)   NOT NULL DEFAULT 1,
+  `is_verified`   TINYINT(1)   NOT NULL DEFAULT 0,
+  `email_verification_token` VARCHAR(255) NULL,
   `created_at`    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at`    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
