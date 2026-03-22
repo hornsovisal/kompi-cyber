@@ -149,7 +149,9 @@ export default function LearnPage() {
 
   const activeLessonIndex = useMemo(() => {
     if (!activeLesson) return -1;
-    return allLessons.findIndex((l) => Number(l.id) === Number(activeLesson.id));
+    return allLessons.findIndex(
+      (l) => Number(l.id) === Number(activeLesson.id),
+    );
   }, [allLessons, activeLesson]);
 
   const progressPercent = useMemo(() => {
@@ -167,9 +169,7 @@ export default function LearnPage() {
   const completedLessonIds = useMemo(() => {
     if (activeLessonIndex <= 0) return new Set();
     return new Set(
-      allLessons
-        .slice(0, activeLessonIndex)
-        .map((lesson) => Number(lesson.id)),
+      allLessons.slice(0, activeLessonIndex).map((lesson) => Number(lesson.id)),
     );
   }, [allLessons, activeLessonIndex]);
 
@@ -373,17 +373,23 @@ export default function LearnPage() {
 
       setQuizResult({
         score: Number(res.data?.score || 0),
-        totalQuestions: Number(res.data?.totalQuestions || quizQuestions.length),
+        totalQuestions: Number(
+          res.data?.totalQuestions || quizQuestions.length,
+        ),
         correctCount: Number(res.data?.correctCount || 0),
         attemptNo: Number(res.data?.attemptNo || 1),
       });
     } catch (err) {
       if (err.code === "ECONNABORTED") {
-        setQuizError("Request timed out. Please check backend/database and try again.");
+        setQuizError(
+          "Request timed out. Please check backend/database and try again.",
+        );
       } else if (!err.response) {
         setQuizError(`Cannot connect to backend API (${API_TARGET_LABEL})`);
       } else {
-        setQuizError(err.response?.data?.message || "Failed to submit practice");
+        setQuizError(
+          err.response?.data?.message || "Failed to submit practice",
+        );
       }
     } finally {
       setSubmittingQuiz(false);
@@ -433,11 +439,14 @@ export default function LearnPage() {
         const rows = await Promise.all(
           allLessons.map(async (lesson) => {
             try {
-              const quizRes = await axios.get(`/api/quizzes/lesson/${lesson.id}`, {
-                baseURL: API_BASE,
-                headers,
-                timeout: REQUEST_TIMEOUT_MS,
-              });
+              const quizRes = await axios.get(
+                `/api/quizzes/lesson/${lesson.id}`,
+                {
+                  baseURL: API_BASE,
+                  headers,
+                  timeout: REQUEST_TIMEOUT_MS,
+                },
+              );
 
               const questions = quizRes.data?.data || [];
               if (questions.length === 0) return null;
@@ -476,25 +485,28 @@ export default function LearnPage() {
           }),
         );
 
-        const filtered = rows
-          .filter(Boolean)
-          .sort((a, b) => {
-            const moduleDiff = a.moduleOrder - b.moduleOrder;
-            if (moduleDiff !== 0) return moduleDiff;
-            return a.lessonOrder - b.lessonOrder;
-          });
+        const filtered = rows.filter(Boolean).sort((a, b) => {
+          const moduleDiff = a.moduleOrder - b.moduleOrder;
+          if (moduleDiff !== 0) return moduleDiff;
+          return a.lessonOrder - b.lessonOrder;
+        });
 
         setPracticeItems(filtered);
 
         if (
           filtered.length > 0 &&
-          (!activeLesson || !filtered.some((item) => item.lessonId === Number(activeLesson.id)))
+          (!activeLesson ||
+            !filtered.some((item) => item.lessonId === Number(activeLesson.id)))
         ) {
-          const firstPending = filtered.find((item) => !item.attempt) || filtered[0];
-          const lessonRes = await axios.get(`/api/lessons/${firstPending.lessonId}`, {
-            baseURL: API_BASE,
-            headers,
-          });
+          const firstPending =
+            filtered.find((item) => !item.attempt) || filtered[0];
+          const lessonRes = await axios.get(
+            `/api/lessons/${firstPending.lessonId}`,
+            {
+              baseURL: API_BASE,
+              headers,
+            },
+          );
           setActiveLesson(lessonRes.data.lesson);
         }
       } catch (err) {
@@ -503,10 +515,13 @@ export default function LearnPage() {
             "Request timed out. Please check backend/database and try again.",
           );
         } else if (!err.response) {
-          setPracticeListError(`Cannot connect to backend API (${API_TARGET_LABEL})`);
+          setPracticeListError(
+            `Cannot connect to backend API (${API_TARGET_LABEL})`,
+          );
         } else {
           setPracticeListError(
-            err.response?.data?.message || "Failed to load practice assessments",
+            err.response?.data?.message ||
+              "Failed to load practice assessments",
           );
         }
       } finally {
@@ -531,11 +546,14 @@ export default function LearnPage() {
       setSelectedAnswers({});
       setQuizResult(null);
       try {
-        const quizRes = await axios.get(`/api/quizzes/lesson/${activeLesson.id}`, {
-          baseURL: API_BASE,
-          headers,
-          timeout: REQUEST_TIMEOUT_MS,
-        });
+        const quizRes = await axios.get(
+          `/api/quizzes/lesson/${activeLesson.id}`,
+          {
+            baseURL: API_BASE,
+            headers,
+            timeout: REQUEST_TIMEOUT_MS,
+          },
+        );
         const questions = quizRes.data?.data || [];
         setQuizQuestions(questions);
 
@@ -558,7 +576,9 @@ export default function LearnPage() {
             setQuizResult({
               score: latest.score,
               totalQuestions: questions.length,
-              correctCount: Math.round((Number(latest.score || 0) * questions.length) / 100),
+              correctCount: Math.round(
+                (Number(latest.score || 0) * questions.length) / 100,
+              ),
               attemptNo: latest.attemptNo,
             });
           }
@@ -569,13 +589,17 @@ export default function LearnPage() {
         }
       } catch (err) {
         if (err.code === "ECONNABORTED") {
-          setQuizError("Request timed out. Please check backend/database and try again.");
+          setQuizError(
+            "Request timed out. Please check backend/database and try again.",
+          );
         } else if (err.response?.status === 404) {
           setQuizError("No practice questions for this lesson yet.");
         } else if (!err.response) {
           setQuizError(`Cannot connect to backend API (${API_TARGET_LABEL})`);
         } else {
-          setQuizError(err.response?.data?.message || "Failed to load practice");
+          setQuizError(
+            err.response?.data?.message || "Failed to load practice",
+          );
         }
       } finally {
         setQuizLoading(false);
@@ -634,11 +658,17 @@ export default function LearnPage() {
         setPracticeHistory(rows);
       } catch (err) {
         if (err.code === "ECONNABORTED") {
-          setProgressError("Request timed out. Please check backend/database and try again.");
+          setProgressError(
+            "Request timed out. Please check backend/database and try again.",
+          );
         } else if (!err.response) {
-          setProgressError(`Cannot connect to backend API (${API_TARGET_LABEL})`);
+          setProgressError(
+            `Cannot connect to backend API (${API_TARGET_LABEL})`,
+          );
         } else {
-          setProgressError(err.response?.data?.message || "Failed to load progress");
+          setProgressError(
+            err.response?.data?.message || "Failed to load progress",
+          );
         }
       } finally {
         setProgressLoading(false);
@@ -697,15 +727,17 @@ export default function LearnPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#171717] p-2 md:p-4">
-      <div className="mx-auto min-h-[calc(100vh-1rem)] max-w-[1400px] overflow-hidden rounded-2xl bg-[#ECEEF2] shadow-2xl ring-1 ring-black/10 md:min-h-[calc(100vh-2rem)]">
+    <div className="min-h-screen bg-[#171717] p-0">
+      <div className="min-h-screen overflow-hidden bg-[#ECEEF2] shadow-2xl ring-1 ring-black/10">
         <header className="flex items-center justify-between bg-[#032A56] px-4 py-3 text-white md:px-6">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-400 text-sm font-bold text-slate-900">
               KC
             </div>
             <div>
-              <p className="text-sm font-semibold leading-none">Next Gen Engagement</p>
+              <p className="text-sm font-semibold leading-none">
+                Next Gen Engagement
+              </p>
               <p className="text-[10px] uppercase tracking-[0.2em] text-blue-200">
                 Learning Platform
               </p>
@@ -737,7 +769,10 @@ export default function LearnPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link to="/dashboard" className="text-xs font-medium text-blue-100 hover:text-white">
+            <Link
+              to="/dashboard"
+              className="text-xs font-medium text-blue-100 hover:text-white"
+            >
               Dashboard
             </Link>
             <button
@@ -787,14 +822,18 @@ export default function LearnPage() {
                   Course Content
                 </p>
                 <p className="mt-1 text-xs text-slate-300">
-                  {allLessons.length} lessons across {groupedModules.length} modules
+                  {allLessons.length} lessons across {groupedModules.length}{" "}
+                  modules
                 </p>
               </div>
             </div>
 
             <div className="px-0 py-2">
               {groupedModules.map((module) => (
-                <div key={module.module_id} className="border-b border-white/10">
+                <div
+                  key={module.module_id}
+                  className="border-b border-white/10"
+                >
                   <button
                     onClick={() => toggleModule(Number(module.module_id))}
                     className="flex w-full items-center justify-between px-5 py-3 text-left transition hover:bg-white/5"
@@ -803,7 +842,9 @@ export default function LearnPage() {
                       <p className="text-[10px] uppercase tracking-[0.15em] text-blue-300">
                         Module {module.module_order}
                       </p>
-                      <h3 className="text-sm font-semibold text-white">{module.module_title}</h3>
+                      <h3 className="text-sm font-semibold text-white">
+                        {module.module_title}
+                      </h3>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-[10px] text-slate-300">
@@ -825,60 +866,77 @@ export default function LearnPage() {
                       {[...module.lessons]
                         .sort(
                           (a, b) =>
-                            Number(a.lesson_order || 0) - Number(b.lesson_order || 0),
+                            Number(a.lesson_order || 0) -
+                            Number(b.lesson_order || 0),
                         )
                         .map((lesson) => {
-                      const isActive = Number(activeLesson?.id) === Number(lesson.id);
-                      const isCompleted = completedLessonIds.has(Number(lesson.id));
-                      return (
-                        <button
-                          key={lesson.id}
-                          onClick={() => openLesson(lesson.id)}
-                          className={`w-full border-l-2 px-5 py-3 text-left transition ${
-                            isActive
-                              ? "border-amber-400 bg-gradient-to-r from-white/12 to-white/5 text-white"
-                              : "border-transparent text-slate-300 hover:bg-white/5 hover:text-white"
-                          }`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <span
-                              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ${
+                          const isActive =
+                            Number(activeLesson?.id) === Number(lesson.id);
+                          const isCompleted = completedLessonIds.has(
+                            Number(lesson.id),
+                          );
+                          return (
+                            <button
+                              key={lesson.id}
+                              onClick={() => openLesson(lesson.id)}
+                              className={`w-full border-l-2 px-5 py-3 text-left transition ${
                                 isActive
-                                  ? "bg-amber-400 text-slate-900"
-                                  : isCompleted
-                                    ? "bg-emerald-500/90 text-white"
-                                    : "bg-white/10 text-slate-300"
+                                  ? "border-amber-400 bg-gradient-to-r from-white/12 to-white/5 text-white"
+                                  : "border-transparent text-slate-300 hover:bg-white/5 hover:text-white"
                               }`}
                             >
-                              {isCompleted ? "V" : lesson.lesson_order || "-"}
-                            </span>
-                            <div className="min-w-0">
-                              <p className="line-clamp-2 text-sm font-medium leading-snug">
-                                {lesson.title}
-                              </p>
-                              <div className="mt-1 flex items-center gap-2 text-[10px] uppercase tracking-wider text-slate-400">
-                                <span>{estimateReadMinutes(lesson.content_md)} min</span>
-                                <span className="h-1 w-1 rounded-full bg-slate-500" />
-                                <span>{isActive ? "Current" : isCompleted ? "Done" : "Pending"}</span>
+                              <div className="flex items-start gap-3">
+                                <span
+                                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ${
+                                    isActive
+                                      ? "bg-amber-400 text-slate-900"
+                                      : isCompleted
+                                        ? "bg-emerald-500/90 text-white"
+                                        : "bg-white/10 text-slate-300"
+                                  }`}
+                                >
+                                  {isCompleted
+                                    ? "V"
+                                    : lesson.lesson_order || "-"}
+                                </span>
+                                <div className="min-w-0">
+                                  <p className="line-clamp-2 text-sm font-medium leading-snug">
+                                    {lesson.title}
+                                  </p>
+                                  <div className="mt-1 flex items-center gap-2 text-[10px] uppercase tracking-wider text-slate-400">
+                                    <span>
+                                      {estimateReadMinutes(lesson.content_md)}{" "}
+                                      min
+                                    </span>
+                                    <span className="h-1 w-1 rounded-full bg-slate-500" />
+                                    <span>
+                                      {isActive
+                                        ? "Current"
+                                        : isCompleted
+                                          ? "Done"
+                                          : "Pending"}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
+                            </button>
+                          );
+                        })}
                     </div>
                   )}
                 </div>
               ))}
 
               {groupedModules.length === 0 && (
-                <p className="px-5 py-4 text-xs text-slate-300">No lessons available yet.</p>
+                <p className="px-5 py-4 text-xs text-slate-300">
+                  No lessons available yet.
+                </p>
               )}
             </div>
           </aside>
 
           <main className="relative flex-1 overflow-y-auto bg-[#ECEEF2]">
-            <div className="mx-auto w-full max-w-5xl px-5 pb-28 pt-8 md:px-10">
+            <div className="w-full px-5 pb-28 pt-8 md:px-10">
               <section className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:hidden">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-slate-500">
                   Modules
@@ -893,7 +951,10 @@ export default function LearnPage() {
                     const isOpen = expandedModules[moduleId];
 
                     return (
-                      <div key={module.module_id} className="overflow-hidden rounded-lg border border-slate-200">
+                      <div
+                        key={module.module_id}
+                        className="overflow-hidden rounded-lg border border-slate-200"
+                      >
                         <button
                           onClick={() => toggleModule(moduleId)}
                           className="flex w-full items-center justify-between bg-slate-50 px-3 py-2 text-left"
@@ -902,7 +963,9 @@ export default function LearnPage() {
                             <p className="text-[10px] uppercase tracking-[0.12em] text-slate-500">
                               Module {module.module_order}
                             </p>
-                            <p className="text-sm font-semibold text-slate-900">{module.module_title}</p>
+                            <p className="text-sm font-semibold text-slate-900">
+                              {module.module_title}
+                            </p>
                           </div>
                           <span className="text-xs font-semibold text-slate-500">
                             {isOpen ? "Hide" : "Show"}
@@ -914,10 +977,13 @@ export default function LearnPage() {
                             {[...module.lessons]
                               .sort(
                                 (a, b) =>
-                                  Number(a.lesson_order || 0) - Number(b.lesson_order || 0),
+                                  Number(a.lesson_order || 0) -
+                                  Number(b.lesson_order || 0),
                               )
                               .map((lesson) => {
-                                const isActive = Number(activeLesson?.id) === Number(lesson.id);
+                                const isActive =
+                                  Number(activeLesson?.id) ===
+                                  Number(lesson.id);
                                 return (
                                   <button
                                     key={lesson.id}
@@ -928,7 +994,8 @@ export default function LearnPage() {
                                         : "text-slate-700 hover:bg-slate-50"
                                     }`}
                                   >
-                                    Lesson {lesson.lesson_order || "-"}: {lesson.title}
+                                    Lesson {lesson.lesson_order || "-"}:{" "}
+                                    {lesson.title}
                                   </button>
                                 );
                               })}
@@ -939,7 +1006,9 @@ export default function LearnPage() {
                   })}
 
                   {groupedModules.length === 0 && (
-                    <p className="text-xs text-slate-500">No modules available.</p>
+                    <p className="text-xs text-slate-500">
+                      No modules available.
+                    </p>
                   )}
                 </div>
               </section>
@@ -947,10 +1016,16 @@ export default function LearnPage() {
               <div className="mb-5 text-[11px] font-semibold uppercase tracking-[0.13em] text-slate-400">
                 {activeTab === "learn" && (
                   <>
-                    Home &gt; Module {activeLesson?.module_order || "-"} &gt; Lesson {activeLesson?.lesson_order || "-"}
+                    Home &gt; Module {activeLesson?.module_order || "-"} &gt;
+                    Lesson {activeLesson?.lesson_order || "-"}
                   </>
                 )}
-                {activeTab === "practice" && <>Home &gt; Practice &gt; Lesson {activeLesson?.lesson_order || "-"}</>}
+                {activeTab === "practice" && (
+                  <>
+                    Home &gt; Practice &gt; Lesson{" "}
+                    {activeLesson?.lesson_order || "-"}
+                  </>
+                )}
                 {activeTab === "progress" && <>Home &gt; Practice Progress</>}
               </div>
 
@@ -962,14 +1037,16 @@ export default function LearnPage() {
                         All Modules
                       </h2>
                       <p className="text-xs text-slate-500">
-                        {groupedModules.length} modules • {allLessons.length} lessons
+                        {groupedModules.length} modules • {allLessons.length}{" "}
+                        lessons
                       </p>
                     </div>
 
                     <div className="grid gap-3 md:grid-cols-2">
                       {groupedModules.map((module) => {
                         const moduleId = Number(module.module_id);
-                        const isCurrent = Number(activeLesson?.module_id) === moduleId;
+                        const isCurrent =
+                          Number(activeLesson?.module_id) === moduleId;
                         const doneCount = module.lessons.filter((lesson) =>
                           completedLessonIds.has(Number(lesson.id)),
                         ).length;
@@ -981,7 +1058,8 @@ export default function LearnPage() {
                               toggleModule(moduleId);
                               const firstLesson = [...module.lessons].sort(
                                 (a, b) =>
-                                  Number(a.lesson_order || 0) - Number(b.lesson_order || 0),
+                                  Number(a.lesson_order || 0) -
+                                  Number(b.lesson_order || 0),
                               )[0];
                               if (firstLesson) openLesson(firstLesson.id);
                             }}
@@ -998,14 +1076,17 @@ export default function LearnPage() {
                               {module.module_title}
                             </p>
                             <p className="mt-2 text-xs text-slate-500">
-                              {module.lessons.length} lessons • {doneCount} completed
+                              {module.lessons.length} lessons • {doneCount}{" "}
+                              completed
                             </p>
                           </button>
                         );
                       })}
 
                       {groupedModules.length === 0 && (
-                        <p className="text-sm text-slate-500">No modules available for this course.</p>
+                        <p className="text-sm text-slate-500">
+                          No modules available for this course.
+                        </p>
                       )}
                     </div>
                   </section>
@@ -1015,7 +1096,9 @@ export default function LearnPage() {
                   </h1>
 
                   <div className="mt-4 flex flex-wrap items-center gap-5 border-b border-slate-300 pb-5 text-sm text-slate-500">
-                    <span>{estimateReadMinutes(activeLesson?.content_md)} min read</span>
+                    <span>
+                      {estimateReadMinutes(activeLesson?.content_md)} min read
+                    </span>
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                     <span>Beginner Friendly</span>
                   </div>
@@ -1044,12 +1127,18 @@ export default function LearnPage() {
 
                       <div className="mt-6 grid gap-3 md:grid-cols-3">
                         <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-4">
-                          <p className="text-xs text-slate-500">Available Now</p>
-                          <p className="mt-1 text-2xl font-bold text-slate-900">{practiceStats.available}</p>
+                          <p className="text-xs text-slate-500">
+                            Available Now
+                          </p>
+                          <p className="mt-1 text-2xl font-bold text-slate-900">
+                            {practiceStats.available}
+                          </p>
                         </div>
                         <div className="rounded-xl border border-slate-200 bg-amber-50 px-4 py-4">
                           <p className="text-xs text-slate-500">Upcoming Due</p>
-                          <p className="mt-1 text-2xl font-bold text-slate-900">{practiceStats.upcoming}</p>
+                          <p className="mt-1 text-2xl font-bold text-slate-900">
+                            {practiceStats.upcoming}
+                          </p>
                         </div>
                         <div className="rounded-xl border border-slate-200 bg-emerald-50 px-4 py-4">
                           <p className="text-xs text-slate-500">Completed</p>
@@ -1090,15 +1179,20 @@ export default function LearnPage() {
                                     Quiz: {item.lessonTitle}
                                   </h3>
                                   <p className="mt-1 text-xs text-slate-500">
-                                    {item.durationMin} min • {item.questionCount} questions
+                                    {item.durationMin} min •{" "}
+                                    {item.questionCount} questions
                                   </p>
                                 </div>
 
                                 <div className="flex items-center gap-3">
                                   {isDone && (
                                     <div className="text-right">
-                                      <p className="text-lg font-bold text-slate-900">{score}%</p>
-                                      <p className="text-[10px] uppercase tracking-wider text-slate-500">Score</p>
+                                      <p className="text-lg font-bold text-slate-900">
+                                        {score}%
+                                      </p>
+                                      <p className="text-[10px] uppercase tracking-wider text-slate-500">
+                                        Score
+                                      </p>
                                     </div>
                                   )}
 
@@ -1140,12 +1234,16 @@ export default function LearnPage() {
                       </h1>
 
                       <div className="mt-4 border-b border-slate-300 pb-5 text-sm text-slate-500">
-                        Answer all questions, then submit to record your score in Progress.
+                        Answer all questions, then submit to record your score
+                        in Progress.
                       </div>
 
                       {quizResult && (
                         <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-800">
-                          Latest score: <span className="font-bold">{quizResult.score}%</span> ({quizResult.correctCount}/{quizResult.totalQuestions} correct), attempt #{quizResult.attemptNo}
+                          Latest score:{" "}
+                          <span className="font-bold">{quizResult.score}%</span>{" "}
+                          ({quizResult.correctCount}/{quizResult.totalQuestions}{" "}
+                          correct), attempt #{quizResult.attemptNo}
                         </div>
                       )}
 
@@ -1164,7 +1262,10 @@ export default function LearnPage() {
                       {!quizLoading && !quizError && (
                         <div className="mt-8 space-y-5">
                           {quizQuestions.map((question, index) => (
-                            <div key={question.id} className="rounded-2xl bg-white p-6 shadow-sm">
+                            <div
+                              key={question.id}
+                              className="rounded-2xl bg-white p-6 shadow-sm"
+                            >
                               <h2 className="text-lg font-bold text-slate-900">
                                 Q{index + 1}. {question.question_text}
                               </h2>
@@ -1173,7 +1274,8 @@ export default function LearnPage() {
                                   <label
                                     key={option.id}
                                     className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm transition ${
-                                      Number(selectedAnswers[question.id]) === Number(option.id)
+                                      Number(selectedAnswers[question.id]) ===
+                                      Number(option.id)
                                         ? "border-cadtBlue bg-blue-50 text-cadtNavy"
                                         : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
                                     }`}
@@ -1182,9 +1284,15 @@ export default function LearnPage() {
                                       type="radio"
                                       name={`question-${question.id}`}
                                       checked={
-                                        Number(selectedAnswers[question.id]) === Number(option.id)
+                                        Number(selectedAnswers[question.id]) ===
+                                        Number(option.id)
                                       }
-                                      onChange={() => handleAnswerChange(question.id, option.id)}
+                                      onChange={() =>
+                                        handleAnswerChange(
+                                          question.id,
+                                          option.id,
+                                        )
+                                      }
                                       className="h-4 w-4"
                                     />
                                     <span>{option.option_text}</span>
@@ -1200,7 +1308,9 @@ export default function LearnPage() {
                               disabled={submittingQuiz}
                               className="rounded-lg bg-[#0A4D98] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#083f7c] disabled:opacity-60"
                             >
-                              {submittingQuiz ? "Submitting..." : "Submit Practice"}
+                              {submittingQuiz
+                                ? "Submitting..."
+                                : "Submit Practice"}
                             </button>
                           )}
                         </div>
@@ -1218,16 +1328,28 @@ export default function LearnPage() {
 
                   <div className="mt-7 grid gap-4 md:grid-cols-3">
                     <div className="rounded-2xl border border-cadtLine bg-white p-5 shadow-sm">
-                      <p className="text-xs uppercase tracking-wider text-slate-500">Attempts</p>
-                      <p className="mt-2 text-3xl font-bold text-cadtNavy">{practiceHistory.length}</p>
+                      <p className="text-xs uppercase tracking-wider text-slate-500">
+                        Attempts
+                      </p>
+                      <p className="mt-2 text-3xl font-bold text-cadtNavy">
+                        {practiceHistory.length}
+                      </p>
                     </div>
                     <div className="rounded-2xl border border-cadtLine bg-white p-5 shadow-sm">
-                      <p className="text-xs uppercase tracking-wider text-slate-500">Average Score</p>
-                      <p className="mt-2 text-3xl font-bold text-cadtNavy">{averagePracticeScore}%</p>
+                      <p className="text-xs uppercase tracking-wider text-slate-500">
+                        Average Score
+                      </p>
+                      <p className="mt-2 text-3xl font-bold text-cadtNavy">
+                        {averagePracticeScore}%
+                      </p>
                     </div>
                     <div className="rounded-2xl border border-cadtLine bg-white p-5 shadow-sm">
-                      <p className="text-xs uppercase tracking-wider text-slate-500">Best Score</p>
-                      <p className="mt-2 text-3xl font-bold text-cadtNavy">{highestPracticeScore}%</p>
+                      <p className="text-xs uppercase tracking-wider text-slate-500">
+                        Best Score
+                      </p>
+                      <p className="mt-2 text-3xl font-bold text-cadtNavy">
+                        {highestPracticeScore}%
+                      </p>
                     </div>
                   </div>
 
@@ -1249,19 +1371,35 @@ export default function LearnPage() {
                         <table className="min-w-full divide-y divide-slate-200 text-sm">
                           <thead className="bg-slate-50">
                             <tr>
-                              <th className="px-4 py-3 text-left font-semibold text-slate-600">Lesson</th>
-                              <th className="px-4 py-3 text-left font-semibold text-slate-600">Module</th>
-                              <th className="px-4 py-3 text-left font-semibold text-slate-600">Attempt</th>
-                              <th className="px-4 py-3 text-left font-semibold text-slate-600">Score</th>
-                              <th className="px-4 py-3 text-left font-semibold text-slate-600">Submitted</th>
+                              <th className="px-4 py-3 text-left font-semibold text-slate-600">
+                                Lesson
+                              </th>
+                              <th className="px-4 py-3 text-left font-semibold text-slate-600">
+                                Module
+                              </th>
+                              <th className="px-4 py-3 text-left font-semibold text-slate-600">
+                                Attempt
+                              </th>
+                              <th className="px-4 py-3 text-left font-semibold text-slate-600">
+                                Score
+                              </th>
+                              <th className="px-4 py-3 text-left font-semibold text-slate-600">
+                                Submitted
+                              </th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100">
                             {practiceHistory.map((row) => (
                               <tr key={row.lessonId}>
-                                <td className="px-4 py-3 font-medium text-slate-800">{row.lessonTitle}</td>
-                                <td className="px-4 py-3 text-slate-600">{row.moduleTitle || "-"}</td>
-                                <td className="px-4 py-3 text-slate-600">#{row.attemptNo}</td>
+                                <td className="px-4 py-3 font-medium text-slate-800">
+                                  {row.lessonTitle}
+                                </td>
+                                <td className="px-4 py-3 text-slate-600">
+                                  {row.moduleTitle || "-"}
+                                </td>
+                                <td className="px-4 py-3 text-slate-600">
+                                  #{row.attemptNo}
+                                </td>
                                 <td className="px-4 py-3">
                                   <span className="rounded-md bg-blue-50 px-2 py-1 font-semibold text-cadtBlue">
                                     {row.score}%
@@ -1280,7 +1418,8 @@ export default function LearnPage() {
 
                       {practiceHistory.length === 0 && (
                         <p className="px-4 py-6 text-center text-slate-500">
-                          No practice records yet. Complete a practice quiz to see progress here.
+                          No practice records yet. Complete a practice quiz to
+                          see progress here.
                         </p>
                       )}
                     </div>
@@ -1290,7 +1429,7 @@ export default function LearnPage() {
             </div>
 
             {activeTab === "learn" && (
-              <div className="fixed bottom-6 left-1/2 z-20 w-[min(100%-2rem,1040px)] -translate-x-1/2 rounded-xl border border-slate-200 bg-white/95 p-3 shadow-xl backdrop-blur">
+              <div className="fixed bottom-6 left-1/2 z-20 w-[calc(100%-2rem)] max-w-none -translate-x-1/2 rounded-xl border border-slate-200 bg-white/95 p-3 shadow-xl backdrop-blur lg:w-[calc(100%-22rem)]">
                 <div className="flex items-center justify-between gap-3">
                   <button
                     onClick={() => openLessonByOffset(-1)}
@@ -1301,9 +1440,12 @@ export default function LearnPage() {
                   </button>
 
                   <div className="hidden min-w-0 flex-1 px-2 md:block">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Up next</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                      Up next
+                    </p>
                     <p className="truncate text-sm font-semibold text-slate-700">
-                      {allLessons[activeLessonIndex + 1]?.title || "You reached the last lesson"}
+                      {allLessons[activeLessonIndex + 1]?.title ||
+                        "You reached the last lesson"}
                     </p>
                   </div>
 
@@ -1315,7 +1457,9 @@ export default function LearnPage() {
                     }
                     className="rounded-lg bg-[#0A4D98] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#083f7c]"
                   >
-                    {allLessons[activeLessonIndex + 1] ? "Complete and Continue" : "Back to Dashboard"}
+                    {allLessons[activeLessonIndex + 1]
+                      ? "Complete and Continue"
+                      : "Back to Dashboard"}
                   </button>
                 </div>
               </div>
