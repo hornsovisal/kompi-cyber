@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecturer Portal - Cambodia Academy of Digital Technology</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div id="app">
+        <!-- Login Page -->
+        <div id="login-page" class="min-h-screen flex items-center justify-center px-4 py-10">
+            <div class="max-w-md w-full bg-white rounded-3xl card-shadow p-8">
+                <div class="text-center mb-8">
+                    <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600 text-2xl font-bold text-white">
+                        👨‍🏫
+                    </div>
+                    <p class="text-sm font-medium uppercase tracking-widest text-blue-600">
+                        Lecturer Portal
+                    </p>
+                    <h1 class="mt-3 text-3xl font-bold text-gray-800">
+                        Welcome Back
+                    </h1>
+                    <p class="mt-2 text-sm text-gray-600">
+                        Sign in to your lecturer account
+                    </p>
+                </div>
+
+                <form id="login-form" class="space-y-6">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                            Email Address
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            required
+                            class="w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm transition focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500"
+                            placeholder="lecturer@cadt.edu.kh"
+                        />
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            required
+                            class="w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm transition focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500"
+                            placeholder="Enter your password"
+                        />
+                    </div>
+
+                    <div id="message" class="hidden rounded-2xl p-4 text-sm"></div>
+
+                    <button
+                        type="submit"
+                        id="login-btn"
+                        class="w-full rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200"
+                    >
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <button id="forgot-password-btn" class="text-sm text-blue-600 hover:text-blue-700 transition">
+                        Forgot your password?
+                    </button>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <a href="/" class="text-sm text-gray-600 hover:text-gray-700 transition">
+                        ← Back to Home
+                    </a>
+                </div>
+
+                <!-- Sample lecturer accounts info -->
+                <div class="mt-8 p-4 bg-blue-50 rounded-2xl border border-blue-200">
+                    <h3 class="text-sm font-semibold text-blue-800 mb-2">Available Lecturer Accounts:</h3>
+                    <div class="text-xs text-blue-700 space-y-1">
+                        <p><strong>Sarah Johnson:</strong> sarah.johnson@cadt.edu.kh <em>(Network Security)</em></p>
+                        <p><strong>Michael Chen:</strong> michael.chen@cadt.edu.kh <em>(Web Security)</em></p>
+                        <p><strong>Lisa Rodriguez:</strong> lisa.rodriguez@cadt.edu.kh <em>(Incident Response)</em></p>
+                        <p><strong>David Kim:</strong> david.kim@cadt.edu.kh <em>(Introduction to Linux)</em></p>
+                        <p><strong>Emma Wilson:</strong> emma.wilson@cadt.edu.kh <em>(Introduction to Cybersecurity)</em></p>
+                        <p class="mt-2 text-blue-600"><em>Password: password123 for all accounts</em></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Page (Hidden initially) -->
+        <div id="dashboard-page" class="hidden min-h-screen bg-gray-50">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between items-center h-16">
+                        <div class="flex items-center">
+                            <h1 class="text-xl font-bold text-gray-900">Lecturer Portal</h1>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <span id="lecturer-name" class="text-sm text-gray-700"></span>
+                            <button id="logout-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700 transition">
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <!-- Welcome Section -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome to the Lecturer Portal!</h2>
+                    <p class="text-gray-600">Manage your courses and track student progress.</p>
+                </div>
+
+                <!-- Course Management Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-xl card-shadow p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-blue-100 p-3 rounded-lg">
+                                <span class="text-2xl">🛡️</span>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-semibold text-gray-900">Network Security</h3>
+                                <p class="text-sm text-gray-600">Course Management</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <button class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition">
+                                View Students
+                            </button>
+                            <button class="w-full bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition">
+                                Manage Content
+                            </button>
+                            <button class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition">
+                                View Reports
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl card-shadow p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-green-100 p-3 rounded-lg">
+                                <span class="text-2xl">🌐</span>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-semibold text-gray-900">Web Security</h3>
+                                <p class="text-sm text-gray-600">Course Management</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <button class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition">
+                                View Students
+                            </button>
+                            <button class="w-full bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition">
+                                Manage Content
+                            </button>
+                            <button class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition">
+                                View Reports
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl card-shadow p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-red-100 p-3 rounded-lg">
+                                <span class="text-2xl">🚨</span>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-semibold text-gray-900">Incident Response</h3>
+                                <p class="text-sm text-gray-600">Course Management</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <button class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition">
+                                View Students
+                            </button>
+                            <button class="w-full bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition">
+                                Manage Content
+                            </button>
+                            <button class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition">
+                                View Reports
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl card-shadow p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-yellow-100 p-3 rounded-lg">
+                                <span class="text-2xl">🐧</span>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-semibold text-gray-900">Introduction to Linux</h3>
+                                <p class="text-sm text-gray-600">Course Management</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <button class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition">
+                                View Students
+                            </button>
+                            <button class="w-full bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition">
+                                Manage Content
+                            </button>
+                            <button class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition">
+                                View Reports
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl card-shadow p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-purple-100 p-3 rounded-lg">
+                                <span class="text-2xl">🔒</span>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-semibold text-gray-900">Introduction to Cybersecurity</h3>
+                                <p class="text-sm text-gray-600">Course Management</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <button class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition">
+                                View Students
+                            </button>
+                            <button class="w-full bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition">
+                                Manage Content
+                            </button>
+                            <button class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition">
+                                View Reports
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Section -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-white rounded-xl card-shadow p-6">
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-3 rounded-lg">
+                                <span class="text-2xl">👥</span>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-600">Total Students</p>
+                                <p class="text-2xl font-bold text-gray-900">1,247</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl card-shadow p-6">
+                        <div class="flex items-center">
+                            <div class="bg-green-100 p-3 rounded-lg">
+                                <span class="text-2xl">📚</span>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-600">Active Courses</p>
+                                <p class="text-2xl font-bold text-gray-900">5</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl card-shadow p-6">
+                        <div class="flex items-center">
+                            <div class="bg-yellow-100 p-3 rounded-lg">
+                                <span class="text-2xl">✅</span>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-600">Completed</p>
+                                <p class="text-2xl font-bold text-gray-900">892</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl card-shadow p-6">
+                        <div class="flex items-center">
+                            <div class="bg-red-100 p-3 rounded-lg">
+                                <span class="text-2xl">⚠️</span>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-600">Need Attention</p>
+                                <p class="text-2xl font-bold text-gray-900">23</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Forgot Password Modal -->
+        <div id="forgot-password-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Reset Password</h3>
+                <p class="text-gray-600 mb-6">Enter your email address and we'll send you a link to reset your password.</p>
+
+                <form id="forgot-password-form" class="space-y-4">
+                    <div>
+                        <label for="reset-email" class="block text-sm font-medium text-gray-700 mb-2">
+                            Email Address
+                        </label>
+                        <input
+                            type="email"
+                            id="reset-email"
+                            name="email"
+                            required
+                            class="w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm transition focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500"
+                            placeholder="lecturer@cadt.edu.kh"
+                        />
+                    </div>
+
+                    <div id="reset-message" class="hidden rounded-2xl p-4 text-sm"></div>
+
+                    <div class="flex space-x-3">
+                        <button
+                            type="button"
+                            id="cancel-reset-btn"
+                            class="flex-1 bg-gray-200 text-gray-800 px-4 py-3 rounded-2xl text-sm font-semibold hover:bg-gray-300 transition"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            id="send-reset-btn"
+                            class="flex-1 bg-blue-600 text-white px-4 py-3 rounded-2xl text-sm font-semibold hover:bg-blue-700 transition"
+                        >
+                            Send Reset Link
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock lecturer data
+        const lecturers = [
+            {
+                email: 'sarah.johnson@cadt.edu.kh',
+                password: 'password123',
+                name: 'Dr. Sarah Johnson',
+                department: 'Network Security',
+                courses: ['network-security']
+            },
+            {
+                email: 'michael.chen@cadt.edu.kh',
+                password: 'password123',
+                name: 'Prof. Michael Chen',
+                department: 'Web Security',
+                courses: ['web-security']
+            },
+            {
+                email: 'lisa.rodriguez@cadt.edu.kh',
+                password: 'password123',
+                name: 'Dr. Lisa Rodriguez',
+                department: 'Incident Response',
+                courses: ['incident-response']
+            },
+            {
+                email: 'david.kim@cadt.edu.kh',
+                password: 'password123',
+                name: 'Mr. David Kim',
+                department: 'Introduction to Linux',
+                courses: ['intro-to-linux-course']
+            },
+            {
+                email: 'emma.wilson@cadt.edu.kh',
+                password: 'password123',
+                name: 'Dr. Emma Wilson',
+                department: 'Introduction to Cybersecurity',
+                courses: ['intro-to-cyber-course']
+            }
+        ];
+
+        // DOM elements
+        const loginPage = document.getElementById('login-page');
+        const dashboardPage = document.getElementById('dashboard-page');
+        const loginForm = document.getElementById('login-form');
+        const forgotPasswordBtn = document.getElementById('forgot-password-btn');
+        const forgotPasswordModal = document.getElementById('forgot-password-modal');
+        const cancelResetBtn = document.getElementById('cancel-reset-btn');
+        const forgotPasswordForm = document.getElementById('forgot-password-form');
+        const logoutBtn = document.getElementById('logout-btn');
+        const lecturerNameSpan = document.getElementById('lecturer-name');
+
+        let currentLecturer = null;
+
+        // Login form submission
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('message');
+
+            // Find lecturer
+            const lecturer = lecturers.find(l => l.email === email && l.password === password);
+
+            if (lecturer) {
+                // Login successful
+                currentLecturer = lecturer;
+                lecturerNameSpan.textContent = lecturer.name;
+
+                messageDiv.className = 'rounded-2xl p-4 text-sm bg-green-50 text-green-700 border border-green-200';
+                messageDiv.textContent = 'Login successful! Redirecting...';
+                messageDiv.classList.remove('hidden');
+
+                setTimeout(() => {
+                    loginPage.classList.add('hidden');
+                    dashboardPage.classList.remove('hidden');
+                }, 1500);
+            } else {
+                // Login failed
+                messageDiv.className = 'rounded-2xl p-4 text-sm bg-red-50 text-red-700 border border-red-200';
+                messageDiv.textContent = 'Invalid email or password';
+                messageDiv.classList.remove('hidden');
+            }
+        });
+
+        // Forgot password
+        forgotPasswordBtn.addEventListener('click', function() {
+            forgotPasswordModal.classList.remove('hidden');
+        });
+
+        cancelResetBtn.addEventListener('click', function() {
+            forgotPasswordModal.classList.add('hidden');
+        });
+
+        forgotPasswordForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('reset-email').value;
+            const resetMessageDiv = document.getElementById('reset-message');
+
+            // Check if email exists
+            const lecturer = lecturers.find(l => l.email === email);
+
+            if (lecturer) {
+                resetMessageDiv.className = 'rounded-2xl p-4 text-sm bg-green-50 text-green-700 border border-green-200';
+                resetMessageDiv.textContent = 'Password reset link sent to your email!';
+                resetMessageDiv.classList.remove('hidden');
+            } else {
+                resetMessageDiv.className = 'rounded-2xl p-4 text-sm bg-red-50 text-red-700 border border-red-200';
+                resetMessageDiv.textContent = 'Email address not found';
+                resetMessageDiv.classList.remove('hidden');
+            }
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', function() {
+            currentLecturer = null;
+            dashboardPage.classList.add('hidden');
+            loginPage.classList.remove('hidden');
+
+            // Clear form
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('message').classList.add('hidden');
+        });
+
+        // Course management buttons (mock functionality)
+        document.querySelectorAll('button').forEach(button => {
+            if (button.textContent.includes('View Students') ||
+                button.textContent.includes('Manage Content') ||
+                button.textContent.includes('View Reports')) {
+
+                button.addEventListener('click', function() {
+                    alert('This feature is coming soon! This is a standalone lecturer interface that doesn\'t interfere with the student system.');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
