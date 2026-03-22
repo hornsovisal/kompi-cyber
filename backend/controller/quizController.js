@@ -1,8 +1,11 @@
-﻿const db = require('../config/db');
+﻿const db = require("../config/db");
 
 // Fetch quiz questions and options for a lesson (without revealing correct options)
-exports.getQuizByLesson = (req, res) => {
-  const { lessonId } = req.params;
+exports.getQuizByLesson = async (req, res) => {
+  const lessonId = Number(req.params.lessonId);
+  if (!Number.isInteger(lessonId) || lessonId <= 0) {
+    return res.status(400).json({ message: "Invalid lessonId" });
+  }
 
   const sql = `
     SELECT q.id AS question_id,
@@ -15,11 +18,11 @@ exports.getQuizByLesson = (req, res) => {
     ORDER BY q.id, o.id
   `;
 
-  db.query(sql, [lessonId], (err, results) => {
-    if (err) return res.status(500).json({ message: 'Database error', error: err });
+  try {
+    const [results] = await db.query(sql, [lessonId]);
 
     if (!results.length) {
-      return res.status(404).json({ message: 'No quiz found for this lesson' });
+      return res.status(404).json({ message: "No quiz found for this lesson" });
     }
 
     const questionsMap = new Map();
@@ -40,59 +43,80 @@ exports.getQuizByLesson = (req, res) => {
       questionsMap.set(row.question_id, question);
     });
 
-    res.json({ success: true, data: Array.from(questionsMap.values()) });
-  });
+    return res.json({ success: true, data: Array.from(questionsMap.values()) });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: "Database error", error: err.message || err });
+  }
 };
 
 // Get the user's latest attempt for a lesson
-exports.getMyAttempt = (req, res) => {
-  const { lessonId } = req.params;
-  const userId = req.user?.id;
-
-  if (!userId) {
-    return res.status(401).json({ message: 'Unauthorized' });
+exports.getMyAttempt = async (req, res) => {
+  const lessonId = Number(req.params.lessonId);
+  if (!Number.isInteger(lessonId) || lessonId <= 0) {
+    return res.status(400).json({ message: "Invalid lessonId" });
   }
 
-  const sql = `
-    SELECT a.id AS attempt_id,
-           a.score,
-           a.attempt_no,
-           a.submitted_at,
-           qa.question_id,
-           qa.selected_option_id,
-           qa.is_correct
-    FROM quiz_attempts a
-    LEFT JOIN quiz_answers qa ON qa.attempt_id = a.id
-    WHERE a.lesson_id = ?
-      AND a.user_id = ?
-    ORDER BY qa.id
-  `;
+  const userId = req.user?.sub || req.user?.id;
 
-  db.query(sql, [lessonId, userId], (err, rows) => {
-    if (err) return res.status(500).json({ message: 'Database error', error: err });
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
-    if (!rows.length) {
-      return res.status(404).json({ message: 'No attempt found for this lesson' });
+  try {
+    const [attemptRows] = await db.query(
+      `SELECT id AS attempt_id,
+              score,
+              attempt_no,
+              submitted_at,
+              passed
+       FROM quiz_attempts
+       WHERE lesson_id = ?
+         AND user_id = ?
+       ORDER BY attempt_no DESC, submitted_at DESC, id DESC
+       LIMIT 1`,
+      [lessonId, userId],
+    );
+
+    if (!attemptRows.length) {
+      return res
+        .status(404)
+        .json({ message: "No attempt found for this lesson" });
     }
 
-    const { attempt_id, score, attempt_no, submitted_at } = rows[0];
-    const answers = rows
-      .filter((r) => r.question_id !== null)
-      .map((r) => ({
-        question_id: r.question_id,
-        selected_option_id: r.selected_option_id,
-        is_correct: Boolean(r.is_correct),
-      }));
+    const latestAttempt = attemptRows[0];
+    const [answerRows] = await db.query(
+      `SELECT qa.question_id,
+              qa.selected_option_id,
+              qa.is_correct
+       FROM quiz_answers qa
+       INNER JOIN quiz_questions qq ON qq.id = qa.question_id
+       WHERE qa.attempt_id = ?
+       ORDER BY qq.question_order ASC, qa.id ASC`,
+      [latestAttempt.attempt_id],
+    );
+
+    const answers = answerRows.map((row) => ({
+      question_id: row.question_id,
+      selected_option_id: row.selected_option_id,
+      is_correct: Boolean(row.is_correct),
+    }));
 
     res.json({
       success: true,
       data: {
-        attemptId: attempt_id,
-        score,
-        attemptNo: attempt_no,
-        submittedAt: submitted_at,
+        attemptId: latestAttempt.attempt_id,
+        score: latestAttempt.score,
+        attemptNo: latestAttempt.attempt_no,
+        submittedAt: latestAttempt.submitted_at,
+        passed: Boolean(latestAttempt.passed),
         answers,
       },
     });
-  });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: "Database error", error: err.message || err });
+  }
 };

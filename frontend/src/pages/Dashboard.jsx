@@ -2,7 +2,24 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link, NavLink, useParams } from "react-router-dom";
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL || "";
+const API_TARGET_LABEL = import.meta.env.VITE_API_URL || "Vite /api proxy";
+const ASSET_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\/$/, "");
+
+const COURSE_COVER_MAP = {
+  1: "/upload/lesson/intro-to-cyber-course/cover.svg",
+  2: "/upload/lesson/intro-to-linux-course/cover.svg",
+  3: "/upload/lesson/network-security/cover.svg",
+  4: "/upload/lesson/web-security/cover.svg",
+  5: "/upload/lesson/incident-response/cover.svg",
+};
+
+function getCourseCoverUrl(course) {
+  const raw = COURSE_COVER_MAP[Number(course.id)] || "";
+  if (!raw) return "";
+  if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+  return `${ASSET_BASE}${raw}`;
+}
 
 const COURSE_COVER_FALLBACKS = [
   {
@@ -34,6 +51,12 @@ export default function Dashboard() {
   const [courses, setCourses] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [enrolledIds, setEnrolledIds] = useState(new Set());
+  const [summary, setSummary] = useState({
+    enrolledCourses: 0,
+    completedCourses: 0,
+    hoursLearned: 0,
+    recentActivity: [],
+  });
   const [enrollingId, setEnrollingId] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -115,6 +138,22 @@ export default function Dashboard() {
           (enrollmentsRes.data.enrollments || []).map((e) => e.course_id),
         );
         setEnrolledIds(ids);
+
+        // Keep dashboard usable even if summary endpoint fails.
+        try {
+          const summaryRes = await axios.get("/api/users/me/dashboard-summary", {
+            baseURL: API_BASE,
+            headers,
+          });
+          setSummary({
+            enrolledCourses: Number(summaryRes.data?.enrolledCourses || ids.size),
+            completedCourses: Number(summaryRes.data?.completedCourses || 0),
+            hoursLearned: Number(summaryRes.data?.hoursLearned || 0),
+            recentActivity: summaryRes.data?.recentActivity || [],
+          });
+        } catch (_summaryError) {
+          setSummary((prev) => ({ ...prev, enrolledCourses: ids.size }));
+        }
       } catch (err) {
         if (err.response?.status === 401) {
           localStorage.removeItem("token");
@@ -124,7 +163,7 @@ export default function Dashboard() {
         }
 
         if (!err.response) {
-          setError("Cannot connect to backend API (http://localhost:5000)");
+          setError(`Cannot connect to backend API (${API_TARGET_LABEL})`);
           return;
         }
 
@@ -345,7 +384,7 @@ export default function Dashboard() {
                 <div className="rounded-2xl border border-cadtLine bg-white p-8 shadow-card">
                   <p className="text-center text-slate-500">
                     No recent activity. Start learning now!
-                  </p>
+                  </p>https://github.com/hornsovisal/kompi-cyber/pull/14/conflict?name=frontend%252Fsrc%252Fpages%252FDashboard.jsx&ancestor_oid=70278f7b86bff6904aec2c8a6ca24c9505dba41a&base_oid=255b54699691e12de5a790d63fde95817a71ae81&head_oid=29a866e13e7e757e1076cf1f7d633e8324a89a75
                 </div>
               </div>
             </>
