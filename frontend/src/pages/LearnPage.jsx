@@ -10,6 +10,10 @@ function MarkdownBlock({ content }) {
   const lines = (content || "").split("\n");
   const elements = [];
   let listItems = [];
+  let codeBlock = null;
+  let codeLines = [];
+  let blockquoteLines = [];
+  let tableLines = [];
 
   const flushList = (key) => {
     if (listItems.length > 0) {
@@ -19,7 +23,7 @@ function MarkdownBlock({ content }) {
           className="mb-5 list-disc space-y-1 pl-6 text-slate-700"
         >
           {listItems.map((item, idx) => (
-            <li key={`li-${key}-${idx}`}>{item}</li>
+            <li key={`li-${key}-${idx}`}>{renderInline(item)}</li>
           ))}
         </ul>,
       );
@@ -27,52 +31,185 @@ function MarkdownBlock({ content }) {
     }
   };
 
-  lines.forEach((raw, i) => {
-    const line = raw.trim();
+  const flushCodeBlock = (key) => {
+    if (codeLines.length > 0) {
+      const code = codeLines.join("\n");
+      elements.push(
+        <pre
+          key={`code-${key}`}
+          className="mb-5 overflow-x-auto rounded-lg bg-slate-900 p-4 text-sm text-slate-100"
+        >
+          <code className="font-mono">{code}</code>
+        </pre>,
+      );
+      codeLines = [];
+      codeBlock = null;
+    }
+  };
 
-    if (!line) {
+  const flushBlockquote = (key) => {
+    if (blockquoteLines.length > 0) {
+      const quote = blockquoteLines.join("\n");
+      elements.push(
+        <blockquote
+          key={`quote-${key}`}
+          className="mb-5 border-l-4 border-slate-300 bg-slate-100 py-2 pl-4 pr-4 italic text-slate-700"
+        >
+          {renderInline(quote)}
+        </blockquote>,
+      );
+      blockquoteLines = [];
+    }
+  };
+
+  // Enhanced inline rendering for bold, italic, code
+  const renderInline = (text) => {
+    const parts = [];
+    let remaining = text;
+    let key = 0;
+
+    // Handle **bold**, __bold__, *italic*, _italic_, `code`
+    const regex = /(\*\*[^\*]+\*\*|__[^_]+__|`[^`]+`|\*[^\*]+\*|_[^_]+_)/g;
+    let match;
+    let lastIndex = 0;
+
+    const matches = [];
+    const tempRegex = /(\*\*[^\*]+\*\*|__[^_]+__|`[^`]+`|\*[^\*]+\*|_[^_]+_)/g;
+    while ((match = tempRegex.exec(text)) !== null) {
+      matches.push({ text: match[0], index: match.index });
+    }
+
+    if (matches.length === 0) {
+      return text;
+    }
+
+    matches.forEach((m) => {
+      // Add text before match
+      if (m.index > lastIndex) {
+        parts.push(text.slice(lastIndex, m.index));
+      }
+
+      const matched = m.text;
+      if (matched.startsWith("**") && matched.endsWith("**")) {
+        parts.push(
+          <strong key={`b-${key++}`} className="font-bold text-slate-900">
+            {matched.slice(2, -2)}
+          </strong>,
+        );
+      } else if (matched.startsWith("__") && matched.endsWith("__")) {
+        parts.push(
+          <strong key={`b-${key++}`} className="font-bold text-slate-900">
+            {matched.slice(2, -2)}
+          </strong>,
+        );
+      } else if (matched.startsWith("`") && matched.endsWith("`")) {
+        parts.push(
+          <code
+            key={`c-${key++}`}
+            className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-sm text-slate-900"
+          >
+            {matched.slice(1, -1)}
+          </code>,
+        );
+      } else if (matched.startsWith("*") && matched.endsWith("*")) {
+        parts.push(
+          <em key={`i-${key++}`} className="italic text-slate-800">
+            {matched.slice(1, -1)}
+          </em>,
+        );
+      } else if (matched.startsWith("_") && matched.endsWith("_")) {
+        parts.push(
+          <em key={`i-${key++}`} className="italic text-slate-800">
+            {matched.slice(1, -1)}
+          </em>,
+        );
+      }
+
+      lastIndex = m.index + m.text.length;
+    });
+
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+
+    return parts;
+  };
+
+  lines.forEach((raw, i) => {
+    const line = raw;
+    const trimmed = line.trim();
+
+    // Handle code blocks
+    if (trimmed.startsWith("```")) {
+      if (codeBlock) {
+        flushCodeBlock(i);
+      } else {
+        flushList(i);
+        flushBlockquote(i);
+        codeBlock = trimmed.slice(3) || "bash";
+      }
+      return;
+    }
+
+    if (codeBlock) {
+      codeLines.push(line);
+      return;
+    }
+
+    // Handle blockquotes
+    if (trimmed.startsWith("> ")) {
+      blockquoteLines.push(trimmed.slice(2));
+      return;
+    }
+
+    if (blockquoteLines.length > 0 && !trimmed.startsWith("> ")) {
+      flushBlockquote(i);
+    }
+
+    if (!trimmed) {
       flushList(i);
       return;
     }
 
-    if (line.startsWith("- ")) {
-      listItems.push(line.slice(2));
+    if (trimmed.startsWith("- ")) {
+      listItems.push(trimmed.slice(2));
       return;
     }
 
     flushList(i);
 
-    if (line.startsWith("### ")) {
+    if (trimmed.startsWith("### ")) {
       elements.push(
         <h3
           key={`h3-${i}`}
           className="mb-2 mt-6 text-xl font-bold text-slate-900"
         >
-          {line.slice(4)}
+          {renderInline(trimmed.slice(4))}
         </h3>,
       );
       return;
     }
 
-    if (line.startsWith("## ")) {
+    if (trimmed.startsWith("## ")) {
       elements.push(
         <h2
           key={`h2-${i}`}
           className="mb-3 mt-7 text-2xl font-bold text-slate-900"
         >
-          {line.slice(3)}
+          {renderInline(trimmed.slice(3))}
         </h2>,
       );
       return;
     }
 
-    if (line.startsWith("# ")) {
+    if (trimmed.startsWith("# ")) {
       elements.push(
         <h1
           key={`h1-${i}`}
           className="mb-4 mt-2 text-3xl font-extrabold text-slate-900"
         >
-          {line.slice(2)}
+          {renderInline(trimmed.slice(2))}
         </h1>,
       );
       return;
@@ -80,12 +217,14 @@ function MarkdownBlock({ content }) {
 
     elements.push(
       <p key={`p-${i}`} className="mb-4 text-[19px] leading-9 text-slate-700">
-        {line}
+        {renderInline(trimmed)}
       </p>,
     );
   });
 
   flushList("end");
+  flushBlockquote("end");
+  flushCodeBlock("end");
   return <>{elements}</>;
 }
 
