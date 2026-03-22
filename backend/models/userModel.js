@@ -71,6 +71,22 @@ class UserModel {
     return result;
   }
 
+  async activateUser(id) {
+    const [result] = await this.db.execute(
+      "UPDATE users SET is_active = 1 WHERE id = ?",
+      [id],
+    );
+    return result;
+  }
+
+  async updatePassword(id, hashedPassword) {
+    const [result] = await this.db.execute(
+      "UPDATE users SET password_hash = ? WHERE id = ?",
+      [hashedPassword, id],
+    );
+    return result;
+  }
+
   async getUserProgress(userId) {
     const [rows] = await this.db.execute(
       `SELECT

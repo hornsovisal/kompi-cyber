@@ -145,7 +145,7 @@ async function main() {
   const courseTitle = String(args.title || slugToTitle(slug)).trim();
   const domainName = String(args.domain || "General").trim();
   const description = String(
-    args.description || `Imported from /upload/lesson/${slug}`,
+    args.description || `${courseTitle} course content imported from lesson markdown files.`,
   ).trim();
   const level = String(args.level || "beginner").trim();
   const durationHours = Number(args.duration || 0);
