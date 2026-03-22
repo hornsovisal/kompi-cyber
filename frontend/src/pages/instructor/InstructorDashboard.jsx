@@ -108,9 +108,9 @@ export default function InstructorDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex justify-between items-center">
             <div>
@@ -121,7 +121,7 @@ export default function InstructorDashboard() {
             </div>
             <button
               onClick={() => navigate("/instructor/courses/create")}
-              className="btn btn-primary bg-orange-600 hover:bg-orange-700 border-none text-white flex items-center gap-2 font-semibold shadow-lg"
+              className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 hover:-translate-y-0.5"
             >
               <Plus size={20} />
               Create Course
@@ -298,13 +298,13 @@ export default function InstructorDashboard() {
   );
 }
 
-// Professional Stat Card with dark modern theme
+// Professional Stat Card with dark modern theme and hover lift effect
 function StatCardWithAccent({ icon, title, value }) {
   const Icon = icon;
   return (
-    <div className="relative group overflow-hidden rounded-lg bg-slate-700 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-600 hover:border-teal-500/50">
-      {/* Subtle hover effect background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    <div className="relative group overflow-hidden rounded-lg bg-slate-700 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-600 hover:border-teal-500 transform hover:-translate-y-2 cursor-default">
+      {/* Enhanced hover effect background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
       <div className="relative p-6">
         {/* Header with title and icon */}
