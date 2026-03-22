@@ -121,12 +121,20 @@ export default function Login() {
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="mb-2 block text-sm font-semibold text-cadtNavy"
-              >
-                Password
-              </label>
+              <div className="flex items-center justify-between">
+                <label
+                  htmlFor="password"
+                  className="mb-2 block text-sm font-semibold text-cadtNavy"
+                >
+                  Password
+                </label>
+                <Link
+                  to="/forgot-password"
+                  className="text-sm font-medium text-cadtBlue hover:text-cadtNavy"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 id="password"
                 name="password"

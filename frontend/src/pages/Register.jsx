@@ -66,7 +66,7 @@ export default function Register() {
 
       setAlert({
         type: "success",
-        message: response.data.message || "Registration successful!",
+        message: response.data.message || "Registration successful! Please check your email to verify your account.",
       });
       setFormData({ name: "", email: "", password: "", confirmPassword: "" });
 

@@ -114,6 +114,33 @@ class UserModel {
     return rows.length > 0;
   }
 
+  async setVerificationToken(id, token) {
+    const [result] = await this.db.execute(
+      "UPDATE users SET email_verification_token = ? WHERE id = ?",
+      [token, id],
+    );
+
+    return result;
+  }
+
+  async verifyEmail(token) {
+    const [result] = await this.db.execute(
+      "UPDATE users SET is_verified = 1, email_verification_token = NULL WHERE email_verification_token = ?",
+      [token],
+    );
+
+    return result.affectedRows > 0;
+  }
+
+  async findByVerificationToken(token) {
+    const [rows] = await this.db.execute(
+      "SELECT * FROM users WHERE email_verification_token = ? LIMIT 1",
+      [token],
+    );
+
+    return rows;
+  }
+
   toSafeUser(userRow) {
     if (!userRow) return null;
 
@@ -124,6 +151,7 @@ class UserModel {
       roleId: userRow.role_id,
       roleName: userRow.role_name,
       isActive: Boolean(userRow.is_active),
+      isVerified: Boolean(userRow.is_verified),
       createdAt: userRow.created_at,
       updatedAt: userRow.updated_at,
     };
