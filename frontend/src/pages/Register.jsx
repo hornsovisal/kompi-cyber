@@ -5,7 +5,10 @@ import axios from "axios";
 export default function Register() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const [alert, setAlert] = useState(null);
+  const [resendMessage, setResendMessage] = useState("");
+  const [registeredEmail, setRegisteredEmail] = useState("");
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     name: "",
@@ -50,6 +53,7 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setAlert(null);
+    setResendMessage("");
 
     if (!validateForm()) {
       return;
@@ -58,9 +62,10 @@ export default function Register() {
     setLoading(true);
 
     try {
+      const submittedEmail = formData.email.trim();
       const response = await axios.post("/api/auth/register", {
         name: formData.name.trim(),
-        email: formData.email.trim(),
+        email: submittedEmail,
         password: formData.password,
       });
 
@@ -68,11 +73,8 @@ export default function Register() {
         type: "success",
         message: response.data.message || "Registration successful!",
       });
+      setRegisteredEmail(submittedEmail);
       setFormData({ name: "", email: "", password: "", confirmPassword: "" });
-
-      setTimeout(() => {
-        navigate("/login");
-      }, 1200);
     } catch (error) {
       const message =
         error.response?.data?.message ||
@@ -81,6 +83,29 @@ export default function Register() {
       setAlert({ type: "error", message });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!registeredEmail) return;
+
+    setResendLoading(true);
+    setResendMessage("");
+
+    try {
+      const response = await axios.post("/api/auth/resend-verification", {
+        email: registeredEmail,
+      });
+      setResendMessage(
+        response.data?.message || "Verification email sent. Please check your inbox.",
+      );
+    } catch (error) {
+      setResendMessage(
+        error.response?.data?.message ||
+          "Could not resend verification email. Please try again.",
+      );
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -140,6 +165,34 @@ export default function Register() {
               }`}
             >
               {alert.message}
+            </div>
+          )}
+
+          {alert?.type === "success" && registeredEmail && (
+            <div className="mb-5 rounded-2xl border border-cyan-300/20 bg-cyan-500/5 p-4">
+              <p className="text-sm text-slate-300">
+                Verified email is required before sign in.
+              </p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={resendLoading}
+                  className="rounded-xl border border-cyan-300/40 px-4 py-2 text-sm font-semibold text-cyan-200 transition hover:bg-cyan-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {resendLoading ? "Sending..." : "Resend verification email"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate("/login")}
+                  className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-2 text-sm font-semibold text-white transition hover:from-cyan-400 hover:to-blue-400"
+                >
+                  Go to Login
+                </button>
+              </div>
+              {resendMessage && (
+                <p className="mt-3 text-xs text-slate-300">{resendMessage}</p>
+              )}
             </div>
           )}
 
