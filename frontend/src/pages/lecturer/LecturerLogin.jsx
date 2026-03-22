@@ -178,14 +178,14 @@ export default function LecturerLogin() {
 
           {/* Sample lecturer accounts info */}
           <div className="mt-8 p-4 bg-blue-50 rounded-2xl border border-blue-200">
-            <h3 className="text-sm font-semibold text-blue-800 mb-2">Sample Lecturer Accounts:</h3>
+            <h3 className="text-sm font-semibold text-blue-800 mb-2">Available Lecturer Accounts:</h3>
             <div className="text-xs text-blue-700 space-y-1">
-              <p><strong>Sarah Johnson:</strong> sarah.johnson@cadt.edu.kh</p>
-              <p><strong>Michael Chen:</strong> michael.chen@cadt.edu.kh</p>
-              <p><strong>Lisa Rodriguez:</strong> lisa.rodriguez@cadt.edu.kh</p>
-              <p><strong>David Kim:</strong> david.kim@cadt.edu.kh</p>
-              <p><strong>Emma Wilson:</strong> emma.wilson@cadt.edu.kh</p>
-              <p className="mt-2 text-blue-600"><em>Password: Use any password (they're pre-configured)</em></p>
+              <p><strong>Sarah Johnson:</strong> sarah.johnson@cadt.edu.kh <em>(Network Security)</em></p>
+              <p><strong>Michael Chen:</strong> michael.chen@cadt.edu.kh <em>(Web Security)</em></p>
+              <p><strong>Lisa Rodriguez:</strong> lisa.rodriguez@cadt.edu.kh <em>(Incident Response)</em></p>
+              <p><strong>David Kim:</strong> david.kim@cadt.edu.kh <em>(Introduction to Linux)</em></p>
+              <p><strong>Emma Wilson:</strong> emma.wilson@cadt.edu.kh <em>(Introduction to Cybersecurity)</em></p>
+              <p className="mt-2 text-blue-600"><em>Password: password123 for all accounts</em></p>
             </div>
           </div>
         </div>

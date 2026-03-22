@@ -12,9 +12,9 @@ router.post("/forgot-password", lecturerAuthController.forgotLecturerPassword);
 router.post("/reset-password", lecturerAuthController.resetLecturerPassword);
 
 // Protected routes
-router.get("/profile", authMiddleware, lecturerAuthController.getLecturerProfile);
+router.get("/profile", authMiddleware.authenticateToken, lecturerAuthController.getLecturerProfile);
 
 // Admin routes (for managing lecturers)
-router.get("/all", authMiddleware, lecturerAuthController.getAllLecturers);
+router.get("/all", authMiddleware.authenticateToken, lecturerAuthController.getAllLecturers);
 
 module.exports = router;

@@ -16,6 +16,7 @@ class LecturerAuthController {
         email: lecturer.email,
         role: "lecturer",
         department: lecturer.department,
+        courses: lecturer.courses,
         employeeId: lecturer.employeeId
       },
       this.jwtSecret,
@@ -64,6 +65,7 @@ class LecturerAuthController {
           name: lecturer.name,
           email: lecturer.email,
           department: lecturer.department,
+          courses: lecturer.courses,
           employeeId: lecturer.employeeId
         }
       });
@@ -223,6 +225,7 @@ class LecturerAuthController {
           name: lecturer.name,
           email: lecturer.email,
           department: lecturer.department,
+          courses: lecturer.courses,
           employeeId: lecturer.employeeId,
           isVerified: lecturer.isVerified
         }

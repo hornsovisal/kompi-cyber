@@ -5,7 +5,8 @@ let lecturers = [
     name: "Dr. Sarah Johnson",
     email: "sarah.johnson@cadt.edu.kh",
     password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
-    department: "Cybersecurity",
+    department: "Network Security",
+    courses: ["network-security"],
     employeeId: "LEC001",
     isVerified: true,
     verificationToken: null,
@@ -18,7 +19,8 @@ let lecturers = [
     name: "Prof. Michael Chen",
     email: "michael.chen@cadt.edu.kh",
     password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
-    department: "Network Security",
+    department: "Web Security",
+    courses: ["web-security"],
     employeeId: "LEC002",
     isVerified: true,
     verificationToken: null,
@@ -31,7 +33,8 @@ let lecturers = [
     name: "Dr. Lisa Rodriguez",
     email: "lisa.rodriguez@cadt.edu.kh",
     password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
-    department: "Information Technology",
+    department: "Incident Response",
+    courses: ["incident-response"],
     employeeId: "LEC003",
     isVerified: true,
     verificationToken: null,
@@ -44,7 +47,8 @@ let lecturers = [
     name: "Mr. David Kim",
     email: "david.kim@cadt.edu.kh",
     password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
-    department: "Computer Science",
+    department: "Introduction to Linux",
+    courses: ["intro-to-linux-course"],
     employeeId: "LEC004",
     isVerified: true,
     verificationToken: null,
@@ -57,7 +61,8 @@ let lecturers = [
     name: "Dr. Emma Wilson",
     email: "emma.wilson@cadt.edu.kh",
     password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
-    department: "Digital Forensics",
+    department: "Introduction to Cybersecurity",
+    courses: ["intro-to-cyber-course"],
     employeeId: "LEC005",
     isVerified: true,
     verificationToken: null,
