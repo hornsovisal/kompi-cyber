@@ -124,7 +124,7 @@ All routes below require JWT.
 
 Get current logged-in profile.
 
-#### Success `200`
+###### Success `200`
 
 ```json
 {
@@ -793,6 +793,115 @@ Delete exercise.
 
 - `400` invalid id
 - `404` not found
+
+---
+
+## 6) Quiz APIs
+
+All routes below require JWT.
+
+### GET `/api/quizzes/lesson/:lessonId`
+
+Get quiz questions and options for one lesson.
+
+#### Success `200`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 10,
+      "question_text": "Which access control principle reduces attack surface by limiting permissions?",
+      "options": [
+        { "id": 37, "option_text": "Least privilege" },
+        { "id": 38, "option_text": "Open trust" },
+        { "id": 39, "option_text": "Shared admin account" },
+        { "id": 40, "option_text": "Guest mode for all users" }
+      ]
+    }
+  ]
+}
+```
+
+#### Errors
+
+- `400` invalid lessonId
+- `404` no quiz found for this lesson
+
+---
+
+### POST `/api/submissions/lesson/:lessonId`
+
+Submit quiz answers for one lesson.
+
+#### Body
+
+```json
+{
+  "answers": [{ "question_id": 10, "selected_option_id": 37 }]
+}
+```
+
+Validation rules:
+
+- Must answer **all** lesson quiz questions
+- One answer per question (no duplicate `question_id`)
+- `selected_option_id` must belong to that `question_id`
+
+#### Success `200`
+
+```json
+{
+  "success": true,
+  "score": 100,
+  "totalQuestions": 1,
+  "correctCount": 1,
+  "attemptNo": 1
+}
+```
+
+#### Errors
+
+- `400` invalid payload / incomplete answers / invalid mapping
+- `404` no quiz found for this lesson
+
+---
+
+### GET `/api/quizzes/lesson/:lessonId/attempt`
+
+Get current user's **latest** quiz attempt for a lesson.
+
+#### Success `200`
+
+```json
+{
+  "success": true,
+  "data": {
+    "attemptId": 12,
+    "score": 100,
+    "attemptNo": 2,
+    "submittedAt": "2026-03-22T11:00:00.000Z",
+    "passed": true,
+    "answers": [
+      { "question_id": 10, "selected_option_id": 37, "is_correct": true }
+    ]
+  }
+}
+```
+
+#### Errors
+
+- `400` invalid lessonId
+- `404` no attempt found for this lesson
+
+---
+
+Quiz flow recommendation for frontend:
+
+1. Load questions: `GET /api/quizzes/lesson/:lessonId`
+2. Submit answers: `POST /api/submissions/lesson/:lessonId`
+3. Refresh result: `GET /api/quizzes/lesson/:lessonId/attempt`
 
 ---
 
