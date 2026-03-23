@@ -2,15 +2,12 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const emailService = require("../utils/emailService");
-
-// In-memory storage for demo purposes (replace with database in production)
-let users = [];
-let verificationTokens = new Map();
-let resetTokens = new Map();
+const userModel = require("../models/userModel");
 
 class AuthController {
   constructor(jwtSecret) {
     this.jwtSecret = jwtSecret;
+    this.userModel = userModel;
   }
 
   signToken(user) {
@@ -18,49 +15,50 @@ class AuthController {
       {
         sub: user.id,
         email: user.email,
-        roleId: user.roleId || 1,
+        roleId: user.role_id || user.roleId || 1,
       },
       this.jwtSecret,
       { expiresIn: "1h" },
     );
   }
 
+  signActionToken(userId, action, expiresIn) {
+    return jwt.sign(
+      {
+        sub: userId,
+        action,
+        nonce: crypto.randomBytes(16).toString("hex"),
+      },
+      this.jwtSecret,
+      { expiresIn },
+    );
+  }
+
+  verifyActionToken(token, expectedAction) {
+    const payload = jwt.verify(token, this.jwtSecret);
+
+    if (payload.action !== expectedAction || !payload.sub) {
+      throw new Error("INVALID_ACTION_TOKEN");
+    }
+
+    return payload.sub;
+  }
+
   registerUser = async (req, res) => {
     try {
       const { name, email, password } = req.body;
 
-      // Check if user already exists
-      const existingUser = users.find(u => u.email === email);
-      if (existingUser) {
-        return res.status(409).json({
-          message: "Email already exists",
-        });
+      const existing = await this.userModel.findUserByEmail(email);
+      if (existing.length > 0) {
+        return res.status(409).json({ message: "Email already exists" });
       }
 
-      // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
+      // is_active = 0 until email is verified
+      const { id: userId } = await this.userModel.createUser(name, email, hashedPassword, 1, 0);
 
-      // Create user
-      const userId = crypto.randomUUID();
-      const newUser = {
-        id: userId,
-        fullName: name,
-        email,
-        passwordHash: hashedPassword,
-        roleId: 1,
-        isActive: true,
-        isVerified: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const verificationToken = this.signActionToken(userId, "verify-email", "24h");
 
-      users.push(newUser);
-
-      // Generate verification token
-      const verificationToken = crypto.randomBytes(32).toString('hex');
-      verificationTokens.set(verificationToken, userId);
-
-      // Send verification email
       try {
         await emailService.sendVerificationEmail(email, verificationToken);
       } catch (emailError) {
@@ -70,17 +68,11 @@ class AuthController {
 
       res.status(201).json({
         message: "User registered successfully. Please check your email to verify your account.",
-        user: {
-          id: userId,
-          name,
-          email,
-        },
+        user: { id: userId, name, email },
       });
     } catch (error) {
       console.error("Register error:", error);
-      res.status(500).json({
-        message: "Server error",
-      });
+      res.status(500).json({ message: "Server error" });
     }
   };
 
@@ -88,24 +80,19 @@ class AuthController {
     try {
       const { email, password } = req.body;
 
-      const user = users.find(u => u.email === email);
+      const rows = await this.userModel.findUserByEmail(email);
+      const user = rows[0];
       if (!user) {
-        return res.status(401).json({
-          message: "Invalid email or password",
-        });
+        return res.status(401).json({ message: "Invalid email or password" });
       }
 
-      const isPasswordMatch = await bcrypt.compare(password, user.passwordHash);
+      const isPasswordMatch = await bcrypt.compare(password, user.password_hash);
       if (!isPasswordMatch) {
-        return res.status(401).json({
-          message: "Invalid email or password",
-        });
+        return res.status(401).json({ message: "Invalid email or password" });
       }
 
-      if (!user.isVerified) {
-        return res.status(403).json({
-          message: "Please verify your email before logging in",
-        });
+      if (!user.is_active) {
+        return res.status(403).json({ message: "Please verify your email before logging in" });
       }
 
       const token = this.signToken(user);
@@ -115,20 +102,15 @@ class AuthController {
         token,
         user: {
           id: user.id,
-          fullName: user.fullName,
+          fullName: user.full_name,
           email: user.email,
-          roleId: user.roleId,
-          isActive: user.isActive,
-          isVerified: user.isVerified,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
+          roleId: user.role_id,
+          isActive: user.is_active,
         },
       });
     } catch (error) {
       console.error("Login error:", error);
-      res.status(500).json({
-        message: "Server error",
-      });
+      res.status(500).json({ message: "Server error" });
     }
   };
 
@@ -136,7 +118,8 @@ class AuthController {
     try {
       const { email } = req.body;
 
-      const user = users.find(u => u.email === email);
+      const rows = await this.userModel.findUserByEmail(email);
+      const user = rows[0];
       if (!user) {
         // Don't reveal if email exists or not for security
         return res.status(200).json({
@@ -144,18 +127,12 @@ class AuthController {
         });
       }
 
-      // Generate reset token
-      const resetToken = crypto.randomBytes(32).toString('hex');
-      resetTokens.set(resetToken, user.id);
+      const resetToken = this.signActionToken(user.id, "reset-password", "1h");
 
-      // Send reset email
       try {
         await emailService.sendPasswordResetEmail(email, resetToken);
       } catch (emailError) {
         console.error("Email sending failed:", emailError);
-        return res.status(500).json({
-          message: "Failed to send reset email",
-        });
       }
 
       res.status(200).json({
@@ -163,9 +140,7 @@ class AuthController {
       });
     } catch (error) {
       console.error("Forgot password error:", error);
-      res.status(500).json({
-        message: "Server error",
-      });
+      res.status(500).json({ message: "Server error" });
     }
   };
 
@@ -173,31 +148,62 @@ class AuthController {
     try {
       const { token } = req.body;
 
-      const userId = verificationTokens.get(token);
-      if (!userId) {
-        return res.status(400).json({
-          message: "Invalid or expired verification token",
-        });
+      if (!token) {
+        return res.status(400).json({ message: "Verification token is required" });
       }
 
-      const user = users.find(u => u.id === userId);
-      if (!user) {
-        return res.status(400).json({
-          message: "User not found",
-        });
+      let userId;
+      try {
+        userId = this.verifyActionToken(token, "verify-email");
+      } catch (tokenError) {
+        return res.status(400).json({ message: "Invalid or expired verification token" });
       }
 
-      user.isVerified = true;
-      verificationTokens.delete(token);
+      await this.userModel.activateUser(userId);
 
-      res.status(200).json({
-        message: "Email verified successfully",
-      });
+      res.status(200).json({ message: "Email verified successfully" });
     } catch (error) {
       console.error("Verify email error:", error);
-      res.status(500).json({
-        message: "Server error",
+      res.status(500).json({ message: "Server error" });
+    }
+  };
+
+  resendVerificationEmail = async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      const rows = await this.userModel.findUserByEmail(email);
+      const user = rows[0];
+
+      // Keep a generic response when user is missing to avoid email enumeration.
+      if (!user) {
+        return res.status(200).json({
+          message: "If an account exists and is not verified, a verification email has been sent.",
+        });
+      }
+
+      if (user.is_active) {
+        return res.status(400).json({ message: "This email is already verified" });
+      }
+
+      const verificationToken = this.signActionToken(user.id, "verify-email", "24h");
+
+      try {
+        await emailService.sendVerificationEmail(email, verificationToken);
+      } catch (emailError) {
+        console.error("Resend verification email failed:", emailError);
+      }
+
+      return res.status(200).json({
+        message: "Verification email sent. Please check your inbox.",
       });
+    } catch (error) {
+      console.error("Resend verification error:", error);
+      return res.status(500).json({ message: "Server error" });
     }
   };
 
@@ -205,32 +211,24 @@ class AuthController {
     try {
       const { token, password } = req.body;
 
-      const userId = resetTokens.get(token);
-      if (!userId) {
-        return res.status(400).json({
-          message: "Invalid or expired reset token",
-        });
+      if (!token) {
+        return res.status(400).json({ message: "Reset token is required" });
       }
 
-      const user = users.find(u => u.id === userId);
-      if (!user) {
-        return res.status(400).json({
-          message: "User not found",
-        });
+      let userId;
+      try {
+        userId = this.verifyActionToken(token, "reset-password");
+      } catch (tokenError) {
+        return res.status(400).json({ message: "Invalid or expired reset token" });
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      user.passwordHash = hashedPassword;
-      resetTokens.delete(token);
+      await this.userModel.updatePassword(userId, hashedPassword);
 
-      res.status(200).json({
-        message: "Password reset successfully",
-      });
+      res.status(200).json({ message: "Password reset successfully" });
     } catch (error) {
       console.error("Reset password error:", error);
-      res.status(500).json({
-        message: "Server error",
-      });
+      res.status(500).json({ message: "Server error" });
     }
   };
 }
