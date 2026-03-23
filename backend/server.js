@@ -2,7 +2,10 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 
-require("dotenv").config({ path: path.resolve(__dirname, ".env"), override: true });
+require("dotenv").config({
+  path: path.resolve(__dirname, ".env"),
+  override: true,
+});
 
 const db = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
@@ -14,6 +17,7 @@ const enrollmentRoutes = require("./routes/enrollmentRoutes");
 const quizRoutes = require("./routes/quizRoutes");
 const submissionRoutes = require("./routes/submissionRoutes");
 const instructorRoutes = require("./routes/instructorRoutes");
+const certificateRoutes = require("./routes/certificateRoutes");
 
 const app = express();
 
@@ -22,6 +26,12 @@ app.use(express.json());
 
 // Serve uploaded course assets like /upload/lesson/<slug>/cover.*
 app.use("/upload", express.static(path.resolve(__dirname, "../upload")));
+
+// Serve generated certificates
+app.use(
+  "/certificates",
+  express.static(path.resolve(__dirname, "certificates")),
+);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -32,6 +42,7 @@ app.use("/api/enrollments", enrollmentRoutes);
 app.use("/api/quizzes", quizRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/instructor", instructorRoutes);
+app.use("/api/certificates", certificateRoutes);
 
 const PORT = process.env.PORT || 5000;
 
@@ -42,7 +53,9 @@ async function startServer() {
       await db.query("SELECT 1");
       console.log("Database connected successfully.");
     } catch (dbError) {
-      console.log("Database not available, running with in-memory storage for authentication.");
+      console.log(
+        "Database not available, running with in-memory storage for authentication.",
+      );
     }
 
     app.listen(PORT, () => {
