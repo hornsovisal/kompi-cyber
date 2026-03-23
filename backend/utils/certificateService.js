@@ -1,17 +1,10 @@
 const PDFDocument = require("pdfkit");
-const AWS = require("aws-sdk");
+const supabase = require("../config/superbase");
 
 class CertificateService {
   constructor() {
-    // Configure S3 client
-    this.s3 = new AWS.S3({
-      endpoint: process.env.S3_ENDPOINT,
-      accessKeyId: process.env.S3_ACCESS_KEY_ID,
-      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
-      region: process.env.S3_REGION,
-      s3ForcePathStyle: true,
-    });
-    this.bucketName = process.env.S3_BUCKET || "certificates";
+    this.supabase = supabase;
+    this.bucketName = "certificates";
   }
 
   /**
@@ -311,24 +304,31 @@ class CertificateService {
             // Convert chunks to buffer
             const pdfBuffer = Buffer.concat(chunks);
 
-            // Upload to S3
-            const uploadParams = {
-              Bucket: this.bucketName,
-              Key: filename,
-              Body: pdfBuffer,
-              ContentType: "application/pdf",
-              ACL: "public-read",
-            };
+            // Upload to Supabase storage
+            const { data: uploadData, error: uploadError } =
+              await this.supabase.storage
+                .from(this.bucketName)
+                .upload(filename, pdfBuffer, {
+                  contentType: "application/pdf",
+                  upsert: true,
+                });
 
-            const uploadResult = await this.s3
-              .upload(uploadParams)
-              .promise();
+            if (uploadError) {
+              console.error("Supabase upload error:", uploadError);
+              reject(uploadError);
+              return;
+            }
 
-            const publicUrl = uploadResult.Location;
-            console.log(`Certificate uploaded to S3: ${publicUrl}`);
+            // Get public URL
+            const { data: publicUrlData } = this.supabase.storage
+              .from(this.bucketName)
+              .getPublicUrl(filename);
+
+            const publicUrl = publicUrlData.publicUrl;
+            console.log(`Certificate uploaded to Supabase: ${publicUrl}`);
             resolve(publicUrl);
           } catch (error) {
-            console.error("Error uploading certificate to S3:", error);
+            console.error("Error uploading certificate to Supabase:", error);
             reject(error);
           }
         });
@@ -347,27 +347,28 @@ class CertificateService {
     return date.toLocaleDateString("en-US", options);
   }
 
-  // Get public URL from S3 for a certificate
+  // Get public URL from Supabase for a certificate
   getPublicPath(certificateCode) {
     const filename = `cert-${certificateCode}.pdf`;
-    const endpoint = process.env.S3_ENDPOINT;
-    const bucket = this.bucketName;
-    return `${endpoint}/${bucket}/${filename}`;
+    const { data } = this.supabase.storage
+      .from(this.bucketName)
+      .getPublicUrl(filename);
+    return data.publicUrl;
   }
 
-  // Delete certificate from S3 storage
+  // Delete certificate from Supabase storage
   async deleteCertificate(certificateCode) {
     try {
       const filename = `cert-${certificateCode}.pdf`;
-      const deleteParams = {
-        Bucket: this.bucketName,
-        Key: filename,
-      };
+      const { error } = await this.supabase.storage
+        .from(this.bucketName)
+        .remove([filename]);
 
-      await this.s3.deleteObject(deleteParams).promise();
-      console.log(`Certificate deleted from S3: ${filename}`);
+      if (error) {
+        console.error("Error deleting certificate from Supabase:", error);
+      }
     } catch (error) {
-      console.error("Error deleting certificate from S3:", error);
+      console.error("Error deleting certificate:", error);
     }
   }
 }
