@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import logo from "../kompi-cyber-logo-slide.svg";
+import CertificateSection from "../components/CertificateSection";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const API_TARGET_LABEL = import.meta.env.VITE_API_URL || "Vite /api proxy";
@@ -442,8 +443,9 @@ export default function LearnPage() {
 
   const handleEnroll = async () => {
     setEnrolling(true);
+    setError("");
     try {
-      await axios.post(
+      const enrollRes = await axios.post(
         "/api/enrollments",
         { course_id: Number(courseId) },
         {
@@ -451,11 +453,50 @@ export default function LearnPage() {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
-      setNotEnrolled(false);
-      // reload lessons
-      window.location.reload();
+
+      if (enrollRes.data?.enrolled) {
+        setNotEnrolled(false);
+
+        // Retry loading lessons after enrollment with a small delay
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        const headers = { Authorization: `Bearer ${token}` };
+        try {
+          const lessonsRes = await axios.get(
+            `/api/courses/${courseId}/lessons`,
+            {
+              baseURL: API_BASE,
+              headers,
+            },
+          );
+
+          const fetchedLessons = lessonsRes.data.lessons || [];
+          if (fetchedLessons.length > 0) {
+            setLessons(fetchedLessons);
+
+            // Load the first lesson
+            const firstLessonId = Number(fetchedLessons[0].id);
+            const lessonRes = await axios.get(`/api/lessons/${firstLessonId}`, {
+              baseURL: API_BASE,
+              headers,
+            });
+            setActiveLesson(lessonRes.data.lesson);
+            navigate(`/learn/${courseId}/${firstLessonId}`, { replace: true });
+          }
+        } catch (lessonErr) {
+          console.error("Failed to load lessons after enrollment:", lessonErr);
+          // Fall back to page reload if manual reload fails
+          window.location.reload();
+        }
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to enroll");
+      console.error("Enrollment error:", err);
+      setError(
+        err.response?.data?.message ||
+          (err.message === "Request failed with status code 401"
+            ? "Your session expired. Please log in again."
+            : "Failed to enroll in course. Please try again."),
+      );
     } finally {
       setEnrolling(false);
     }
@@ -1554,6 +1595,14 @@ export default function LearnPage() {
                       )}
                     </div>
                   )}
+
+                  <div className="mt-8">
+                    <CertificateSection
+                      courseId={courseId}
+                      courseName={course?.title}
+                      token={token}
+                    />
+                  </div>
                 </>
               )}
             </div>
