@@ -112,6 +112,21 @@ class LessonController {
       return res.status(500).json({ message: "Server error" });
     }
   };
+
+  getLessonsByCourse = async (req, res) => {
+    try {
+      const courseId = Number(req.params.courseId);
+      if (!Number.isInteger(courseId) || courseId <= 0) {
+        return res.status(400).json({ message: "Invalid course id" });
+      }
+
+      const lessons = await this.lessonModel.getByCourseId(courseId);
+      return res.status(200).json({ lessons });
+    } catch (error) {
+      console.error("getLessonsByCourse error:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  };
 }
 
 module.exports = new LessonController(lessonModel);

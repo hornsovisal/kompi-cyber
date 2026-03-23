@@ -9,6 +9,9 @@ const authMiddleware = require("../middleware/authMiddleware");
 // All lesson routes require a valid JWT
 router.use(authMiddleware.authenticateToken);
 
+// GET /api/lessons/course/:courseId
+router.get("/course/:courseId", lessonController.getLessonsByCourse);
+
 // GET /api/lessons/:lessonId/exercises
 router.get("/:lessonId/exercises", exerciseController.getExercisesByLesson);
 
