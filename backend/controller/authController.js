@@ -4,10 +4,6 @@ const crypto = require("crypto");
 const emailService = require("../utils/emailService");
 const userModel = require("../models/userModel");
 
-// In-memory maps for ephemeral tokens (acceptable for short-lived tokens)
-let verificationTokens = new Map();
-let resetTokens = new Map();
-
 class AuthController {
   constructor(jwtSecret) {
     this.jwtSecret = jwtSecret;
@@ -26,6 +22,28 @@ class AuthController {
     );
   }
 
+  signActionToken(userId, action, expiresIn) {
+    return jwt.sign(
+      {
+        sub: userId,
+        action,
+        nonce: crypto.randomBytes(16).toString("hex"),
+      },
+      this.jwtSecret,
+      { expiresIn },
+    );
+  }
+
+  verifyActionToken(token, expectedAction) {
+    const payload = jwt.verify(token, this.jwtSecret);
+
+    if (payload.action !== expectedAction || !payload.sub) {
+      throw new Error("INVALID_ACTION_TOKEN");
+    }
+
+    return payload.sub;
+  }
+
   registerUser = async (req, res) => {
     try {
       const { name, email, password } = req.body;
@@ -39,8 +57,7 @@ class AuthController {
       // is_active = 0 until email is verified
       const { id: userId } = await this.userModel.createUser(name, email, hashedPassword, 1, 0);
 
-      const verificationToken = crypto.randomBytes(32).toString('hex');
-      verificationTokens.set(verificationToken, userId);
+      const verificationToken = this.signActionToken(userId, "verify-email", "24h");
 
       try {
         await emailService.sendVerificationEmail(email, verificationToken);
@@ -110,8 +127,7 @@ class AuthController {
         });
       }
 
-      const resetToken = crypto.randomBytes(32).toString('hex');
-      resetTokens.set(resetToken, user.id);
+      const resetToken = this.signActionToken(user.id, "reset-password", "1h");
 
       try {
         await emailService.sendPasswordResetEmail(email, resetToken);
@@ -132,13 +148,18 @@ class AuthController {
     try {
       const { token } = req.body;
 
-      const userId = verificationTokens.get(token);
-      if (!userId) {
+      if (!token) {
+        return res.status(400).json({ message: "Verification token is required" });
+      }
+
+      let userId;
+      try {
+        userId = this.verifyActionToken(token, "verify-email");
+      } catch (tokenError) {
         return res.status(400).json({ message: "Invalid or expired verification token" });
       }
 
       await this.userModel.activateUser(userId);
-      verificationTokens.delete(token);
 
       res.status(200).json({ message: "Email verified successfully" });
     } catch (error) {
@@ -169,8 +190,7 @@ class AuthController {
         return res.status(400).json({ message: "This email is already verified" });
       }
 
-      const verificationToken = crypto.randomBytes(32).toString("hex");
-      verificationTokens.set(verificationToken, user.id);
+      const verificationToken = this.signActionToken(user.id, "verify-email", "24h");
 
       try {
         await emailService.sendVerificationEmail(email, verificationToken);
@@ -191,14 +211,19 @@ class AuthController {
     try {
       const { token, password } = req.body;
 
-      const userId = resetTokens.get(token);
-      if (!userId) {
+      if (!token) {
+        return res.status(400).json({ message: "Reset token is required" });
+      }
+
+      let userId;
+      try {
+        userId = this.verifyActionToken(token, "reset-password");
+      } catch (tokenError) {
         return res.status(400).json({ message: "Invalid or expired reset token" });
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
       await this.userModel.updatePassword(userId, hashedPassword);
-      resetTokens.delete(token);
 
       res.status(200).json({ message: "Password reset successfully" });
     } catch (error) {
