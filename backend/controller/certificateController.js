@@ -70,8 +70,8 @@ class CertificateController {
       // Get certificate data
       const certificateData = await this.model.getCertificateById(certId);
 
-      // Generate PDF
-      const pdfPath = await this.service.generateCertificate({
+      // Generate PDF (returns Supabase public URL)
+      const publicPath = await this.service.generateCertificate({
         studentName: certificateData.full_name,
         courseName: certificateData.title,
         certificateCode: certificateCode,
@@ -84,8 +84,7 @@ class CertificateController {
         },
       });
 
-      // Update certificate with PDF path
-      const publicPath = this.service.getPublicPath(certificateCode);
+      // Update certificate with Supabase URL
       await this.model.updateCertificatePdfPath(certId, publicPath);
 
       return res.status(201).json({
