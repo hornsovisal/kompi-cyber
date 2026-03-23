@@ -5,7 +5,10 @@ import axios from "axios";
 export default function Login() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const [alert, setAlert] = useState(null);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     email: "",
@@ -31,9 +34,30 @@ export default function Login() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleResendVerification = async () => {
+    const email = formData.email.trim();
+    if (!email) return;
+
+    setResendLoading(true);
+    setResendMessage("");
+
+    try {
+      const response = await axios.post("/api/auth/resend-verification", { email });
+      setResendMessage(response.data?.message || "Verification email sent. Please check your inbox.");
+    } catch (error) {
+      setResendMessage(
+        error.response?.data?.message || "Could not resend verification email. Please try again.",
+      );
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setAlert(null);
+    setNeedsVerification(false);
+    setResendMessage("");
 
     if (!validateForm()) {
       return;
@@ -61,6 +85,9 @@ export default function Login() {
         error.response?.data?.message ||
         error.message ||
         "Login failed. Please try again.";
+      if (error.response?.status === 403 && message.toLowerCase().includes("verify")) {
+        setNeedsVerification(true);
+      }
       setAlert({ type: "error", message });
     } finally {
       setLoading(false);
@@ -124,6 +151,25 @@ export default function Login() {
             </div>
           )}
 
+          {needsVerification && (
+            <div className="mb-5 rounded-2xl border border-cyan-300/20 bg-cyan-500/5 p-4">
+              <p className="text-sm text-slate-300">
+                Didn't receive the email or the link expired?
+              </p>
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resendLoading}
+                className="mt-3 w-full rounded-xl border border-cyan-300/40 px-4 py-2 text-sm font-semibold text-cyan-200 transition hover:bg-cyan-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {resendLoading ? "Sending..." : "Resend verification email"}
+              </button>
+              {resendMessage && (
+                <p className="mt-3 text-xs text-slate-300">{resendMessage}</p>
+              )}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label
@@ -165,6 +211,14 @@ export default function Login() {
               {errors.password && (
                 <p className="mt-1 text-sm text-rose-300">{errors.password}</p>
               )}
+              <div className="mt-2 text-right">
+                <Link
+                  to="/forget-password"
+                  className="text-sm text-cyan-400 transition hover:text-cyan-300"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
             </div>
 
             <button
