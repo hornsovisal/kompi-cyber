@@ -13,7 +13,6 @@ import {
   Star,
   TrendingUp,
 } from "lucide-react";
-
 export default function InstructorDashboard() {
   const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
