@@ -264,14 +264,11 @@ export default function CertificateSection({ courseId, courseName, token }) {
                   Issued Date
                 </p>
                 <p className="mt-1 text-sm font-bold text-amber-900">
-                  {new Date(certificate.issued_at).toLocaleDateString(
-                    "en-US",
-                    {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    },
-                  )}
+                  {new Date(certificate.issued_at).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
                 </p>
               </div>
               <div>
