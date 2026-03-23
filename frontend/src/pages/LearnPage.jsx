@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import logo from "../kompi-cyber-logo-slide.svg";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const API_TARGET_LABEL = import.meta.env.VITE_API_URL || "Vite /api proxy";
@@ -869,18 +870,8 @@ export default function LearnPage() {
     <div className="min-h-screen bg-[#171717] p-0">
       <div className="min-h-screen overflow-hidden bg-[#ECEEF2] shadow-2xl ring-1 ring-black/10">
         <header className="flex items-center justify-between bg-[#032A56] px-4 py-3 text-white md:px-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-400 text-sm font-bold text-slate-900">
-              KC
-            </div>
-            <div>
-              <p className="text-sm font-semibold leading-none">
-                Next Gen Engagement
-              </p>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-blue-200">
-                Learning Platform
-              </p>
-            </div>
+          <div className="flex items-center">
+            <img src={logo} alt="Kompi-Cyber" className="h-10" />
           </div>
 
           <div className="rounded-full bg-[#012149] p-1">

@@ -1,16 +1,20 @@
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
-  port: process.env.SMTP_PORT || 2525,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
-});
+const smtpConfigured = process.env.SMTP_USER && process.env.SMTP_PASS;
+
+const transporter = smtpConfigured
+  ? nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
+      port: Number(process.env.SMTP_PORT) || 2525,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    })
+  : null;
 
 const sendVerificationEmail = async (email, token) => {
-  const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${token}`;
+  const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
 
   const mailOptions = {
     from: process.env.FROM_EMAIL || 'noreply@kompi-cyber.com',
@@ -44,6 +48,12 @@ const sendVerificationEmail = async (email, token) => {
     `
   };
 
+  if (!smtpConfigured) {
+    console.log('\n[DEV] SMTP not configured — verification link:');
+    console.log(verificationUrl + '\n');
+    return;
+  }
+
   try {
     await transporter.sendMail(mailOptions);
     console.log('Verification email sent to:', email);
@@ -54,7 +64,7 @@ const sendVerificationEmail = async (email, token) => {
 };
 
 const sendPasswordResetEmail = async (email, token) => {
-  const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${token}`;
+  const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
 
   const mailOptions = {
     from: process.env.FROM_EMAIL || 'noreply@kompi-cyber.com',
@@ -88,6 +98,12 @@ const sendPasswordResetEmail = async (email, token) => {
       </div>
     `
   };
+
+  if (!smtpConfigured) {
+    console.log('\n[DEV] SMTP not configured — password reset link:');
+    console.log(resetUrl + '\n');
+    return;
+  }
 
   try {
     await transporter.sendMail(mailOptions);
