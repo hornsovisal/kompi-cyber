@@ -1,5 +1,113 @@
 ﻿const db = require("../config/db");
 
+// Create quiz questions and options for a lesson
+exports.createQuiz = async (req, res) => {
+  const { lessonId, questions } = req.body;
+
+  if (!lessonId || !Array.isArray(questions) || questions.length === 0) {
+    return res.status(400).json({ message: "Invalid request data" });
+  }
+
+  const connection = await db.getConnection();
+  await connection.beginTransaction();
+
+  try {
+    for (const [index, question] of questions.entries()) {
+      // Insert question
+      const [questionResult] = await connection.query(
+        "INSERT INTO quiz_questions (lesson_id, question_text, question_order) VALUES (?, ?, ?)",
+        [lessonId, question.question_text, index + 1]
+      );
+
+      const questionId = questionResult.insertId;
+
+      // Insert options
+      for (const option of question.options) {
+        await connection.query(
+          "INSERT INTO quiz_options (question_id, option_text, is_correct) VALUES (?, ?, ?)",
+          [questionId, option.option_text, option.is_correct ? 1 : 0]
+        );
+      }
+    }
+
+    await connection.commit();
+    res.json({ success: true, message: "Quiz created successfully" });
+  } catch (err) {
+    await connection.rollback();
+    res.status(500).json({ message: "Database error", error: err.message });
+  } finally {
+    connection.release();
+  }
+};
+
+// Update quiz questions and options
+exports.updateQuiz = async (req, res) => {
+  const { lessonId, questions } = req.body;
+
+  if (!lessonId || !Array.isArray(questions)) {
+    return res.status(400).json({ message: "Invalid request data" });
+  }
+
+  const connection = await db.getConnection();
+  await connection.beginTransaction();
+
+  try {
+    // Delete existing questions and options
+    await connection.query("DELETE FROM quiz_options WHERE question_id IN (SELECT id FROM quiz_questions WHERE lesson_id = ?)", [lessonId]);
+    await connection.query("DELETE FROM quiz_questions WHERE lesson_id = ?", [lessonId]);
+
+    // Insert new questions and options
+    for (const [index, question] of questions.entries()) {
+      const [questionResult] = await connection.query(
+        "INSERT INTO quiz_questions (lesson_id, question_text, question_order) VALUES (?, ?, ?)",
+        [lessonId, question.question_text, index + 1]
+      );
+
+      const questionId = questionResult.insertId;
+
+      for (const option of question.options) {
+        await connection.query(
+          "INSERT INTO quiz_options (question_id, option_text, is_correct) VALUES (?, ?, ?)",
+          [questionId, option.option_text, option.is_correct ? 1 : 0]
+        );
+      }
+    }
+
+    await connection.commit();
+    res.json({ success: true, message: "Quiz updated successfully" });
+  } catch (err) {
+    await connection.rollback();
+    res.status(500).json({ message: "Database error", error: err.message });
+  } finally {
+    connection.release();
+  }
+};
+
+// Delete quiz for a lesson
+exports.deleteQuiz = async (req, res) => {
+  const lessonId = Number(req.params.lessonId);
+
+  if (!Number.isInteger(lessonId) || lessonId <= 0) {
+    return res.status(400).json({ message: "Invalid lessonId" });
+  }
+
+  const connection = await db.getConnection();
+  await connection.beginTransaction();
+
+  try {
+    await connection.query("DELETE FROM quiz_options WHERE question_id IN (SELECT id FROM quiz_questions WHERE lesson_id = ?)", [lessonId]);
+    await connection.query("DELETE FROM quiz_questions WHERE lesson_id = ?", [lessonId]);
+
+    await connection.commit();
+    res.json({ success: true, message: "Quiz deleted successfully" });
+  } catch (err) {
+    await connection.rollback();
+    res.status(500).json({ message: "Database error", error: err.message });
+  } finally {
+    connection.release();
+  }
+};
+
 // Fetch quiz questions and options for a lesson (without revealing correct options)
 exports.getQuizByLesson = async (req, res) => {
   const lessonId = Number(req.params.lessonId);

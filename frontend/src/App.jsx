@@ -9,6 +9,8 @@ import VerifyEmail from "./pages/VerifyEmail";
 import ResetPassword from "./pages/ResetPassword";
 import InstructorLayout from "./components/Layout/InstructorLayout";
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
+import InstructorLogin from "./pages/instructor/InstructorLogin";
+import CreateQuiz from "./pages/instructor/CreateQuiz";
 
 export default function App() {
   return (
@@ -26,11 +28,20 @@ export default function App() {
         <Route path="/learn/:courseId/:lessonId" element={<LearnPage />} />
         
         {/* Instructor Routes */}
+        <Route path="/instructor/login" element={<InstructorLogin />} />
         <Route 
           path="/instructor/dashboard" 
           element={
             <InstructorLayout>
               <InstructorDashboard />
+            </InstructorLayout>
+          } 
+        />
+        <Route 
+          path="/instructor/create-quiz/:lessonId?" 
+          element={
+            <InstructorLayout>
+              <CreateQuiz />
             </InstructorLayout>
           } 
         />
