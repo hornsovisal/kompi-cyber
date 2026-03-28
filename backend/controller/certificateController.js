@@ -72,6 +72,7 @@ class CertificateController {
 
       // Generate PDF (returns Supabase public URL)
       const publicPath = await this.service.generateCertificate({
+        userId: userId,
         studentName: certificateData.full_name,
         courseName: certificateData.title,
         certificateCode: certificateCode,
@@ -100,8 +101,12 @@ class CertificateController {
         certificateUrl: publicPath,
       });
     } catch (error) {
-      console.error("Generate certificate error:", error);
-      return res.status(500).json({ message: "Server error" });
+      console.error("Generate certificate error:", error.message);
+      console.error("Full error:", error);
+      return res.status(500).json({
+        message: "Server error generating certificate",
+        error: error.message,
+      });
     }
   };
 
@@ -144,8 +149,12 @@ class CertificateController {
         exists: true,
       });
     } catch (error) {
-      console.error("Get certificate error:", error);
-      return res.status(500).json({ message: "Server error" });
+      console.error("Get certificate error:", error.message);
+      console.error("Full error:", error);
+      return res.status(500).json({
+        message: "Server error fetching certificate",
+        error: error.message,
+      });
     }
   };
 

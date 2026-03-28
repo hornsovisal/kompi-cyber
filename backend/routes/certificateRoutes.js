@@ -4,6 +4,50 @@ const router = express.Router();
 const certificateController = require("../controller/certificateController");
 const authMiddleware = require("../middleware/authMiddleware");
 
+// Test endpoint - check Supabase connection
+router.get("/test/upload", async (req, res) => {
+  try {
+    const supabase = require("../config/superbase");
+
+    const testBuffer = Buffer.from("Test PDF content");
+    const testFilename = `test-${Date.now()}.pdf`;
+
+    console.log("Testing Supabase upload...");
+
+    const uploadResult = await supabase.storage
+      .from("certificates")
+      .upload(testFilename, testBuffer, {
+        contentType: "application/pdf",
+        upsert: true,
+      });
+
+    console.log("Upload result:", uploadResult);
+
+    if (uploadResult.error) {
+      return res.status(500).json({
+        message: "Upload failed",
+        error: uploadResult.error,
+      });
+    }
+
+    const publicUrlResult = supabase.storage
+      .from("certificates")
+      .getPublicUrl(testFilename);
+
+    return res.json({
+      message: "Upload successful",
+      filename: testFilename,
+      publicUrl: publicUrlResult.data.publicUrl,
+    });
+  } catch (error) {
+    console.error("Test upload error:", error);
+    return res.status(500).json({
+      message: "Error during test upload",
+      error: error.message,
+    });
+  }
+});
+
 // All routes require authentication
 router.use(authMiddleware.authenticateToken);
 
