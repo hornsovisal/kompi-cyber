@@ -64,6 +64,64 @@ function MarkdownBlock({ content }) {
     }
   };
 
+  const flushTable = (key) => {
+    if (tableLines.length < 2) {
+      tableLines = [];
+      return;
+    }
+
+    // First line is header, second line is separator
+    const headerLine = tableLines[0];
+    const headers = headerLine
+      .split("|")
+      .map((h) => h.trim())
+      .filter((h) => h.length > 0);
+
+    const rows = tableLines.slice(2).map((line) =>
+      line
+        .split("|")
+        .map((cell) => cell.trim())
+        .filter((cell) => cell.length > 0),
+    );
+
+    elements.push(
+      <div
+        key={`table-${key}`}
+        className="mb-5 overflow-x-auto rounded-lg border border-slate-200"
+      >
+        <table className="min-w-full divide-y divide-slate-200">
+          <thead className="bg-slate-100">
+            <tr>
+              {headers.map((header, idx) => (
+                <th
+                  key={`th-${idx}`}
+                  className="px-4 py-3 text-left font-semibold text-slate-900"
+                >
+                  {renderInline(header)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200 bg-white">
+            {rows.map((row, rowIdx) => (
+              <tr key={`tr-${rowIdx}`}>
+                {row.map((cell, cellIdx) => (
+                  <td
+                    key={`td-${rowIdx}-${cellIdx}`}
+                    className="px-4 py-3 text-slate-700"
+                  >
+                    {renderInline(cell)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>,
+    );
+    tableLines = [];
+  };
+
   // Enhanced inline rendering for bold, italic, code
   const renderInline = (text) => {
     const parts = [];
@@ -149,6 +207,7 @@ function MarkdownBlock({ content }) {
       } else {
         flushList(i);
         flushBlockquote(i);
+        flushTable(i);
         codeBlock = trimmed.slice(3) || "bash";
       }
       return;
@@ -167,6 +226,20 @@ function MarkdownBlock({ content }) {
 
     if (blockquoteLines.length > 0 && !trimmed.startsWith("> ")) {
       flushBlockquote(i);
+    }
+
+    // Handle tables - detect pipe character
+    if (trimmed.includes("|")) {
+      if (tableLines.length === 0) {
+        flushList(i);
+      }
+      tableLines.push(trimmed);
+      return;
+    }
+
+    // If we were building a table and now there's no pipe, flush it
+    if (tableLines.length > 0 && !trimmed.includes("|")) {
+      flushTable(i);
     }
 
     if (!trimmed) {
@@ -226,6 +299,7 @@ function MarkdownBlock({ content }) {
 
   flushList("end");
   flushBlockquote("end");
+  flushTable("end");
   flushCodeBlock("end");
   return <>{elements}</>;
 }
