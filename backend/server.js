@@ -12,6 +12,7 @@ const lessonRoutes = require("./routes/lessonRoutes");
 const exerciseRoutes = require("./routes/exerciseRoutes");
 const enrollmentRoutes = require("./routes/enrollmentRoutes");
 const quizRoutes = require("./routes/quizRoutes");
+const studentRoutes = require("./routes/studentRoutes");
 const submissionRoutes = require("./routes/submissionRoutes");
 const instructorRoutes = require("./routes/instructorRoutes");
 
@@ -30,6 +31,7 @@ app.use("/api/lessons", lessonRoutes);
 app.use("/api/exercises", exerciseRoutes);
 app.use("/api/enrollments", enrollmentRoutes);
 app.use("/api/quizzes", quizRoutes);
+app.use("/api/students", studentRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/instructor", instructorRoutes);
 

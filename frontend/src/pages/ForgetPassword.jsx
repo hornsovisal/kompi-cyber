@@ -33,7 +33,7 @@ export default function ForgetPassword() {
               KC
             </div>
             <p className="text-sm font-medium uppercase tracking-widest text-cadtBlue">
-              Kompi-Cyber
+              KOMPI-CYBER
             </p>
             <h1 className="mt-3 text-3xl font-bold text-cadtNavy">
               Forgot Password

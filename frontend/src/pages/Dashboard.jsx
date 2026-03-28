@@ -242,7 +242,7 @@ export default function Dashboard() {
             </svg>
           </div>
           <p className="text-2xl font-semibold uppercase tracking-wider text-white">
-            Kompi Cyber
+            KOMPI-CYBER
           </p>
         </div>
 
@@ -572,11 +572,11 @@ export default function Dashboard() {
               </svg>
             </div>
             <span className="text-sm font-semibold uppercase tracking-wider text-white">
-              Kompi Cyber
+              KOMPI-CYBER
             </span>
           </div>
           <p className="text-sm text-slate-400">
-            © 2026 CADT. All rights reserved.
+            © 2026 KOMPI-CYBER. All rights reserved.
           </p>
         </div>
       </footer>
