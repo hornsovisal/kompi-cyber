@@ -9,7 +9,7 @@ export default function Home() {
             KC
           </div>
           <p className="text-sm font-semibold uppercase tracking-wider text-cadtBlue">
-            KOMPI-CYBER
+            Kompi-Cyber
           </p>
         </div>
         <div className="flex gap-4">
@@ -35,7 +35,7 @@ export default function Home() {
           </div>
 
           <h1 className="mb-4 text-5xl font-bold text-cadtNavy">
-            Welcome to KOMPI-CYBER
+            Welcome to Kompi-Cyber
           </h1>
 
           <p className="mb-8 text-lg text-slate-600">
