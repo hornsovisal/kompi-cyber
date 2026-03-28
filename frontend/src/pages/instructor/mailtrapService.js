@@ -20,11 +20,11 @@ const sendVerificationEmail = async (email, name, otp) => {
   const mailOptions = {
     from: process.env.FROM_EMAIL || 'noreply@kompi-cyber.com',
     to: email,
-    subject: 'Verify Your Instructor Account - Kompi-Cyber',
+    subject: 'Verify Your Instructor Account - KOMPI-CYBER',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">Kompi-Cyber</h1>
+          <h1 style="color: white; margin: 0; font-size: 28px;">KOMPI-CYBER</h1>
           <p style="color: #e8e8e8; margin: 10px 0 0 0; font-size: 16px;">Instructor Portal</p>
         </div>
 
@@ -44,7 +44,7 @@ const sendVerificationEmail = async (email, name, otp) => {
         </div>
 
         <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
-          <p>Kompi-Cyber Cybersecurity Learning Platform</p>
+          <p>KOMPI-CYBER Cybersecurity Learning Platform</p>
         </div>
       </div>
     `
