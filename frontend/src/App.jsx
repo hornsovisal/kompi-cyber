@@ -7,6 +7,7 @@ import LearnPage from "./pages/LearnPage";
 import ForgetPassword from "./pages/ForgetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import ResetPassword from "./pages/ResetPassword";
+import ViewCertificate from "./pages/ViewCertificate";
 import InstructorLayout from "./components/Layout/InstructorLayout";
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 import InstructorLogin from "./pages/instructor/InstructorLogin";
@@ -26,24 +27,25 @@ export default function App() {
         <Route path="/dashboard/:tab" element={<Dashboard />} />
         <Route path="/learn/:courseId" element={<LearnPage />} />
         <Route path="/learn/:courseId/:lessonId" element={<LearnPage />} />
-        
+        <Route path="/certificate/:courseId" element={<ViewCertificate />} />
+
         {/* Instructor Routes */}
         <Route path="/instructor/login" element={<InstructorLogin />} />
-        <Route 
-          path="/instructor/dashboard" 
+        <Route
+          path="/instructor/dashboard"
           element={
             <InstructorLayout>
               <InstructorDashboard />
             </InstructorLayout>
-          } 
+          }
         />
-        <Route 
-          path="/instructor/create-quiz/:lessonId?" 
+        <Route
+          path="/instructor/create-quiz/:lessonId?"
           element={
             <InstructorLayout>
               <CreateQuiz />
             </InstructorLayout>
-          } 
+          }
         />
       </Routes>
     </Router>
