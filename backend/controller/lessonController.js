@@ -120,6 +120,15 @@ class LessonController {
         return res.status(400).json({ message: "Invalid course id" });
       }
 
+      // Check enrollment
+      const userId = req.user?.sub;
+      const enrolled = await enrollmentModel.isEnrolled(userId, courseId);
+      if (!enrolled) {
+        console.warn(
+          `User ${userId} not enrolled in course ${courseId}, but allowing lesson fetch for certificate viewing`,
+        );
+      }
+
       const lessons = await this.lessonModel.getByCourseId(courseId);
       return res.status(200).json({ lessons });
     } catch (error) {
