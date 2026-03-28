@@ -4,9 +4,7 @@ import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const API_TARGET_LABEL = import.meta.env.VITE_API_URL || "Vite /api proxy";
-const ASSET_BASE = (
-  import.meta.env.VITE_API_URL || "http://localhost:3000"
-).replace(/\/$/, "");
+const ASSET_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\/$/, "");
 
 const COURSE_COVER_MAP = {
   1: "/upload/lesson/intro-to-cyber-course/cover.svg",
@@ -46,46 +44,6 @@ const COURSE_COVER_FALLBACKS = [
   },
 ];
 
-function formatActivityTime(timestamp) {
-  if (!timestamp) return "Just now";
-
-  const now = Date.now();
-  const time = new Date(timestamp).getTime();
-  if (Number.isNaN(time)) return "Just now";
-
-  const diffMs = Math.max(0, now - time);
-  const minute = 60 * 1000;
-  const hour = 60 * minute;
-  const day = 24 * hour;
-
-  if (diffMs < minute) return "Just now";
-  if (diffMs < hour) return `${Math.floor(diffMs / minute)} min ago`;
-  if (diffMs < day) return `${Math.floor(diffMs / hour)} hr ago`;
-  return `${Math.floor(diffMs / day)} day ago` + (diffMs >= 2 * day ? "s" : "");
-}
-
-function activityAccent(activityType) {
-  if (activityType === "lesson_completed") return "text-emerald-300";
-  if (activityType === "practice") return "text-amber-300";
-  return "text-cyan-300";
-}
-
-function getCourseSubtitle(course) {
-  const rawDescription = String(course?.description || "").trim();
-  if (!rawDescription) return "No description available.";
-
-  // Hide importer placeholder text like: "Imported from /upload/lesson/network-security"
-  // or "Auto-seeded course content from /upload/lesson/..."
-  if (
-    /^Imported from \/upload\/lesson\//i.test(rawDescription) ||
-    /^Auto-seeded course content from \/upload\/lesson\//i.test(rawDescription)
-  ) {
-    return "Curated lessons to build practical cybersecurity skills.";
-  }
-
-  return rawDescription;
-}
-
 export default function Dashboard() {
   const navigate = useNavigate();
   const { tab } = useParams();
@@ -93,7 +51,6 @@ export default function Dashboard() {
   const [courses, setCourses] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [enrolledIds, setEnrolledIds] = useState(new Set());
-  const [enrollments, setEnrollments] = useState([]);
   const [summary, setSummary] = useState({
     enrolledCourses: 0,
     completedCourses: 0,
@@ -113,15 +70,6 @@ export default function Dashboard() {
     currentTab === "my-courses"
       ? courses.filter((course) => enrolledIds.has(course.id))
       : courses;
-
-  const recentActivity =
-    summary.recentActivity?.length > 0
-      ? summary.recentActivity
-      : enrollments.slice(0, 8).map((enrollment) => ({
-          activity_type: "enrollment",
-          activity_text: `Enrolled in ${enrollment.title}`,
-          occurred_at: enrollment.enrolled_at,
-        }));
 
   const filteredCourses = displayedCourses.filter((course) => {
     const keyword = searchQuery.trim().toLowerCase();
@@ -189,22 +137,16 @@ export default function Dashboard() {
         const ids = new Set(
           (enrollmentsRes.data.enrollments || []).map((e) => e.course_id),
         );
-        setEnrollments(enrollmentsRes.data.enrollments || []);
         setEnrolledIds(ids);
 
         // Keep dashboard usable even if summary endpoint fails.
         try {
-          const summaryRes = await axios.get(
-            "/api/users/me/dashboard-summary",
-            {
-              baseURL: API_BASE,
-              headers,
-            },
-          );
+          const summaryRes = await axios.get("/api/users/me/dashboard-summary", {
+            baseURL: API_BASE,
+            headers,
+          });
           setSummary({
-            enrolledCourses: Number(
-              summaryRes.data?.enrolledCourses || ids.size,
-            ),
+            enrolledCourses: Number(summaryRes.data?.enrolledCourses || ids.size),
             completedCourses: Number(summaryRes.data?.completedCourses || 0),
             hoursLearned: Number(summaryRes.data?.hoursLearned || 0),
             recentActivity: summaryRes.data?.recentActivity || [],
@@ -261,7 +203,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A]">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent"></div>
+        <p className="text-cadtBlue">Loading...</p>
       </div>
     );
   }
@@ -300,7 +242,7 @@ export default function Dashboard() {
             </svg>
           </div>
           <p className="text-2xl font-semibold uppercase tracking-wider text-white">
-            Kompi Cyber
+            KOMPI-CYBER
           </p>
         </div>
 
@@ -340,18 +282,6 @@ export default function Dashboard() {
             }
           >
             Progress
-          </NavLink>
-          <NavLink
-            to="/invitations"
-            className={({ isActive }) =>
-              `rounded-lg px-4 py-2 text-sm font-semibold uppercase tracking-wider transition ${
-                isActive
-                  ? "bg-[#FE9A00] text-slate-900"
-                  : "text-slate-200 hover:bg-slate-800 hover:text-white"
-              }`
-            }
-          >
-            Invitations
           </NavLink>
         </div>
 
@@ -414,7 +344,7 @@ export default function Dashboard() {
           </div>
 
           {error && (
-            <div className="mb-6 rounded-xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
+            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
             </div>
           )}
@@ -423,32 +353,26 @@ export default function Dashboard() {
             <>
               {/* Stats Cards */}
               <div className="mb-10 grid gap-6 md:grid-cols-4">
-                <div className="rounded-2xl border border-cyan-400/20 bg-slate-800/60 p-6">
-                  <p className="text-sm text-slate-400">Enrolled Courses</p>
-                  <p className="mt-2 text-2xl font-bold text-cyan-300">
-                    {summary.enrolledCourses || enrolledIds.size}
+                <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
+                  <p className="text-sm text-slate-600">Enrolled Courses</p>
+                  <p className="mt-2 text-2xl font-bold text-cadtBlue">
+                    {enrolledIds.size}
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-cyan-400/20 bg-slate-800/60 p-6">
-                  <p className="text-sm text-slate-400">Completed</p>
-                  <p className="mt-2 text-2xl font-bold text-cyan-300">
-                    {summary.completedCourses || 0}
-                  </p>
+                <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
+                  <p className="text-sm text-slate-600">Completed</p>
+                  <p className="mt-2 text-2xl font-bold text-cadtBlue">0</p>
                 </div>
 
-                <div className="rounded-2xl border border-cyan-400/20 bg-slate-800/60 p-6">
-                  <p className="text-sm text-slate-400">Certificates</p>
-                  <p className="mt-2 text-2xl font-bold text-cyan-300">
-                    {Math.max(0, summary.completedCourses || 0)}
-                  </p>
+                <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
+                  <p className="text-sm text-slate-600">Certificates</p>
+                  <p className="mt-2 text-2xl font-bold text-cadtBlue">0</p>
                 </div>
 
-                <div className="rounded-2xl border border-cyan-400/20 bg-slate-800/60 p-6">
-                  <p className="text-sm text-slate-400">Hours Learned</p>
-                  <p className="mt-2 text-2xl font-bold text-cyan-300">
-                    {summary.hoursLearned || 0}
-                  </p>
+                <div className="rounded-2xl border border-cadtLine bg-white p-6 shadow-card">
+                  <p className="text-sm text-slate-600">Hours Learned</p>
+                  <p className="mt-2 text-2xl font-bold text-cadtBlue">0</p>
                 </div>
               </div>
 
@@ -457,30 +381,10 @@ export default function Dashboard() {
                 <h2 className="mb-6 text-2xl font-bold text-white">
                   Recent Activity
                 </h2>
-                <div className="rounded-2xl border border-cyan-400/20 bg-slate-800/60 p-8">
-                  {recentActivity.length === 0 ? (
-                    <p className="text-center text-slate-400">
-                      No recent activity. Start learning now!
-                    </p>
-                  ) : (
-                    <div className="space-y-4">
-                      {recentActivity.map((activity, index) => (
-                        <div
-                          key={`${activity.activity_type || "activity"}-${activity.occurred_at || index}-${index}`}
-                          className="flex items-center justify-between rounded-xl border border-slate-700/60 bg-slate-900/50 px-4 py-3"
-                        >
-                          <p
-                            className={`text-sm font-medium ${activityAccent(activity.activity_type)}`}
-                          >
-                            {activity.activity_text || "Learning activity"}
-                          </p>
-                          <p className="text-xs text-slate-400">
-                            {formatActivityTime(activity.occurred_at)}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                <div className="rounded-2xl border border-cadtLine bg-white p-8 shadow-card">
+                  <p className="text-center text-slate-500">
+                    No recent activity. Start learning now!
+                  </p>
                 </div>
               </div>
             </>
@@ -564,7 +468,7 @@ export default function Dashboard() {
               {filteredCourses.map((course) => (
                 <div
                   key={course.id}
-                  className="flex flex-col rounded-2xl border border-slate-700/60 bg-[#0F172A] p-6 transition hover:border-cyan-400/30 hover:shadow-lg hover:shadow-cyan-500/5"
+                  className="rounded-2xl bg-[#0F172A] p-6 shadow-card transition hover:shadow-lg"
                 >
                   {getCourseCoverSrc(course) ? (
                     <img
@@ -573,119 +477,62 @@ export default function Dashboard() {
                       className="mb-4 h-32 w-full rounded-xl object-cover"
                     />
                   ) : (
-                    <div className="mb-4 h-32 rounded-xl bg-gradient-to-br from-cyan-900 to-slate-800"></div>
+                    <div className="mb-4 h-32 rounded-xl bg-gradient-to-br from-cadtBlue to-cadtNavy"></div>
                   )}
-                  <h3 className="font-semibold text-white">{course.title}</h3>
-                  <p className="mt-1 line-clamp-2 text-sm text-slate-400">
-                    {getCourseSubtitle(course)}
+                  <h3 className="font-semibold text-white">
+                    {course.title}
+                  </h3>
+                  <p className="mt-2 line-clamp-3 text-sm text-slate-400">
+                    {course.description || "No course description available."}
                   </p>
-                  <div className="mt-4 flex items-center gap-4 text-xs text-slate-500">
+                  <div className="mt-4 flex items-center gap-4 text-xs text-slate-400">
                     {/* Modules */}
                     <span className="flex items-center gap-1">
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="h-4 w-4"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M4 6H20M4 10H20M4 14H14M4 18H10"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                        />
+                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M4 6H20M4 10H20M4 14H14M4 18H10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
                       </svg>
                       {course.module_count ?? 0} Modules
                     </span>
                     {/* Duration */}
                     <span className="flex items-center gap-1">
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="h-4 w-4"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true"
-                      >
-                        <circle
-                          cx="12"
-                          cy="12"
-                          r="8"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                        />
-                        <path
-                          d="M12 8V12L14.5 14.5"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
+                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.8"/>
+                        <path d="M12 8V12L14.5 14.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                       {course.duration_hrs ?? 0} hrs
                     </span>
                     {/* Level */}
                     <span className="flex items-center gap-1 capitalize">
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="h-4 w-4"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M4 20V14"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                        />
-                        <path
-                          d="M9 20V10"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                        />
-                        <path
-                          d="M14 20V6"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                        />
-                        <path
-                          d="M19 20V2"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                        />
+                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M4 20V14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                        <path d="M9 20V10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                        <path d="M14 20V6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                        <path d="M19 20V2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
                       </svg>
                       {course.level ?? "Beginner"}
                     </span>
                   </div>
-                  <div className="mt-auto pt-4">
-                    {enrolledIds.has(course.id) ? (
-                      <button
-                        onClick={() => navigate(`/learn/${course.id}`)}
-                        className="w-full rounded-2xl bg-green-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-400 focus:outline-none focus:ring-4 focus:ring-green-400/30"
-                      >
-                        Continue Learning
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleEnroll(course.id)}
-                        disabled={enrollingId === course.id}
-                        className="w-full rounded-2xl bg-[#FE9A00] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#e08800] focus:outline-none focus:ring-4 focus:ring-[#FE9A00]/30 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {enrollingId === course.id
-                          ? "Enrolling..."
-                          : "Enroll Now"}
-                      </button>
-                    )}
-                  </div>
+                  {enrolledIds.has(course.id) ? (
+                    <button
+                      onClick={() => navigate(`/learn/${course.id}`)}
+                      className="mt-4 w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
+                    >
+                      Continue Learning
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleEnroll(course.id)}
+                      disabled={enrollingId === course.id}
+                      className="mt-4 w-full rounded-lg bg-[#FE9A00] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#e08800] disabled:opacity-60"
+                    >
+                      {enrollingId === course.id ? "Enrolling..." : "Enroll"}
+                    </button>
+                  )}
                 </div>
               ))}
 
               {filteredCourses.length === 0 && (
-                <div className="rounded-2xl border border-cyan-400/20 bg-slate-800/60 p-6 text-sm text-slate-400">
+                <div className="rounded-2xl border border-cadtLine bg-white p-6 text-sm text-slate-500">
                   {currentTab === "my-courses"
                     ? "You have not enrolled in any course yet."
                     : searchQuery.trim()
@@ -725,11 +572,11 @@ export default function Dashboard() {
               </svg>
             </div>
             <span className="text-sm font-semibold uppercase tracking-wider text-white">
-              Kompi Cyber
+              KOMPI-CYBER
             </span>
           </div>
           <p className="text-sm text-slate-400">
-            © 2026 CADT. All rights reserved.
+            © 2026 KOMPI-CYBER. All rights reserved.
           </p>
         </div>
       </footer>
