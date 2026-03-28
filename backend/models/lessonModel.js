@@ -79,17 +79,28 @@ class LessonModel {
   }
 
   async resolveLessonContent(row) {
-    const relPath = this.normalizeMarkdownPath(row?.content_md);
-    if (relPath) {
-      const markdown = await this.readMarkdownByRelativePath(relPath);
-      if (typeof markdown === "string" && markdown.trim().length > 0) {
-        return { ...row, content_md: markdown };
+    // First check if content is already in database and valid
+    const dbContent = row?.content_md;
+    if (typeof dbContent === "string" && dbContent.trim().length > 0) {
+      // Check if it's a file path or actual content
+      const relPath = this.normalizeMarkdownPath(dbContent);
+      if (relPath) {
+        // It's a path, try to read the file
+        const markdown = await this.readMarkdownByRelativePath(relPath);
+        if (typeof markdown === "string" && markdown.trim().length > 0) {
+          return { ...row, content_md: markdown };
+        }
+      } else {
+        // It's actual markdown content in the database, use it directly
+        return row;
       }
     }
 
+    // Only use fallback if database content is empty or missing
     const fallbackPath = await this.findFallbackMarkdownPath(row);
     if (fallbackPath) {
-      const fallbackMarkdown = await this.readMarkdownByRelativePath(fallbackPath);
+      const fallbackMarkdown =
+        await this.readMarkdownByRelativePath(fallbackPath);
       if (
         typeof fallbackMarkdown === "string" &&
         fallbackMarkdown.trim().length > 0

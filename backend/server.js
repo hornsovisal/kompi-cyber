@@ -2,7 +2,10 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 
-require("dotenv").config({ path: path.resolve(__dirname, ".env"), override: true });
+require("dotenv").config({
+  path: path.resolve(__dirname, ".env"),
+  override: true,
+});
 
 const db = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
@@ -15,6 +18,8 @@ const quizRoutes = require("./routes/quizRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const submissionRoutes = require("./routes/submissionRoutes");
 const instructorRoutes = require("./routes/instructorRoutes");
+const certificateRoutes = require("./routes/certificateRoutes");
+const invitationRoutes = require("./routes/invitationRoutes");
 
 const app = express();
 
@@ -34,6 +39,8 @@ app.use("/api/quizzes", quizRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/instructor", instructorRoutes);
+app.use("/api/certificates", certificateRoutes);
+app.use("/api/invitations", invitationRoutes);
 
 const PORT = process.env.PORT || 5000;
 
@@ -44,7 +51,9 @@ async function startServer() {
       await db.query("SELECT 1");
       console.log("Database connected successfully.");
     } catch (dbError) {
-      console.log("Database not available, running with in-memory storage for authentication.");
+      console.log(
+        "Database not available, running with in-memory storage for authentication.",
+      );
     }
 
     app.listen(PORT, () => {

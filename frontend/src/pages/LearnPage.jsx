@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import logo from "../kompi-cyber-logo-slide.svg";
+import CertificateSection from "../components/CertificateSection";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const API_TARGET_LABEL = import.meta.env.VITE_API_URL || "Vite /api proxy";
@@ -60,6 +62,64 @@ function MarkdownBlock({ content }) {
       );
       blockquoteLines = [];
     }
+  };
+
+  const flushTable = (key) => {
+    if (tableLines.length < 2) {
+      tableLines = [];
+      return;
+    }
+
+    // First line is header, second line is separator
+    const headerLine = tableLines[0];
+    const headers = headerLine
+      .split("|")
+      .map((h) => h.trim())
+      .filter((h) => h.length > 0);
+
+    const rows = tableLines.slice(2).map((line) =>
+      line
+        .split("|")
+        .map((cell) => cell.trim())
+        .filter((cell) => cell.length > 0),
+    );
+
+    elements.push(
+      <div
+        key={`table-${key}`}
+        className="mb-5 overflow-x-auto rounded-lg border border-slate-200"
+      >
+        <table className="min-w-full divide-y divide-slate-200">
+          <thead className="bg-slate-100">
+            <tr>
+              {headers.map((header, idx) => (
+                <th
+                  key={`th-${idx}`}
+                  className="px-4 py-3 text-left font-semibold text-slate-900"
+                >
+                  {renderInline(header)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200 bg-white">
+            {rows.map((row, rowIdx) => (
+              <tr key={`tr-${rowIdx}`}>
+                {row.map((cell, cellIdx) => (
+                  <td
+                    key={`td-${rowIdx}-${cellIdx}`}
+                    className="px-4 py-3 text-slate-700"
+                  >
+                    {renderInline(cell)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>,
+    );
+    tableLines = [];
   };
 
   // Enhanced inline rendering for bold, italic, code
@@ -147,6 +207,7 @@ function MarkdownBlock({ content }) {
       } else {
         flushList(i);
         flushBlockquote(i);
+        flushTable(i);
         codeBlock = trimmed.slice(3) || "bash";
       }
       return;
@@ -165,6 +226,20 @@ function MarkdownBlock({ content }) {
 
     if (blockquoteLines.length > 0 && !trimmed.startsWith("> ")) {
       flushBlockquote(i);
+    }
+
+    // Handle tables - detect pipe character
+    if (trimmed.includes("|")) {
+      if (tableLines.length === 0) {
+        flushList(i);
+      }
+      tableLines.push(trimmed);
+      return;
+    }
+
+    // If we were building a table and now there's no pipe, flush it
+    if (tableLines.length > 0 && !trimmed.includes("|")) {
+      flushTable(i);
     }
 
     if (!trimmed) {
@@ -224,6 +299,7 @@ function MarkdownBlock({ content }) {
 
   flushList("end");
   flushBlockquote("end");
+  flushTable("end");
   flushCodeBlock("end");
   return <>{elements}</>;
 }
@@ -441,8 +517,9 @@ export default function LearnPage() {
 
   const handleEnroll = async () => {
     setEnrolling(true);
+    setError("");
     try {
-      await axios.post(
+      const enrollRes = await axios.post(
         "/api/enrollments",
         { course_id: Number(courseId) },
         {
@@ -450,11 +527,50 @@ export default function LearnPage() {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
-      setNotEnrolled(false);
-      // reload lessons
-      window.location.reload();
+
+      if (enrollRes.data?.enrolled) {
+        setNotEnrolled(false);
+
+        // Retry loading lessons after enrollment with a small delay
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        const headers = { Authorization: `Bearer ${token}` };
+        try {
+          const lessonsRes = await axios.get(
+            `/api/courses/${courseId}/lessons`,
+            {
+              baseURL: API_BASE,
+              headers,
+            },
+          );
+
+          const fetchedLessons = lessonsRes.data.lessons || [];
+          if (fetchedLessons.length > 0) {
+            setLessons(fetchedLessons);
+
+            // Load the first lesson
+            const firstLessonId = Number(fetchedLessons[0].id);
+            const lessonRes = await axios.get(`/api/lessons/${firstLessonId}`, {
+              baseURL: API_BASE,
+              headers,
+            });
+            setActiveLesson(lessonRes.data.lesson);
+            navigate(`/learn/${courseId}/${firstLessonId}`, { replace: true });
+          }
+        } catch (lessonErr) {
+          console.error("Failed to load lessons after enrollment:", lessonErr);
+          // Fall back to page reload if manual reload fails
+          window.location.reload();
+        }
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to enroll");
+      console.error("Enrollment error:", err);
+      setError(
+        err.response?.data?.message ||
+          (err.message === "Request failed with status code 401"
+            ? "Your session expired. Please log in again."
+            : "Failed to enroll in course. Please try again."),
+      );
     } finally {
       setEnrolling(false);
     }
@@ -869,18 +985,8 @@ export default function LearnPage() {
     <div className="min-h-screen bg-[#171717] p-0">
       <div className="min-h-screen overflow-hidden bg-[#ECEEF2] shadow-2xl ring-1 ring-black/10">
         <header className="flex items-center justify-between bg-[#032A56] px-4 py-3 text-white md:px-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-400 text-sm font-bold text-slate-900">
-              KC
-            </div>
-            <div>
-              <p className="text-sm font-semibold leading-none">
-                Next Gen Engagement
-              </p>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-blue-200">
-                Learning Platform
-              </p>
-            </div>
+          <div className="flex items-center">
+            <img src={logo} alt="Kompi-Cyber" className="h-10" />
           </div>
 
           <div className="rounded-full bg-[#012149] p-1">
@@ -1563,6 +1669,14 @@ export default function LearnPage() {
                       )}
                     </div>
                   )}
+
+                  <div className="mt-8">
+                    <CertificateSection
+                      courseId={courseId}
+                      courseName={course?.title}
+                      token={token}
+                    />
+                  </div>
                 </>
               )}
             </div>

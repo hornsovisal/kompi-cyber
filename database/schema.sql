@@ -102,6 +102,30 @@ CREATE TABLE `enrollments` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ------------------------------------------------------------
+-- 5.5. course_invitations
+--      Teacher invites a student (by email) to a course.
+--      Student can accept/reject the invitation.
+-- ------------------------------------------------------------
+CREATE TABLE `course_invitations` (
+  `id`           INT          NOT NULL AUTO_INCREMENT,
+  `course_id`    INT          NOT NULL,
+  `teacher_id`   CHAR(36)     NOT NULL,              -- instructor who sent invite
+  `student_email` VARCHAR(150) NOT NULL,             -- email of invited student
+  `status`       ENUM('pending','accepted','rejected') NOT NULL DEFAULT 'pending',
+  `invited_at`   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `responded_at` TIMESTAMP    NULL DEFAULT NULL,
+  `student_id`   CHAR(36)     NULL,                  -- FK to user once they accept
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_invitations_course_email` (`course_id`, `student_email`),
+  KEY `idx_invitations_teacher_id` (`teacher_id`),
+  KEY `idx_invitations_student_email` (`student_email`),
+  KEY `idx_invitations_status` (`status`),
+  CONSTRAINT `fk_invitations_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_invitations_teacher` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_invitations_student` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------
 -- 6. modules
 --    Ordered chapters within a course.
 --    e.g. Course "Ethical Hacking" → Module 1 "Reconnaissance"
@@ -290,10 +314,12 @@ CREATE TABLE `certificates` (
   `user_id`          CHAR(36)     NOT NULL,
   `course_id`        INT          NOT NULL,
   `certificate_code` CHAR(20)     NOT NULL,
+  `certificate_hash` CHAR(16),
   `issued_at`        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `pdf_path`         VARCHAR(500),
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_certificates_code`        (`certificate_code`),
+  UNIQUE KEY `uq_certificates_hash`        (`certificate_hash`),
   UNIQUE KEY `uq_certificates_user_course` (`user_id`, `course_id`),
   KEY `idx_certificates_course_id` (`course_id`),
   CONSTRAINT `fk_certificates_user`   FOREIGN KEY (`user_id`)   REFERENCES `users`   (`id`),

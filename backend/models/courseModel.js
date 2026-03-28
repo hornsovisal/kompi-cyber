@@ -234,7 +234,7 @@ class CourseModel {
     const seedValues = [
       domainId,
       "Introduction to Cybersecurity",
-      "Auto-seeded course content from /upload/lesson/intro-to-cyber-course",
+      "Starter course on threats, CIA triad, and cyber hygiene.",
     ];
 
     if (hasCoverImage) {
