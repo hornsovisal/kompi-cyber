@@ -18,6 +18,7 @@ export default function ViewCertificate() {
   const navigate = useNavigate();
   const [certificate, setCertificate] = useState(null);
   const [courseData, setCourseData] = useState(null);
+  const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState(false);
@@ -54,10 +55,40 @@ export default function ViewCertificate() {
           );
           if (courseRes.ok) {
             const course = await courseRes.json();
-            setCourseData(course);
+            setCourseData(course.course || course);
+          }
+
+          // Fetch lessons for the course
+          try {
+            const lessonsRes = await fetch(
+              `${API_BASE}/api/lessons/course/${certData.certificate.course_id}`,
+              { headers },
+            );
+            if (lessonsRes.ok) {
+              const lessonsData = await lessonsRes.json();
+              console.log("Lessons fetched:", lessonsData);
+              setLessons(lessonsData.lessons || lessonsData || []);
+            } else {
+              console.warn(
+                "Lessons fetch returned non-ok status:",
+                lessonsRes.status,
+              );
+              // Try alternative endpoint
+              const altRes = await fetch(
+                `${API_BASE}/api/courses/${certData.certificate.course_id}/lessons`,
+                { headers },
+              );
+              if (altRes.ok) {
+                const altData = await altRes.json();
+                console.log("Lessons from alternative endpoint:", altData);
+                setLessons(altData.lessons || altData || []);
+              }
+            }
+          } catch (lessonErr) {
+            console.warn("Could not fetch lessons:", lessonErr);
           }
         } catch (err) {
-          console.log("Could not fetch course details");
+          console.log("Could not fetch course details or lessons:", err);
         }
       }
     } catch (err) {
@@ -118,6 +149,11 @@ export default function ViewCertificate() {
     }
   };
 
+  const handleAddToLinkedIn = () => {
+    const linkedinShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`;
+    window.open(linkedinShareUrl, "_blank", "width=600,height=400");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
@@ -155,13 +191,79 @@ export default function ViewCertificate() {
     courseData?.description ||
     "A comprehensive cybersecurity course covering essential concepts and practical skills.";
 
-  const skillsLearned = [
-    "Cybersecurity fundamentals",
-    "Threat identification and mitigation",
-    "Security best practices",
-    "Risk assessment techniques",
-    "Incident response procedures",
-  ];
+  // Extract skills from lesson titles
+  const extractSkills = () => {
+    if (!lessons || lessons.length === 0) {
+      return [
+        "Security Principles",
+        "Threat Identification",
+        "Risk Assessment",
+        "Security Best Practices",
+        "Incident Response",
+      ];
+    }
+
+    // Extract first 6 unique lesson titles as skills
+    return lessons.slice(0, 6).map((lesson) => {
+      const title = lesson.title || lesson.name || "Security Topic";
+      return title.replace(/^module.*?:\s*/i, "").substring(0, 30);
+    });
+  };
+
+  // Fallback modules when lessons aren't available
+  const getFallbackModules = () => {
+    return [
+      {
+        title: "Module 1: Course Fundamentals",
+        lessons: [
+          "✓ Introduction and Overview",
+          "✓ Core Concepts",
+          "✓ Best Practices",
+        ],
+        index: 0,
+      },
+      {
+        title: "Module 2: Practical Applications",
+        lessons: [
+          "✓ Hands-on Exercises",
+          "✓ Real-world Scenarios",
+          "✓ Problem Solving",
+        ],
+        index: 1,
+      },
+      {
+        title: "Module 3: Advanced Topics",
+        lessons: ["✓ Deep Dive", "✓ Expert Techniques", "✓ Case Studies"],
+        index: 2,
+      },
+    ];
+  };
+
+  // Group lessons by module (if available)
+  const groupLessonsByModule = () => {
+    if (!lessons || lessons.length === 0) {
+      // Use course description to determine if we should show fallback
+      return getFallbackModules();
+    }
+
+    // Group by module_title or module_id
+    const grouped = {};
+    lessons.forEach((lesson) => {
+      const moduleKey =
+        lesson.module_title || `Module ${lesson.module_id || 1}`;
+      if (!grouped[moduleKey]) {
+        grouped[moduleKey] = [];
+      }
+      grouped[moduleKey].push(lesson);
+    });
+
+    // Convert to array format
+    return Object.entries(grouped).map(([title, lessonsList], idx) => ({
+      title: title,
+      lessons: lessonsList.map((l) => `✓ ${l.title || l.name || "Topic"}`),
+      index: idx,
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-white py-6 px-4">
@@ -325,35 +427,16 @@ export default function ViewCertificate() {
               </button>
             </div>
 
-            {/* Add to Profile Section */}
-            <div className="flex gap-3 mb-6">
-              <button className="flex-1 bg-[#378ADD] text-white px-4 py-3 rounded-lg font-semibold hover:bg-[#2966a3] transition-all">
-                <Share2 size={18} className="inline mr-2" />
-                Add to Profile
-              </button>
-              <button className="flex-1 border-2 border-[#378ADD] text-[#378ADD] px-4 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all">
-                <BookOpen size={18} className="inline mr-2" />
-                Add to Resume
-              </button>
-            </div>
-
-            {/* Instructor Info */}
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">
-                Instructor
-              </h3>
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-[#378ADD] to-[#0C447C] rounded-full flex items-center justify-center text-white font-bold text-lg">
-                  MC
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-800">
-                    Prof. Michael Chan
-                  </p>
-                  <p className="text-sm text-gray-600">Course Instructor</p>
-                </div>
-              </div>
-            </div>
+            {/* Add to LinkedIn Section */}
+            <button
+              onClick={handleAddToLinkedIn}
+              className="w-full bg-[#0A66C2] text-white px-4 py-3 rounded-lg font-semibold hover:bg-[#084BA5] transition-all flex items-center justify-center gap-2 mb-4"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+              </svg>
+              Add to LinkedIn
+            </button>
           </div>
         </div>
 
@@ -375,22 +458,13 @@ export default function ViewCertificate() {
               Skills You Gained
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {[
-                "Security Principles",
-                "Business Continuity",
-                "Disaster Recovery",
-                "Incident Response",
-                "Access Control",
-                "Network Security Fundamentals",
-                "Security Operations",
-                "Threat Intelligence",
-              ].map((skill, index) => (
+              {extractSkills().map((skill, index) => (
                 <div
                   key={index}
                   className="bg-blue-50 border border-[#378ADD] rounded-lg px-4 py-2 text-center"
                 >
                   <p className="text-sm font-semibold text-[#0C447C]">
-                    {skill}
+                    {skill.replace(/"|'/g, "").substring(0, 30)}
                   </p>
                 </div>
               ))}
@@ -403,54 +477,22 @@ export default function ViewCertificate() {
               Course Outline
             </h3>
             <div className="space-y-4">
-              {[
-                {
-                  title: "Module 1: Security Principles",
-                  lessons: [
-                    "✓ Cybersecurity, integrity & availability (CIA)",
-                    "✓ Authentication and authorization",
-                    "✓ Non-repudiation",
-                  ],
-                },
-                {
-                  title: "Module 2: Business Continuity & Disaster Recovery",
-                  lessons: [
-                    "✓ Business impact analysis",
-                    "✓ Recovery strategies",
-                    "✓ Testing procedures",
-                  ],
-                },
-                {
-                  title: "Module 3: Assess Credentials",
-                  lessons: [
-                    "✓ Physical access controls",
-                    "✓ Identity management",
-                    "✓ Access control models",
-                  ],
-                },
-                {
-                  title: "Module 4: Network Security",
-                  lessons: [
-                    "✓ Network design principles",
-                    "✓ Firewall configuration",
-                    "✓ VPN technologies",
-                  ],
-                },
-              ].map((module, index) => (
+              {groupLessonsByModule().map((module, index) => (
                 <div
                   key={index}
                   className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition"
                 >
                   <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
                     <span className="w-6 h-6 bg-[#378ADD] text-white rounded-full flex items-center justify-center text-xs">
-                      {index + 1}
+                      {module.index + 1}
                     </span>
-                    {module.title}
+                    {module.title?.replace(/"|'/g, "") ||
+                      `Module ${module.index + 1}`}
                   </h4>
                   <ul className="space-y-2 ml-8">
                     {module.lessons.map((lesson, i) => (
                       <li key={i} className="text-gray-700 text-sm">
-                        {lesson}
+                        {lesson.replace(/"|'/g, "")}
                       </li>
                     ))}
                   </ul>
