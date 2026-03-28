@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Award, Download, CheckCircle } from "lucide-react";
+import { Award, Download, CheckCircle, Eye } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
 export default function CertificateSection({ courseId, courseName, token }) {
+  const navigate = useNavigate();
   const [completionStatus, setCompletionStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -101,6 +103,10 @@ export default function CertificateSection({ courseId, courseName, token }) {
         document.body.removeChild(link);
       }, 100);
     }
+  };
+
+  const handleViewCertificate = () => {
+    navigate(`/certificate/${courseId}`);
   };
 
   if (loading) {
@@ -228,18 +234,27 @@ export default function CertificateSection({ courseId, courseName, token }) {
 
           <div className="flex gap-3 flex-shrink-0">
             {certificate ? (
-              <button
-                onClick={handleDownloadCertificate}
-                className="flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-emerald-700 hover:shadow-xl active:scale-95"
-              >
-                <Download className="h-4 w-4" />
-                Download Certificate
-              </button>
+              <>
+                <button
+                  onClick={handleViewCertificate}
+                  className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#378ADD] to-[#0C447C] px-5 py-3 text-sm font-bold text-white shadow-lg transition hover:shadow-xl active:scale-95"
+                >
+                  <Eye className="h-4 w-4" />
+                  View Certificate
+                </button>
+                <button
+                  onClick={handleDownloadCertificate}
+                  className="flex items-center gap-2 rounded-lg bg-[#EF9F27] px-5 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-orange-600 hover:shadow-xl active:scale-95"
+                >
+                  <Download className="h-4 w-4" />
+                  Download
+                </button>
+              </>
             ) : (
               <button
                 onClick={handleGenerateCertificate}
                 disabled={generating || !completionStatus?.completed}
-                className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-blue-700 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#378ADD] to-[#0C447C] px-5 py-3 text-sm font-bold text-white shadow-lg transition hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
               >
                 <Award className="h-4 w-4" />
                 {generating ? "Generating..." : "Get Certificate"}
