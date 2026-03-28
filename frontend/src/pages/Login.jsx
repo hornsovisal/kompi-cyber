@@ -104,7 +104,7 @@ export default function Login() {
               </svg>
             </div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-300">
-              Kompi-Cyber
+              KOMPI-CYBER
             </p>
             <h1 className="mt-3 text-3xl font-bold text-slate-100">Welcome back</h1>
             <p className="mt-2 text-sm text-slate-400">

@@ -1,15 +1,25 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, LogOut, Home, BookOpen, BarChart3, Settings } from 'lucide-react';
+import { Menu, X, LogOut, Home, BookOpen, BarChart3, Settings, FileQuestion, Users } from 'lucide-react';
 
 export default function InstructorLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const instructor = localStorage.getItem('instructor');
+
+    if (!token || !instructor) {
+      navigate('/instructor/login', { replace: true });
+    }
+  }, [navigate]);
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('instructor');
     navigate('/instructor/login');
   };
 
@@ -18,7 +28,9 @@ export default function InstructorLayout({ children }) {
   const navItems = [
     { label: 'Dashboard', icon: Home, path: '/instructor/dashboard' },
     { label: 'Courses', icon: BookOpen, path: '/instructor/courses' },
-    { label: 'Analytics', icon: BarChart3, path: '/instructor/analytics' },
+    { label: 'Quizzes', icon: FileQuestion, path: '/instructor/quizzes' },
+    { label: 'Performance', icon: Users, path: '/instructor/performance' },
+    { label: 'Analytics', icon: BarChart3, path: '/instructor/dashboard' },
     { label: 'Settings', icon: Settings, path: '/instructor/settings' },
   ];
 
@@ -31,7 +43,7 @@ export default function InstructorLayout({ children }) {
         } bg-slate-900 text-white transition-all duration-300 fixed h-screen overflow-y-auto z-40 lg:relative lg:w-64`}
       >
         <div className="p-6">
-          <h1 className="text-xl font-bold">KC NextGen</h1>
+          <h1 className="text-xl font-bold">KOMPI-CYBER</h1>
           <p className="text-slate-400 text-xs mt-1">Instructor Portal</p>
         </div>
 

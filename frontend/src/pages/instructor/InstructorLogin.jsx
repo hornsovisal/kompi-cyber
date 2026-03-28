@@ -8,15 +8,6 @@ import {
 
 const OTP_EXPIRY_SECONDS = 600;
 
-// ── Demo accounts aligned with LecturerModel
-const DEMOS = [
-  { email: "sarah.johnson@cadt.edu.kh", pwd: "password123", av: "SJ", name: "Dr. Sarah Johnson",   course: "Network Security" },
-  { email: "michael.chen@cadt.edu.kh",  pwd: "password123", av: "MC", name: "Prof. Michael Chen",  course: "Web Security" },
-  { email: "lisa.rodriguez@cadt.edu.kh",pwd: "password123", av: "LR", name: "Dr. Lisa Rodriguez",  course: "Incident Response" },
-  { email: "david.kim@cadt.edu.kh",     pwd: "password123", av: "DK", name: "Mr. David Kim",       course: "Intro to Linux" },
-  { email: "emma.wilson@cadt.edu.kh",   pwd: "password123", av: "EW", name: "Dr. Emma Wilson",     course: "Intro to Cybersecurity" },
-];
-
 export default function InstructorLogin() {
   const navigate = useNavigate();
 
@@ -32,6 +23,15 @@ export default function InstructorLogin() {
   const [error, setError]         = useState("");
   const [pending, setPending]     = useState(null);
   const otpRefs                   = useRef([]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const instructor = localStorage.getItem("instructor");
+
+    if (token && instructor) {
+      navigate("/instructor/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   // ── Countdown
   useEffect(() => {
@@ -149,16 +149,18 @@ export default function InstructorLogin() {
   // ── Success — stores token + instructor, redirects to InstructorDashboard
   const loginSuccess = (inst) => {
     localStorage.setItem("token", inst.token);
-    // Store fields InstructorDashboard.jsx reads: id, name, email, department, employeeId
-    localStorage.setItem("instructor", JSON.stringify({
-      id:         inst.id,
-      name:       inst.name,
-      email:      inst.email,
+    const instructorData = {
+      id: inst.id,
+      name: inst.name,
+      email: inst.email,
       department: inst.department,
+      courses: inst.courses || [],
       employeeId: inst.employeeId,
-    }));
+      isVerified: inst.isVerified,
+    };
+    localStorage.setItem("instructor", JSON.stringify(instructorData));
+    localStorage.setItem("user", JSON.stringify(instructorData));
     setStep("success");
-    // InstructorDashboard.jsx checks localStorage.getItem("token") on mount
     setTimeout(() => navigate("/instructor/dashboard"), 1200);
   };
 
@@ -190,7 +192,6 @@ export default function InstructorLogin() {
         @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         input:focus { border-color: #38bdf8 !important; box-shadow: 0 0 0 3px rgba(56,189,248,0.12); }
         button:hover:not(:disabled) { opacity: 0.88; }
-        .demo-btn:hover { border-color: rgba(56,189,248,0.4) !important; background: rgba(56,189,248,0.05) !important; }
       `}</style>
 
       <div style={S.grid} />
@@ -201,7 +202,7 @@ export default function InstructorLogin() {
         <div style={S.brand}>
           <div style={S.iconRing}><Shield size={26} color="#38bdf8" /></div>
           <div>
-            <h1 style={S.brandName}>CADT</h1>
+            <h1 style={S.brandName}>KOMPI-CYBER</h1>
             <p style={S.brandSub}>Instructor Portal</p>
           </div>
         </div>
@@ -250,26 +251,6 @@ export default function InstructorLogin() {
                   : <><span>Sign In</span><ArrowRight size={16} /></>}
               </button>
             </form>
-
-            {/* Demo accounts — aligned with LecturerModel */}
-            <div style={S.demoBox}>
-              <p style={S.demoLabel}>Quick Fill — Demo Accounts</p>
-              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                {DEMOS.map(d => (
-                  <button key={d.email} className="demo-btn"
-                    style={S.demoBtn} onClick={()=>{ setEmail(d.email); setPassword(d.pwd); }}>
-                    <span style={S.av}>{d.av}</span>
-                    <div style={{ textAlign:"left" }}>
-                      <p style={{ margin:0, color:"#94a3b8", fontSize:12, fontWeight:600 }}>{d.name}</p>
-                      <p style={{ margin:0, color:"#475569", fontSize:11 }}>{d.course}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-              <p style={{ color:"#334155", fontSize:11, textAlign:"center", marginTop:10 }}>
-                🔑 Password: <span style={{ fontFamily:"monospace", color:"#38bdf8" }}>password123</span>
-              </p>
-            </div>
           </div>
         )}
 
@@ -376,16 +357,6 @@ const S = {
   back: { marginTop:10, background:"none", border:"none", color:"#475569",
     fontSize:13, cursor:"pointer", padding:"8px 0", width:"100%",
     textAlign:"center", fontFamily:"'DM Sans',sans-serif" },
-  demoBox: { marginTop:28, borderTop:"1px solid #0f172a", paddingTop:20 },
-  demoLabel: { color:"#334155", fontSize:10, fontWeight:700, textTransform:"uppercase",
-    letterSpacing:"1.2px", marginBottom:10 },
-  demoBtn: { background:"rgba(15,23,42,0.5)", border:"1px solid #1e293b",
-    borderRadius:8, padding:"8px 12px", cursor:"pointer", display:"flex",
-    alignItems:"center", gap:10, width:"100%", transition:"border-color .2s, background .2s" },
-  av: { width:28, height:28, borderRadius:6, background:"rgba(56,189,248,0.12)",
-    border:"1px solid rgba(56,189,248,0.25)", color:"#38bdf8", fontSize:9,
-    fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center",
-    flexShrink:0, fontFamily:"'JetBrains Mono',monospace" },
   otpRow: { display:"flex", gap:8, justifyContent:"center", marginBottom:18 },
   otpBox: { width:50, height:58, background:"rgba(15,23,42,0.8)", border:"1.5px solid #1e293b",
     borderRadius:10, textAlign:"center", fontSize:22, fontWeight:700,

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
@@ -11,6 +11,8 @@ import InstructorLayout from "./components/Layout/InstructorLayout";
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 import InstructorLogin from "./pages/instructor/InstructorLogin";
 import CreateQuiz from "./pages/instructor/CreateQuiz";
+import ManageQuizzes from "./pages/instructor/ManageQuizzes";
+import StudentPerformance from "./pages/instructor/StudentPerformance";
 
 export default function App() {
   return (
@@ -28,6 +30,7 @@ export default function App() {
         <Route path="/learn/:courseId/:lessonId" element={<LearnPage />} />
         
         {/* Instructor Routes */}
+        <Route path="/instructor" element={<Navigate to="/instructor/login" replace />} />
         <Route path="/instructor/login" element={<InstructorLogin />} />
         <Route 
           path="/instructor/dashboard" 
@@ -45,6 +48,51 @@ export default function App() {
             </InstructorLayout>
           } 
         />
+        <Route 
+          path="/instructor/quizzes" 
+          element={
+            <InstructorLayout>
+              <ManageQuizzes />
+            </InstructorLayout>
+          } 
+        />
+        <Route 
+          path="/instructor/quizzes/:id/edit" 
+          element={
+            <InstructorLayout>
+              <CreateQuiz />
+            </InstructorLayout>
+          } 
+        />
+        <Route 
+          path="/instructor/performance" 
+          element={
+            <InstructorLayout>
+              <StudentPerformance />
+            </InstructorLayout>
+          } 
+        />
+
+        {/* Temporary mapped routes to avoid blank page from sidebar links */}
+        <Route 
+          path="/instructor/courses" 
+          element={
+            <InstructorLayout>
+              <InstructorDashboard />
+            </InstructorLayout>
+          } 
+        />
+        <Route 
+          path="/instructor/settings" 
+          element={
+            <InstructorLayout>
+              <InstructorDashboard />
+            </InstructorLayout>
+          } 
+        />
+
+        {/* Global fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
