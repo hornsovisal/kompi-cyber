@@ -384,7 +384,7 @@ export default function Dashboard() {
                 <div className="rounded-2xl border border-cadtLine bg-white p-8 shadow-card">
                   <p className="text-center text-slate-500">
                     No recent activity. Start learning now!
-                  </p>https://github.com/hornsovisal/kompi-cyber/pull/14/conflict?name=frontend%252Fsrc%252Fpages%252FDashboard.jsx&ancestor_oid=70278f7b86bff6904aec2c8a6ca24c9505dba41a&base_oid=255b54699691e12de5a790d63fde95817a71ae81&head_oid=29a866e13e7e757e1076cf1f7d633e8324a89a75
+                  </p>
                 </div>
               </div>
             </>
