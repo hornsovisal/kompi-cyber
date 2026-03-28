@@ -1,376 +1,245 @@
-const PDFDocument = require("pdfkit");
 const supabase = require("../config/superbase");
+const PDFDocument = require("pdfkit");
+const { Readable } = require("stream");
 
-class CertificateService {
-  constructor() {
-    this.supabase = supabase;
-    this.bucketName = "certificates";
+/**
+ * Upload certificate file to Supabase Storage
+ * @param {string} userId - User ID
+ * @param {Buffer} file - File buffer/content
+ * @param {string} fileName - File name with extension
+ * @returns {Promise<string>} Public URL of uploaded file
+ */
+async function uploadCertificate(userId, file, fileName) {
+  const filePath = `${userId}/${fileName}`; // e.g. "user_123/cert_abc.pdf"
+
+  const { data, error } = await supabase.storage
+    .from("certificates")
+    .upload(filePath, file, {
+      contentType: "application/pdf",
+      upsert: true, // overwrite if exists
+    });
+
+  if (error) throw error;
+
+  // Get the public URL after upload
+  const { data: publicUrlData } = supabase.storage
+    .from("certificates")
+    .getPublicUrl(filePath);
+
+  return publicUrlData.publicUrl;
+}
+
+/**
+ * Generate a certificate PDF with course completion details
+ * @param {Object} certificateData - Certificate information
+ * @returns {Promise<string>} Public URL of generated certificate
+ */
+async function generateCertificate(certificateData) {
+  const {
+    studentName,
+    courseName,
+    certificateCode,
+    issuedAt,
+    courseLevel,
+    stats,
+  } = certificateData;
+
+  // Create PDF document
+  const doc = new PDFDocument({
+    size: "A4",
+    margin: 0,
+  });
+
+  // Convert PDF to buffer
+  const chunks = [];
+  doc.on("data", (chunk) => chunks.push(chunk));
+
+  // ============ BACKGROUND & BORDERS ============
+  // Cream/off-white background
+  doc.rect(0, 0, 595, 842).fill("#FAFAF8");
+
+  // Top decorative bar (blue from logo)
+  doc.rect(0, 0, 595, 80).fill("#378ADD");
+
+  // Bottom decorative bar (amber from logo)
+  doc.rect(0, 820, 595, 22).fill("#EF9F27");
+
+  // Left & right borders
+  doc.rect(0, 0, 595, 842).strokeColor("#0C447C").lineWidth(3).stroke();
+
+  // ============ HEADER SECTION ============
+  // Logo area (text-based shield logo)
+  doc.fontSize(16).font("Helvetica-Bold").fillColor("#FFFFFF");
+  doc.text("🔐 KOMPI CYBER", 50, 25, { align: "center", width: 495 });
+  doc.fontSize(10).font("Helvetica").fillColor("#E8F1FA");
+  doc.text("CYBERSECURITY EDUCATION PLATFORM", 50, 45, {
+    align: "center",
+    width: 495,
+  });
+
+  // ============ MAIN CONTENT ============
+  const mainY = 120;
+
+  // Title
+  doc.fontSize(42).font("Helvetica-Bold").fillColor("#0C447C");
+  doc.text("Certificate", 50, mainY, { width: 495, align: "center" });
+  doc.fontSize(18).font("Helvetica").fillColor("#378ADD");
+  doc.text("of Completion", 50, mainY + 48, { width: 495, align: "center" });
+
+  // Decorative line under title
+  doc
+    .moveTo(150, mainY + 75)
+    .lineTo(445, mainY + 75)
+    .strokeColor("#EF9F27")
+    .lineWidth(2)
+    .stroke();
+
+  // Main text
+  doc.moveDown(3);
+  doc.fontSize(13).font("Helvetica").fillColor("#333333");
+  doc.text("This certificate is proudly presented to", 50, mainY + 100, {
+    width: 495,
+    align: "center",
+  });
+
+  // Student name (prominent)
+  doc.fontSize(32).font("Helvetica-Bold").fillColor("#0C447C");
+  doc.text(studentName, 50, mainY + 130, { width: 495, align: "center" });
+
+  // Decorative underline for name
+  doc
+    .moveTo(100, mainY + 168)
+    .lineTo(495, mainY + 168)
+    .strokeColor("#378ADD")
+    .lineWidth(1.5)
+    .stroke();
+
+  // Achievement text
+  doc.fontSize(12).font("Helvetica").fillColor("#555555");
+  doc.text("for successfully completing the course", 50, mainY + 185, {
+    width: 495,
+    align: "center",
+  });
+
+  doc.fontSize(18).font("Helvetica-Bold").fillColor("#0C447C");
+  doc.text(courseName, 50, mainY + 210, {
+    width: 495,
+    align: "center",
+  });
+
+  // Course details box
+  const boxY = mainY + 260;
+  doc.rect(60, boxY, 475, 90).fillColor("#F0F5FB").fill();
+  doc.rect(60, boxY, 475, 90).strokeColor("#378ADD").lineWidth(1.5).stroke();
+
+  doc.fontSize(11).font("Helvetica").fillColor("#0C447C");
+  doc.text(`Level: ${courseLevel}`, 75, boxY + 12, {
+    width: 445,
+    align: "left",
+  });
+  doc.text(
+    `Lessons Completed: ${stats.completedLessons}/${stats.totalLessons}`,
+    75,
+    boxY + 32,
+    { width: 445, align: "left" },
+  );
+  if (stats.averageScore && typeof stats.averageScore === "number") {
+    doc.text(
+      `Achievement Score: ${stats.averageScore.toFixed(1)}%`,
+      75,
+      boxY + 52,
+      {
+        width: 445,
+        align: "left",
+      },
+    );
   }
 
-  /**
-   * Generate a PDF certificate and upload to Supabase storage
-   * @param {Object} data - Certificate data
-   * @param {string} data.studentName - Name of student
-   * @param {string} data.courseName - Name of course
-   * @param {string} data.certificateCode - Unique certificate code
-   * @param {Date} data.issuedAt - Issue date
-   * @param {string} data.courseLevel - Course level (beginner/intermediate/advanced)
-   * @param {Object} data.stats - Completion statistics
-   * @param {number} data.stats.completedLessons - Number of lessons completed
-   * @param {number} data.stats.totalLessons - Total lessons in course
-   * @param {number} data.stats.averageScore - Average quiz score
-   * @returns {string} Public URL of the generated PDF in Supabase
-   */
-  generateCertificate(data) {
-    return new Promise((resolve, reject) => {
+  // ============ FOOTER SECTION ============
+  const footerY = 700;
+
+  // Certificate code and date
+  doc.fontSize(9).font("Helvetica").fillColor("#666666");
+  doc.text(`Certificate Code: ${certificateCode}`, 50, footerY, {
+    width: 245,
+    align: "center",
+  });
+  doc.text(`Issued: ${new Date(issuedAt).toLocaleDateString()}`, 300, footerY, {
+    width: 245,
+    align: "center",
+  });
+
+  // Decorative seal (simple geometric design)
+  const sealX = 60;
+  const sealY = footerY + 30;
+  doc.circle(sealX, sealY, 25).strokeColor("#EF9F27").lineWidth(2).stroke();
+  doc.circle(sealX, sealY, 20).strokeColor("#EF9F27").lineWidth(1).stroke();
+  doc.fontSize(14).font("Helvetica-Bold").fillColor("#EF9F27");
+  doc.text("★", sealX - 5, sealY - 8);
+
+  // Signature line
+  doc
+    .moveTo(300, footerY + 65)
+    .lineTo(500, footerY + 65)
+    .strokeColor("#378ADD")
+    .lineWidth(1)
+    .stroke();
+  doc.fontSize(9).font("Helvetica").fillColor("#666666");
+  doc.text("Authorized by KOMPI Cyber Platform", 300, footerY + 70, {
+    width: 200,
+    align: "center",
+  });
+
+  // ============ DISCLAIMER ============
+  doc.fontSize(8).font("Helvetica").fillColor("#999999");
+  doc.text(
+    "This certificate acknowledges successful completion and represents the educational achievement of the bearer.",
+    50,
+    footerY + 110,
+    { width: 495, align: "center" },
+  );
+
+  // End the document
+  doc.end();
+
+  // Wait for PDF to be fully written
+  return new Promise((resolve, reject) => {
+    doc.on("end", async () => {
+      const pdfBuffer = Buffer.concat(chunks);
+
       try {
-        const filename = `cert-${data.certificateCode}.pdf`;
-        const chunks = [];
+        // Generate unique filename
+        const fileName = `${certificateCode}_${Date.now()}.pdf`;
+        const userId = certificateData.userId || "system";
 
-        const doc = new PDFDocument({
-          size: "A4",
-          margin: 0,
-          bufferPages: true,
-        });
-
-        // Collect PDF data in chunks instead of writing to file
-        doc.on("data", (chunk) => {
-          chunks.push(chunk);
-        });
-
-        // Handle errors
-        doc.on("error", (err) => {
-          console.error("PDF Document error:", err);
-          reject(err);
-        });
-
-        // BACKGROUND GRADIENT EFFECT (dark blue header)
-        doc.rect(0, 0, 595, 150).fillColor("#003366").fill();
-
-        // DECORATIVE TOP BORDER with accent colors
-        doc.rect(0, 140, 595, 10).fillColor("#FF6B35").fill();
-        doc.rect(0, 150, 595, 5).fillColor("#004B9D").fill();
-
-        // LEFT ACCENT BAR
-        doc.rect(0, 0, 20, 842).fillColor("#FF6B35").fill();
-
-        // OUTER BORDER
-        doc.lineWidth(3).strokeColor("#003366").rect(40, 60, 515, 722);
-
-        // INNER ACCENT BORDER
-        doc.lineWidth(1).strokeColor("#FF6B35").rect(45, 65, 505, 712);
-
-        // DECORATIVE CIRCLES (top right)
-        doc.circle(545, 85, 15).fillColor("#FF6B35").fill();
-        doc.circle(545, 85, 10).fillColor("#003366").fill();
-        doc.circle(545, 85, 5).fillColor("#FF6B35").fill();
-
-        // HEADER TEXT - "CERTIFICATE OF ACHIEVEMENT"
-        doc
-          .font("Helvetica-Bold")
-          .fontSize(52)
-          .fillColor("#FFFFFF")
-          .text("CERTIFICATE", 60, 75, {
-            align: "center",
-            width: 475,
-            characterMargin: 5,
-          });
-
-        doc
-          .fontSize(16)
-          .fillColor("#FF6B35")
-          .text("~ OF ACHIEVEMENT ~", 60, 135, {
-            align: "center",
-            width: 475,
-          });
-
-        // MAIN CONTENT SECTION
-        // Separator line
-        doc
-          .lineWidth(2)
-          .strokeColor("#004B9D")
-          .moveTo(100, 180)
-          .lineTo(495, 180)
-          .stroke();
-
-        // INTRODUCTORY TEXT
-        doc
-          .fontSize(14)
-          .font("Helvetica")
-          .fillColor("#333333")
-          .text("This is to proudly certify that", 60, 210, {
-            align: "center",
-            width: 475,
-          });
-
-        // STUDENT NAME - LARGE AND PROMINENT
-        doc
-          .fontSize(42)
-          .font("Helvetica-Bold")
-          .fillColor("#003366")
-          .text(data.studentName, 60, 260, {
-            align: "center",
-            width: 475,
-            lineBreak: true,
-          });
-
-        // COMPLETION TEXT
-        doc
-          .fontSize(14)
-          .font("Helvetica")
-          .fillColor("#333333")
-          .text(
-            "has successfully completed the comprehensive training course",
-            60,
-            330,
-            {
-              align: "center",
-              width: 475,
-            },
-          );
-
-        // COURSE NAME - HIGHLIGHTED BOX
-        doc.rect(60, 365, 475, 50).fillColor("#E8F0F7").fill();
-        doc
-          .fontSize(18)
-          .font("Helvetica-Bold")
-          .fillColor("#003366")
-          .text(data.courseName, 70, 380, {
-            align: "center",
-            width: 455,
-            lineBreak: true,
-          });
-
-        // DECORATIVE DIVIDER
-        doc
-          .moveTo(150, 430)
-          .lineTo(445, 430)
-          .strokeColor("#FF6B35")
-          .lineWidth(2)
-          .stroke();
-
-        // ACHIEVEMENT DETAILS BOX
-        doc
-          .rect(70, 460, 455, 120)
-          .lineWidth(1)
-          .strokeColor("#004B9D")
-          .stroke();
-
-        const detailsY = 475;
-        const colWidth = 227.5;
-
-        doc
-          .fontSize(10)
-          .font("Helvetica-Bold")
-          .fillColor("#003366")
-          .text("COURSE LEVEL", 80, detailsY);
-
-        doc
-          .fontSize(11)
-          .font("Helvetica")
-          .fillColor("#111111")
-          .text(
-            data.courseLevel
-              ? data.courseLevel.charAt(0).toUpperCase() +
-                  data.courseLevel.slice(1)
-              : "Professional",
-            80,
-            detailsY + 20,
-          );
-
-        doc
-          .fontSize(10)
-          .font("Helvetica-Bold")
-          .fillColor("#003366")
-          .text("LESSONS COMPLETED", 80 + colWidth, detailsY);
-
-        doc
-          .fontSize(11)
-          .font("Helvetica")
-          .fillColor("#111111")
-          .text(
-            `${data.stats?.completedLessons || 0}/${data.stats?.totalLessons || 0}`,
-            80 + colWidth,
-            detailsY + 20,
-          );
-
-        doc
-          .fontSize(10)
-          .font("Helvetica-Bold")
-          .fillColor("#003366")
-          .text("AVERAGE SCORE", 80, detailsY + 50);
-
-        doc
-          .fontSize(11)
-          .font("Helvetica")
-          .fillColor("#111111")
-          .text(
-            `${Math.round(data.stats?.averageScore || 0)}%`,
-            80,
-            detailsY + 70,
-          );
-
-        doc
-          .fontSize(10)
-          .font("Helvetica-Bold")
-          .fillColor("#003366")
-          .text("COMPLETION STATUS", 80 + colWidth, detailsY + 50);
-
-        doc
-          .fontSize(11)
-          .font("Helvetica")
-          .fillColor("#00AA00")
-          .text("✓ COMPLETED", 80 + colWidth, detailsY + 70);
-
-        // SIGNATURE AREA
-        const sigY = 610;
-
-        // Signature line
-        doc
-          .lineWidth(1)
-          .strokeColor("#333333")
-          .moveTo(100, sigY)
-          .lineTo(220, sigY)
-          .stroke();
-
-        doc
-          .fontSize(10)
-          .font("Helvetica")
-          .fillColor("#333333")
-          .text("Authorized Official", 100, sigY + 8, {
-            width: 120,
-            align: "center",
-          });
-
-        // Date line
-        doc
-          .lineWidth(1)
-          .strokeColor("#333333")
-          .moveTo(375, sigY)
-          .lineTo(495, sigY)
-          .stroke();
-
-        doc
-          .fontSize(10)
-          .font("Helvetica")
-          .fillColor("#333333")
-          .text(this.formatDate(data.issuedAt), 375, sigY + 8, {
-            width: 120,
-            align: "center",
-          });
-
-        // CERTIFICATE CODE AND FOOTER
-        doc
-          .fontSize(9)
-          .font("Helvetica")
-          .fillColor("#888888")
-          .text(`Certificate ID: ${data.certificateCode}`, 60, 680, {
-            align: "center",
-            width: 475,
-          });
-
-        doc
-          .fontSize(11)
-          .font("Helvetica-Bold")
-          .fillColor("#003366")
-          .text("Kompi-Cyber Academy", 60, 710, {
-            align: "center",
-            width: 475,
-          });
-
-        doc
-          .fontSize(9)
-          .font("Helvetica")
-          .fillColor("#666666")
-          .text("Professional Cybersecurity Training Platform", 60, 730, {
-            align: "center",
-            width: 475,
-          });
-
-        // Issued date at bottom
-        doc
-          .fontSize(8)
-          .fillColor("#999999")
-          .text(`Issued: ${this.formatDate(data.issuedAt)}`, 60, 760, {
-            align: "center",
-            width: 475,
-          });
-
-        // Finalize PDF
-        doc.end();
-
-        doc.on("end", async () => {
-          try {
-            // Convert chunks to buffer
-            const pdfBuffer = Buffer.concat(chunks);
-
-            // Upload to Supabase storage
-            const { data: uploadData, error: uploadError } =
-              await this.supabase.storage
-                .from(this.bucketName)
-                .upload(filename, pdfBuffer, {
-                  contentType: "application/pdf",
-                  upsert: true,
-                });
-
-            if (uploadError) {
-              console.error("Supabase upload error:", uploadError);
-              reject(uploadError);
-              return;
-            }
-
-            // Get public URL
-            const { data: publicUrlData } = this.supabase.storage
-              .from(this.bucketName)
-              .getPublicUrl(filename);
-
-            const publicUrl = publicUrlData.publicUrl;
-            console.log(`Certificate uploaded to Supabase: ${publicUrl}`);
-            resolve(publicUrl);
-          } catch (error) {
-            console.error("Error uploading certificate to Supabase:", error);
-            reject(error);
-          }
-        });
+        // Upload to Supabase
+        const publicUrl = await uploadCertificate(userId, pdfBuffer, fileName);
+        resolve(publicUrl);
       } catch (error) {
-        console.error("Error generating certificate:", error);
         reject(error);
       }
     });
-  }
 
-  formatDate(date) {
-    if (!date) date = new Date();
-    if (typeof date === "string") date = new Date(date);
-
-    const options = { year: "numeric", month: "long", day: "numeric" };
-    return date.toLocaleDateString("en-US", options);
-  }
-
-  // Get public URL from Supabase for a certificate
-  getPublicPath(certificateCode) {
-    const filename = `cert-${certificateCode}.pdf`;
-    const { data } = this.supabase.storage
-      .from(this.bucketName)
-      .getPublicUrl(filename);
-    return data.publicUrl;
-  }
-
-  // Delete certificate from Supabase storage
-  async deleteCertificate(certificateCode) {
-    try {
-      const filename = `cert-${certificateCode}.pdf`;
-      const { error } = await this.supabase.storage
-        .from(this.bucketName)
-        .remove([filename]);
-
-      if (error) {
-        console.error("Error deleting certificate from Supabase:", error);
-      }
-    } catch (error) {
-      console.error("Error deleting certificate:", error);
-    }
-  }
+    doc.on("error", reject);
+  });
 }
 
-module.exports = new CertificateService();
+/**
+ * Get the public URL for a certificate
+ * @param {string} certificateCode - Certificate code
+ * @returns {string} Public URL path
+ */
+function getPublicPath(certificateCode) {
+  // This constructs the URL pattern based on Supabase storage structure
+  // The actual URL will be built from the generateCertificate function
+  if (!certificateCode) {
+    throw new Error("Certificate code is required");
+  }
+  return certificateCode;
+}
+
+module.exports = {
+  uploadCertificate,
+  generateCertificate,
+  getPublicPath,
+};
