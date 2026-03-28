@@ -4,7 +4,9 @@ import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const API_TARGET_LABEL = import.meta.env.VITE_API_URL || "Vite /api proxy";
-const ASSET_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\/$/, "");
+const ASSET_BASE = (
+  import.meta.env.VITE_API_URL || "http://localhost:3000"
+).replace(/\/$/, "");
 
 const COURSE_COVER_MAP = {
   1: "/upload/lesson/intro-to-cyber-course/cover.svg",
@@ -192,12 +194,17 @@ export default function Dashboard() {
 
         // Keep dashboard usable even if summary endpoint fails.
         try {
-          const summaryRes = await axios.get("/api/users/me/dashboard-summary", {
-            baseURL: API_BASE,
-            headers,
-          });
+          const summaryRes = await axios.get(
+            "/api/users/me/dashboard-summary",
+            {
+              baseURL: API_BASE,
+              headers,
+            },
+          );
           setSummary({
-            enrolledCourses: Number(summaryRes.data?.enrolledCourses || ids.size),
+            enrolledCourses: Number(
+              summaryRes.data?.enrolledCourses || ids.size,
+            ),
             completedCourses: Number(summaryRes.data?.completedCourses || 0),
             hoursLearned: Number(summaryRes.data?.hoursLearned || 0),
             recentActivity: summaryRes.data?.recentActivity || [],
@@ -333,6 +340,18 @@ export default function Dashboard() {
             }
           >
             Progress
+          </NavLink>
+          <NavLink
+            to="/invitations"
+            className={({ isActive }) =>
+              `rounded-lg px-4 py-2 text-sm font-semibold uppercase tracking-wider transition ${
+                isActive
+                  ? "bg-[#FE9A00] text-slate-900"
+                  : "text-slate-200 hover:bg-slate-800 hover:text-white"
+              }`
+            }
+          >
+            Invitations
           </NavLink>
         </div>
 
@@ -556,35 +575,88 @@ export default function Dashboard() {
                   ) : (
                     <div className="mb-4 h-32 rounded-xl bg-gradient-to-br from-cyan-900 to-slate-800"></div>
                   )}
-                  <h3 className="font-semibold text-white">
-                    {course.title}
-                  </h3>
+                  <h3 className="font-semibold text-white">{course.title}</h3>
                   <p className="mt-1 line-clamp-2 text-sm text-slate-400">
                     {getCourseSubtitle(course)}
                   </p>
                   <div className="mt-4 flex items-center gap-4 text-xs text-slate-500">
                     {/* Modules */}
                     <span className="flex items-center gap-1">
-                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path d="M4 6H20M4 10H20M4 14H14M4 18H10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M4 6H20M4 10H20M4 14H14M4 18H10"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                        />
                       </svg>
                       {course.module_count ?? 0} Modules
                     </span>
                     {/* Duration */}
                     <span className="flex items-center gap-1">
-                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.8"/>
-                        <path d="M12 8V12L14.5 14.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                      >
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="8"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                        />
+                        <path
+                          d="M12 8V12L14.5 14.5"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                       {course.duration_hrs ?? 0} hrs
                     </span>
                     {/* Level */}
                     <span className="flex items-center gap-1 capitalize">
-                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path d="M4 20V14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-                        <path d="M9 20V10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-                        <path d="M14 20V6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-                        <path d="M19 20V2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M4 20V14"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M9 20V10"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M14 20V6"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M19 20V2"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                        />
                       </svg>
                       {course.level ?? "Beginner"}
                     </span>
@@ -603,7 +675,9 @@ export default function Dashboard() {
                         disabled={enrollingId === course.id}
                         className="w-full rounded-2xl bg-[#FE9A00] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#e08800] focus:outline-none focus:ring-4 focus:ring-[#FE9A00]/30 disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        {enrollingId === course.id ? "Enrolling..." : "Enroll Now"}
+                        {enrollingId === course.id
+                          ? "Enrolling..."
+                          : "Enroll Now"}
                       </button>
                     )}
                   </div>

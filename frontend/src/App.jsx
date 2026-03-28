@@ -8,10 +8,12 @@ import ForgetPassword from "./pages/ForgetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import ResetPassword from "./pages/ResetPassword";
 import ViewCertificate from "./pages/ViewCertificate";
+import StudentInvitations from "./pages/StudentInvitations";
 import InstructorLayout from "./components/Layout/InstructorLayout";
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 import InstructorLogin from "./pages/instructor/InstructorLogin";
 import CreateQuiz from "./pages/instructor/CreateQuiz";
+import CreateCourse from "./pages/instructor/CreateCourse";
 
 export default function App() {
   return (
@@ -31,6 +33,7 @@ export default function App() {
           path="/certificate/:certificateHash"
           element={<ViewCertificate />}
         />
+        <Route path="/invitations" element={<StudentInvitations />} />
 
         {/* Instructor Routes */}
         <Route path="/instructor/login" element={<InstructorLogin />} />
@@ -47,6 +50,14 @@ export default function App() {
           element={
             <InstructorLayout>
               <CreateQuiz />
+            </InstructorLayout>
+          }
+        />
+        <Route
+          path="/instructor/create-course"
+          element={
+            <InstructorLayout>
+              <CreateCourse />
             </InstructorLayout>
           }
         />
