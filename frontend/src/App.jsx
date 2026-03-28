@@ -27,7 +27,10 @@ export default function App() {
         <Route path="/dashboard/:tab" element={<Dashboard />} />
         <Route path="/learn/:courseId" element={<LearnPage />} />
         <Route path="/learn/:courseId/:lessonId" element={<LearnPage />} />
-        <Route path="/certificate/:courseId" element={<ViewCertificate />} />
+        <Route
+          path="/certificate/:certificateHash"
+          element={<ViewCertificate />}
+        />
 
         {/* Instructor Routes */}
         <Route path="/instructor/login" element={<InstructorLogin />} />

@@ -40,11 +40,11 @@ class CertificateModel {
   }
 
   // Create a new certificate
-  async createCertificate(userId, courseId, certificateCode) {
+  async createCertificate(userId, courseId, certificateCode, certificateHash) {
     const [result] = await this.db.execute(
-      `INSERT INTO certificates (user_id, course_id, certificate_code) 
-       VALUES (?, ?, ?)`,
-      [userId, courseId, certificateCode],
+      `INSERT INTO certificates (user_id, course_id, certificate_code, certificate_hash) 
+       VALUES (?, ?, ?, ?)`,
+      [userId, courseId, certificateCode, certificateHash],
     );
     return result.insertId;
   }
@@ -86,6 +86,19 @@ class CertificateModel {
       [userId],
     );
     return rows;
+  }
+
+  // Get certificate by hash
+  async getCertificateByHash(certificateHash) {
+    const [rows] = await this.db.execute(
+      `SELECT c.*, u.full_name, cr.title, cr.level, cr.duration_hrs
+       FROM certificates c
+       INNER JOIN users u ON u.id = c.user_id
+       INNER JOIN courses cr ON cr.id = c.course_id
+       WHERE c.certificate_hash = ?`,
+      [certificateHash],
+    );
+    return rows[0] || null;
   }
 
   // Update certificate PDF path

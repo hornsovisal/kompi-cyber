@@ -14,7 +14,7 @@ import {
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
 export default function ViewCertificate() {
-  const { courseId } = useParams();
+  const { certificateHash } = useParams();
   const navigate = useNavigate();
   const [certificate, setCertificate] = useState(null);
   const [courseData, setCourseData] = useState(null);
@@ -25,16 +25,16 @@ export default function ViewCertificate() {
 
   useEffect(() => {
     fetchData();
-  }, [courseId]);
+  }, [certificateHash]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
       const headers = { Authorization: `Bearer ${token}` };
 
-      // Fetch certificate
+      // Fetch certificate by hash
       const certRes = await fetch(
-        `${API_BASE}/api/certificates/course/${courseId}`,
+        `${API_BASE}/api/certificates/view/${certificateHash}`,
         { headers },
       );
 
@@ -45,17 +45,20 @@ export default function ViewCertificate() {
       const certData = await certRes.json();
       setCertificate(certData.certificate);
 
-      // Fetch course details
-      try {
-        const courseRes = await fetch(`${API_BASE}/api/courses/${courseId}`, {
-          headers,
-        });
-        if (courseRes.ok) {
-          const course = await courseRes.json();
-          setCourseData(course);
+      // Fetch course details if we have a course_id
+      if (certData.certificate?.course_id) {
+        try {
+          const courseRes = await fetch(
+            `${API_BASE}/api/courses/${certData.certificate.course_id}`,
+            { headers },
+          );
+          if (courseRes.ok) {
+            const course = await courseRes.json();
+            setCourseData(course);
+          }
+        } catch (err) {
+          console.log("Could not fetch course details");
         }
-      } catch (err) {
-        console.log("Could not fetch course details");
       }
     } catch (err) {
       setError(err.message);
@@ -73,7 +76,7 @@ export default function ViewCertificate() {
     try {
       setDownloading(true);
       const pdfUrl = certificate.pdf_path;
-      
+
       // Fetch the PDF
       const response = await fetch(pdfUrl);
       if (!response.ok) {
@@ -148,7 +151,9 @@ export default function ViewCertificate() {
   }
 
   const issueDate = new Date(certificate.issued_at);
-  const courseDescription = courseData?.description || "A comprehensive cybersecurity course covering essential concepts and practical skills.";
+  const courseDescription =
+    courseData?.description ||
+    "A comprehensive cybersecurity course covering essential concepts and practical skills.";
 
   const skillsLearned = [
     "Cybersecurity fundamentals",
@@ -159,238 +164,298 @@ export default function ViewCertificate() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-50 py-8 px-4">
-      {/* Navigation */}
-      <div className="max-w-7xl mx-auto mb-8">
+    <div className="min-h-screen bg-white py-6 px-4">
+      {/* Back Button */}
+      <div className="max-w-6xl mx-auto mb-6">
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-[#378ADD] hover:text-[#0C447C] font-semibold transition-colors"
         >
           <ArrowLeft size={20} />
-          Back to Learning
+          Back to My Learning
         </button>
       </div>
 
-      {/* Main Container */}
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Side - Certificate Details & Course Info */}
-          <div className="lg:col-span-2 flex flex-col">
-            {/* KOMPI Logo */}
-            <div className="mb-8">
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#378ADD] to-[#0C447C] text-white px-4 py-2 rounded-lg font-bold">
-                <div className="w-6 h-6 bg-[#EF9F27] rounded flex items-center justify-center text-xs font-black text-[#0C447C]">
-                  🔐
-                </div>
-                KOMPI CYBER
-              </div>
+      {/* Header Section */}
+      <div className="max-w-6xl mx-auto mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-gray-500 text-sm">📋 Certification</span>
+              <span className="text-gray-500 text-sm">✓ Completed</span>
             </div>
-
-            {/* Title */}
-            <h1 className="text-4xl lg:text-5xl font-bold text-[#0C447C] mb-2">
-              Completed!
+            <h1 className="text-4xl md:text-5xl font-bold text-[#0C447C]">
+              {certificate.title}
             </h1>
-            <p className="text-lg text-gray-600 mb-8">
-              Congratulations on your achievement
-            </p>
-
-            {/* Course Title */}
-            <div className="mb-8">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
-                {certificate.title}
-              </h2>
-              <p className="text-gray-600 leading-relaxed bg-white p-6 rounded-lg border border-gray-200">
-                {courseDescription}
-              </p>
-            </div>
-
-            {/* Student & Details Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              {/* Student Name */}
-              <div className="border-l-4 border-[#EF9F27] pl-4 bg-white p-4 rounded-lg">
-                <p className="text-sm text-gray-500 uppercase tracking-wide font-semibold mb-1">
-                  Completed by
-                </p>
-                <p className="text-xl font-bold text-gray-800">
-                  {certificate.full_name}
-                </p>
-              </div>
-
-              {/* Issue Date */}
-              <div className="flex items-center gap-4 bg-white p-4 rounded-lg">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#378ADD] to-[#0C447C] rounded-lg flex items-center justify-center">
-                  <Calendar className="text-white" size={24} />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 uppercase tracking-wide font-semibold">
-                    Date Completed
-                  </p>
-                  <p className="font-semibold text-gray-800">
-                    {issueDate.toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </p>
-                </div>
-              </div>
-
-              {/* Certificate Code */}
-              <div className="flex items-center gap-4 bg-white p-4 rounded-lg">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#378ADD] to-[#0C447C] rounded-lg flex items-center justify-center">
-                  <Award className="text-white" size={24} />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 uppercase tracking-wide font-semibold">
-                    Certificate ID
-                  </p>
-                  <p className="font-mono font-bold text-gray-800 break-all text-sm">
-                    {certificate.certificate_code}
-                  </p>
-                </div>
-              </div>
-
-              {/* Course Level */}
-              <div className="flex items-center gap-4 bg-white p-4 rounded-lg">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#EF9F27] to-orange-600 rounded-lg flex items-center justify-center">
-                  <BookOpen className="text-white" size={24} />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 uppercase tracking-wide font-semibold">
-                    Level
-                  </p>
-                  <p className="font-semibold text-gray-800 capitalize">
-                    {certificate.level || "Professional"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Skills Learned Section */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#378ADD] rounded-lg p-6 mb-8">
-              <h3 className="text-xl font-bold text-[#0C447C] mb-4 flex items-center gap-2">
-                <Zap size={24} className="text-[#EF9F27]" />
-                Skills You Gained
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {skillsLearned.map((skill, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3 text-gray-700"
-                  >
-                    <CheckCircle2
-                      size={20}
-                      className="text-[#EF9F27] flex-shrink-0"
-                    />
-                    <span className="font-medium">{skill}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Verification Info */}
-            <div className="bg-blue-50 border border-[#378ADD] rounded-lg p-4 mb-8">
-              <p className="text-sm text-gray-700">
-                <span className="font-semibold text-[#0C447C]">
-                  Credential verified.
-                </span>{" "}
-                KOMPI Cyber certifies that {certificate.full_name} successfully
-                completed all course requirements and earned this certificate.
-              </p>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button
-                onClick={handleDownload}
-                disabled={downloading}
-                className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#378ADD] to-[#0C447C] text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                <Download size={20} />
-                {downloading ? "Downloading..." : "Download Certificate"}
-              </button>
-              <button
-                onClick={handleShare}
-                className="flex items-center justify-center gap-2 border-2 border-[#378ADD] text-[#378ADD] px-6 py-3 rounded-lg font-semibold hover:bg-[#378ADD] hover:text-white transition-all"
-              >
-                <Share2 size={20} />
-                Share Achievement
-              </button>
+            <div className="flex items-center gap-4 mt-4 text-gray-600">
+              <span className="flex items-center gap-1">
+                <Award size={18} />
+                {certificate.certificate_code}
+              </span>
+              <span className="flex items-center gap-1">
+                <Calendar size={18} />
+                Completed {issueDate.toLocaleDateString()}
+              </span>
+              <span className="text-sm">
+                Duration <strong>4 months</strong>
+              </span>
             </div>
           </div>
 
-          {/* Right Side - Certificate Preview */}
-          <div className="flex items-start justify-center lg:sticky lg:top-8">
-            <div className="relative w-full max-w-sm">
-              {/* Floating shadow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#378ADD] to-[#0C447C] rounded-2xl blur-2xl opacity-20 transform -skew-y-2"></div>
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              className="bg-white border-2 border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-all disabled:opacity-70"
+            >
+              <Download size={18} className="inline mr-2" />
+              {downloading ? "Downloading..." : "Download"}
+            </button>
+            <button
+              onClick={handleShare}
+              className="bg-[#EF9F27] text-white px-6 py-2 rounded-lg font-semibold hover:bg-orange-500 transition-all"
+            >
+              Share
+            </button>
+          </div>
+        </div>
+      </div>
 
-              {/* Certificate Card */}
-              <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden transform hover:scale-105 transition-transform duration-300">
-                {/* Certificate Header */}
-                <div className="h-20 bg-gradient-to-r from-[#378ADD] to-[#0C447C]"></div>
-
-                {/* Certificate Content */}
-                <div className="p-8 pt-6">
-                  {/* KOMPI Logo Text */}
-                  <div className="text-center mb-8">
-                    <p className="font-bold text-[#0C447C] text-lg">
-                      🔐 KOMPI CYBER
-                    </p>
-                    <p className="text-[#378ADD] text-xs uppercase tracking-widest font-semibold">
-                      Certificate of Completion
-                    </p>
-                  </div>
-
-                  {/* Student Name - Large */}
-                  <div className="text-center mb-6">
-                    <p className="text-[#666] text-xs mb-2">
-                      This certificate is proudly presented to
-                    </p>
-                    <p className="text-2xl font-bold text-[#0C447C] border-b-2 border-[#EF9F27] pb-3 break-words">
-                      {certificate.full_name}
-                    </p>
-                  </div>
-
-                  {/* Course Info */}
-                  <div className="text-center mb-8">
-                    <p className="text-[#666] text-xs mb-2">
-                      FOR SUCCESSFULLY COMPLETING
-                    </p>
-                    <p className="text-lg font-bold text-gray-800 break-words">
-                      {certificate.title}
-                    </p>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="border-t border-gray-200 mb-6"></div>
-
-                  {/* Badge & Date */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-16 h-16 rounded-full border-4 border-[#EF9F27] flex items-center justify-center bg-[#FFF5E6] flex-shrink-0">
-                      <span className="text-2xl">⭐</span>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[#666] text-xs">Issued</p>
-                      <p className="text-sm font-bold text-gray-800">
-                        {issueDate.toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Certificate ID */}
-                  <p className="text-center text-[#666] text-xs mt-6 break-all">
-                    ID: {certificate.certificate_code}
+      {/* Main Content Grid */}
+      <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Side - Certificate Preview */}
+          <div className="flex justify-center">
+            <div className="w-full max-w-sm">
+              {/* Certificate Preview Card */}
+              <div className="bg-gradient-to-br from-[#0C447C] to-[#1a5ba3] rounded-lg shadow-2xl overflow-hidden transform hover:scale-105 transition-transform">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-[#0C447C] to-[#1a5ba3] p-8 text-center border-b-4 border-[#EF9F27]">
+                  <p className="text-[#EF9F27] text-sm uppercase tracking-widest font-bold">
+                    🔐 KOMPI CYBER
+                  </p>
+                  <p className="text-white text-xs mt-1 uppercase tracking-wide">
+                    Certificate of Completion
                   </p>
                 </div>
 
-                {/* Bottom Accent */}
-                <div className="h-1 bg-gradient-to-r from-[#378ADD] via-[#EF9F27] to-[#0C447C]"></div>
+                {/* Content */}
+                <div className="bg-white p-8 text-center">
+                  <p className="text-gray-600 text-sm mb-4">Presented to</p>
+                  <h2 className="text-2xl font-bold text-[#0C447C] mb-2">
+                    {certificate.full_name || certificate.student_name}
+                  </h2>
+                  <div className="border-t-2 border-[#378ADD] my-6 pt-4">
+                    <p className="text-gray-700 text-sm mb-2">for completing</p>
+                    <p className="font-bold text-[#0C447C] text-sm">
+                      {certificate.course_name}
+                    </p>
+                  </div>
+
+                  {/* Certificate Details */}
+                  <div className="bg-blue-50 rounded p-4 my-6 text-xs">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <p className="text-gray-600">Certificate ID</p>
+                        <p className="font-mono font-bold text-[#0C447C]">
+                          {certificate.certificate_code}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">Issued</p>
+                        <p className="font-bold text-[#0C447C]">
+                          {issueDate.toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-8 h-8 bg-[#EF9F27] rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold">★</span>
+                    </div>
+                    <p className="text-xs text-gray-600">
+                      VERIFIED CREDENTIALS
+                    </p>
+                  </div>
+                </div>
               </div>
+            </div>
+          </div>
+
+          {/* Right Side - Details & Course Info */}
+          <div className="lg:col-span-2">
+            {/* Achievement Stats */}
+            <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg p-6 mb-6 border border-gray-200">
+              <h3 className="text-lg font-bold text-[#0C447C] mb-4">
+                Achievement Stats
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-gray-600 text-sm">Final Grade</p>
+                  <p className="text-3xl font-bold text-[#EF9F27]">
+                    {certificate.stats?.averageScore
+                      ? Math.round(certificate.stats.averageScore)
+                      : "—"}
+                    %
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-600 text-sm">Duration</p>
+                  <p className="text-2xl font-bold text-[#0C447C]">
+                    {certificate.stats?.totalLessons || 0} lessons
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Verified Certificate Badge */}
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-6 mb-6 border border-green-200">
+              <h3 className="text-lg font-bold text-green-800 mb-3">
+                ✓ Verified Certificates
+              </h3>
+              <p className="text-gray-700 text-sm mb-4">
+                Share your achievement on your resume, LinkedIn, and other
+                platforms.
+              </p>
+              <button className="w-full border-2 border-green-600 text-green-600 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-all">
+                ✓ Verify Certificate
+              </button>
+            </div>
+
+            {/* Add to Profile Section */}
+            <div className="flex gap-3 mb-6">
+              <button className="flex-1 bg-[#378ADD] text-white px-4 py-3 rounded-lg font-semibold hover:bg-[#2966a3] transition-all">
+                <Share2 size={18} className="inline mr-2" />
+                Add to Profile
+              </button>
+              <button className="flex-1 border-2 border-[#378ADD] text-[#378ADD] px-4 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all">
+                <BookOpen size={18} className="inline mr-2" />
+                Add to Resume
+              </button>
+            </div>
+
+            {/* Instructor Info */}
+            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">
+                Instructor
+              </h3>
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-[#378ADD] to-[#0C447C] rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  MC
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-800">
+                    Prof. Michael Chan
+                  </p>
+                  <p className="text-sm text-gray-600">Course Instructor</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Section - Course Info */}
+        <div className="mt-12">
+          {/* About This Course */}
+          <div className="mb-8">
+            <h3 className="text-2xl font-bold text-[#0C447C] mb-4">
+              About This Course
+            </h3>
+            <p className="text-gray-700 leading-relaxed bg-gray-50 p-6 rounded-lg border border-gray-200">
+              {courseDescription}
+            </p>
+          </div>
+
+          {/* Skills You Gained */}
+          <div className="mb-8">
+            <h3 className="text-2xl font-bold text-[#0C447C] mb-4">
+              Skills You Gained
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {[
+                "Security Principles",
+                "Business Continuity",
+                "Disaster Recovery",
+                "Incident Response",
+                "Access Control",
+                "Network Security Fundamentals",
+                "Security Operations",
+                "Threat Intelligence",
+              ].map((skill, index) => (
+                <div
+                  key={index}
+                  className="bg-blue-50 border border-[#378ADD] rounded-lg px-4 py-2 text-center"
+                >
+                  <p className="text-sm font-semibold text-[#0C447C]">
+                    {skill}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Course Outline */}
+          <div className="mb-8">
+            <h3 className="text-2xl font-bold text-[#0C447C] mb-4">
+              Course Outline
+            </h3>
+            <div className="space-y-4">
+              {[
+                {
+                  title: "Module 1: Security Principles",
+                  lessons: [
+                    "✓ Cybersecurity, integrity & availability (CIA)",
+                    "✓ Authentication and authorization",
+                    "✓ Non-repudiation",
+                  ],
+                },
+                {
+                  title: "Module 2: Business Continuity & Disaster Recovery",
+                  lessons: [
+                    "✓ Business impact analysis",
+                    "✓ Recovery strategies",
+                    "✓ Testing procedures",
+                  ],
+                },
+                {
+                  title: "Module 3: Assess Credentials",
+                  lessons: [
+                    "✓ Physical access controls",
+                    "✓ Identity management",
+                    "✓ Access control models",
+                  ],
+                },
+                {
+                  title: "Module 4: Network Security",
+                  lessons: [
+                    "✓ Network design principles",
+                    "✓ Firewall configuration",
+                    "✓ VPN technologies",
+                  ],
+                },
+              ].map((module, index) => (
+                <div
+                  key={index}
+                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition"
+                >
+                  <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                    <span className="w-6 h-6 bg-[#378ADD] text-white rounded-full flex items-center justify-center text-xs">
+                      {index + 1}
+                    </span>
+                    {module.title}
+                  </h4>
+                  <ul className="space-y-2 ml-8">
+                    {module.lessons.map((lesson, i) => (
+                      <li key={i} className="text-gray-700 text-sm">
+                        {lesson}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
           </div>
         </div>

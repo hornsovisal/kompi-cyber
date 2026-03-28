@@ -1,6 +1,7 @@
 const supabase = require("../config/superbase");
 const PDFDocument = require("pdfkit");
-const { Readable } = require("stream");
+const fs = require("fs");
+const path = require("path");
 
 /**
  * Upload certificate file to Supabase Storage
@@ -68,13 +69,26 @@ async function generateCertificate(certificateData) {
   doc.rect(0, 0, 595, 842).strokeColor("#0C447C").lineWidth(3).stroke();
 
   // ============ HEADER SECTION ============
-  // Logo area (text-based shield logo)
-  doc.fontSize(16).font("Helvetica-Bold").fillColor("#FFFFFF");
-  doc.text("🔐 KOMPI CYBER", 50, 25, { align: "center", width: 495 });
-  doc.fontSize(10).font("Helvetica").fillColor("#E8F1FA");
-  doc.text("CYBERSECURITY EDUCATION PLATFORM", 50, 45, {
-    align: "center",
-    width: 495,
+  // Try to load and add logo image
+  try {
+    const logoPath = path.join(
+      __dirname,
+      "../../frontend/src/kompi-cyber-logo.png",
+    );
+    if (fs.existsSync(logoPath)) {
+      doc.image(logoPath, 35, 15, { width: 50, height: 50 });
+    }
+  } catch (err) {
+    console.log("Logo image not found, using text fallback");
+  }
+
+  // Logo text (text-based shield logo)
+  doc.fontSize(14).font("Helvetica-Bold").fillColor("#FFFFFF");
+  doc.text("KOMPI CYBER", 100, 30, { align: "left", width: 400 });
+  doc.fontSize(9).font("Helvetica").fillColor("#E8F1FA");
+  doc.text("CYBERSECURITY EDUCATION PLATFORM", 100, 48, {
+    align: "left",
+    width: 400,
   });
 
   // ============ MAIN CONTENT ============
@@ -129,30 +143,48 @@ async function generateCertificate(certificateData) {
 
   // Course details box
   const boxY = mainY + 260;
-  doc.rect(60, boxY, 475, 90).fillColor("#F0F5FB").fill();
-  doc.rect(60, boxY, 475, 90).strokeColor("#378ADD").lineWidth(1.5).stroke();
+  doc.rect(60, boxY, 475, 110).fillColor("#F0F5FB").fill();
+  doc.rect(60, boxY, 475, 110).strokeColor("#378ADD").lineWidth(1.5).stroke();
 
-  doc.fontSize(11).font("Helvetica").fillColor("#0C447C");
-  doc.text(`Level: ${courseLevel}`, 75, boxY + 12, {
+  // Calculate completion percentage
+  const completionPercentage =
+    stats.totalLessons > 0
+      ? Math.round((stats.completedLessons / stats.totalLessons) * 100)
+      : 0;
+
+  doc.fontSize(11).font("Helvetica-Bold").fillColor("#0C447C");
+  doc.text(
+    `Completed by: ${completionPercentage}% (${stats.completedLessons}/${stats.totalLessons} Lessons)`,
+    75,
+    boxY + 12,
+    { width: 445, align: "left" },
+  );
+
+  doc.fontSize(10).font("Helvetica").fillColor("#378ADD");
+  doc.text(`Level: ${courseLevel || "Beginner"}`, 75, boxY + 32, {
     width: 445,
     align: "left",
   });
-  doc.text(
-    `Lessons Completed: ${stats.completedLessons}/${stats.totalLessons}`,
-    75,
-    boxY + 32,
-    { width: 445, align: "left" },
-  );
+
   if (stats.averageScore && typeof stats.averageScore === "number") {
     doc.text(
       `Achievement Score: ${stats.averageScore.toFixed(1)}%`,
       75,
-      boxY + 52,
+      boxY + 50,
       {
         width: 445,
         align: "left",
       },
     );
+    doc.text(`Duration: ${stats.duration || "Self-paced"}`, 75, boxY + 68, {
+      width: 445,
+      align: "left",
+    });
+  } else {
+    doc.text(`Duration: ${stats.duration || "Self-paced"}`, 75, boxY + 50, {
+      width: 445,
+      align: "left",
+    });
   }
 
   // ============ FOOTER SECTION ============

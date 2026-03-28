@@ -55,6 +55,13 @@ router.use(authMiddleware.authenticateToken);
 // POST /api/certificates/generate/:courseId
 router.post("/generate/:courseId", certificateController.generateCertificate);
 
+// Get certificate by hash (for viewing with hash-based URL)
+// GET /api/certificates/view/:certificateHash
+router.get(
+  "/view/:certificateHash",
+  certificateController.getCertificateByHash,
+);
+
 // Get certificate for a specific course
 // GET /api/certificates/course/:courseId
 router.get("/course/:courseId", certificateController.getCertificate);
