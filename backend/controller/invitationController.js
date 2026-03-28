@@ -1,7 +1,6 @@
 const InvitationModel = require("../models/invitationModel");
 const enrollmentModel = require("../models/enrollmentModel");
-const UserModel = require("../models/userModel");
-const CourseModel = require("../models/courseModel");
+const courseModel = require("../models/courseModel");
 
 class InvitationController {
   // POST /api/invitations/send - Teacher sends invitation
@@ -19,7 +18,7 @@ class InvitationController {
       }
 
       // Check if teacher owns this course
-      const course = await CourseModel.getCourseById(courseId);
+      const course = await courseModel.findById(courseId);
       if (!course || course.created_by !== teacherId) {
         return res.status(403).json({
           success: false,
@@ -196,7 +195,7 @@ class InvitationController {
       const teacherId = req.user.id;
 
       // Check if teacher owns this course
-      const course = await CourseModel.getCourseById(courseId);
+      const course = await courseModel.findById(courseId);
       if (!course || course.created_by !== teacherId) {
         return res.status(403).json({
           success: false,
