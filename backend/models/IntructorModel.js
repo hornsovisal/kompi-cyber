@@ -8,7 +8,7 @@ let lecturers = [
     department: "Network Security",
     courses: ["network-security"],
     employeeId: "LEC001",
-    isVerified: false,
+    isVerified: true,
     verificationToken: null,
     resetToken: null,
     resetTokenExpiry: null,
@@ -22,7 +22,7 @@ let lecturers = [
     department: "Web Security",
     courses: ["web-security"],
     employeeId: "LEC002",
-    isVerified: false,
+    isVerified: true,
     verificationToken: null,
     resetToken: null,
     resetTokenExpiry: null,
@@ -36,7 +36,7 @@ let lecturers = [
     department: "Incident Response",
     courses: ["incident-response"],
     employeeId: "LEC003",
-    isVerified: false,
+    isVerified: true,
     verificationToken: null,
     resetToken: null,
     resetTokenExpiry: null,
@@ -50,7 +50,7 @@ let lecturers = [
     department: "Introduction to Linux",
     courses: ["intro-to-linux-course"],
     employeeId: "LEC004",
-    isVerified: false,
+    isVerified: true,
     verificationToken: null,
     resetToken: null,
     resetTokenExpiry: null,
@@ -64,7 +64,7 @@ let lecturers = [
     department: "Introduction to Cybersecurity",
     courses: ["intro-to-cyber-course"],
     employeeId: "LEC005",
-    isVerified: false,
+    isVerified: true,
     verificationToken: null,
     resetToken: null,
     resetTokenExpiry: null,
@@ -75,7 +75,10 @@ let lecturers = [
 class LecturerModel {
   // Find lecturer by email
   async findLecturerByEmail(email) {
-    return lecturers.filter(lecturer => lecturer.email === email);
+    const result = lecturers.filter(lecturer => lecturer.email === email);
+    console.log('findLecturerByEmail called with:', email);
+    console.log('Found lecturers:', result);
+    return result;
   }
 
   // Find lecturer by ID

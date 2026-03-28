@@ -1,333 +1,159 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import {
-  BookOpen,
-  Users,
-  BarChart3,
-  Plus,
-  Edit2,
-  Trash2,
-  Eye,
-  AlertCircle,
-  Star,
-  TrendingUp,
-} from "lucide-react";
+import { BookOpen, CalendarClock, FileQuestion, TrendingUp, Users } from "lucide-react";
+import { useInstructorAPI } from "../../hooks/useInstructorAPI";
+
 export default function InstructorDashboard() {
   const navigate = useNavigate();
+  const { fetchInstructorCourses, fetchMyQuizzes, fetchStudentPerformance, loading, error, clearError } = useInstructorAPI();
+
   const [courses, setCourses] = useState([]);
-  const [stats, setStats] = useState({
-    totalCourses: 0,
-    activeCourses: 0,
-    studentsEnrolled: 0,
-    totalModules: 0,
-    totalStudents: 0,
-    totalEarnings: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [quizzes, setQuizzes] = useState([]);
+  const [performance, setPerformance] = useState({ students: [] });
+
+  const instructor = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("instructor") || "null");
+    } catch {
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
-    // Check if user is authenticated before fetching data
-    const token = sessionStorage.getItem("token");
-    const user = sessionStorage.getItem("user");
+    const loadDashboard = async () => {
+      try {
+        const [courseData, quizData, performanceData] = await Promise.all([
+          fetchInstructorCourses(),
+          fetchMyQuizzes(),
+          fetchStudentPerformance(),
+        ]);
 
-    if (!token || !user) {
-      // Redirect to login if not authenticated
-      navigate("/instructor/login");
-      return;
-    }
+        setCourses(courseData);
+        setQuizzes(quizData);
+        setPerformance(performanceData || { students: [] });
+      } catch (_) {
+        const token = localStorage.getItem("token");
+        if (!token) navigate("/instructor/login");
+      }
+    };
 
-    fetchDashboardData();
+    loadDashboard();
   }, [navigate]);
 
-  const fetchDashboardData = async () => {
-    try {
-      const token = sessionStorage.getItem("token");
+  const upcomingQuizzes = useMemo(
+    () => [...quizzes]
+      .filter((quiz) => new Date(`${quiz.dueDate}T${quiz.dueTime}`) > new Date())
+      .sort((a, b) => new Date(`${a.dueDate}T${a.dueTime}`) - new Date(`${b.dueDate}T${b.dueTime}`))
+      .slice(0, 6),
+    [quizzes],
+  );
 
-      if (!token) {
-        navigate("/instructor/login");
-        return;
-      }
-
-      const response = await axios.get("/api/instructor/courses", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const coursesList = response.data.data || [];
-      setCourses(coursesList);
-
-      // Calculate stats from courses data
-      const totalCourses = coursesList.length;
-      const activeCourses = coursesList.filter(
-        (c) => c.status === "published",
-      ).length;
-      const totalModules = coursesList.reduce(
-        (sum, c) => sum + (c.moduleCount || 0),
-        0,
-      );
-      const studentsEnrolled = coursesList.reduce(
-        (sum, course) => sum + (course.enrollmentCount || 0),
-        0,
-      );
-      const totalStudents = studentsEnrolled;
-      const totalEarnings = studentsEnrolled * 150;
-
-      setStats({
-        totalCourses,
-        activeCourses,
-        studentsEnrolled,
-        totalModules,
-        totalStudents,
-        totalEarnings,
-      });
-
-      setLoading(false);
-    } catch (err) {
-      console.error("Error fetching dashboard data:", err);
-
-      // If unauthorized, redirect to login
-      if (err.response?.status === 401) {
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("user");
-        navigate("/instructor/login");
-        return;
-      }
-
-      setError("Failed to load dashboard data");
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteCourse = async (courseId) => {
-    if (!window.confirm("Are you sure you want to delete this course?")) return;
-
-    try {
-      const token = sessionStorage.getItem("token");
-
-      if (!token) {
-        navigate("/instructor/login");
-        return;
-      }
-
-      await axios.delete(`/api/instructor/courses/${courseId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      // Update courses list without the deleted course
-      setCourses(courses.filter((c) => c.id !== courseId));
-
-      // Show success feedback (optional: could add a toast notification)
-      console.log("Course deleted successfully");
-    } catch (err) {
-      console.error("Error deleting course:", err);
-
-      if (err.response?.status === 401) {
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("user");
-        navigate("/instructor/login");
-        return;
-      }
-
-      alert("Failed to delete course. Please try again.");
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-full border-4 border-orange-200 border-t-orange-600 animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading your dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  const averageScore = useMemo(() => {
+    const students = performance.students || [];
+    if (!students.length) return 0;
+    const total = students.reduce((sum, student) => sum + Number(student.averageScore || 0), 0);
+    return (total / students.length).toFixed(2);
+  }, [performance]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100">
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-4xl font-bold text-slate-900">Dashboard</h1>
-              <p className="text-slate-500 text-sm mt-2">
-                Welcome to KC NextGen Cybersecurity Platform
-              </p>
-            </div>
-            <button
-              onClick={() => navigate("/instructor/courses/create")}
-              className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 hover:-translate-y-0.5"
-            >
-              <Plus size={20} />
-              Create Course
-            </button>
+    <div className="min-h-screen bg-slate-50">
+      <div className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-6 sm:px-6 lg:px-8">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Instructor Dashboard</h1>
+            <p className="mt-1 text-sm text-slate-500">Overview of lecturer info, quiz activity, and student performance.</p>
           </div>
+          <button
+            onClick={() => navigate("/instructor/create-quiz")}
+            className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+          >
+            Create Quiz
+          </button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {error && (
-          <div className="alert alert-error shadow-lg mb-8">
-            <AlertCircle size={24} />
-            <div>
-              <h3 className="font-bold">Error Loading Dashboard</h3>
-              <p className="text-sm">{error}</p>
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            <div className="flex items-center justify-between gap-4">
+              <span>{error}</span>
+              <button onClick={clearError} className="font-semibold text-red-800">Dismiss</button>
             </div>
           </div>
         )}
 
-        {/* Statistics Cards - 2x3 Grid with professional dark theme */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <StatCardWithAccent
-            icon={BookOpen}
-            title="Courses Taught"
-            value={stats.totalCourses}
-          />
-          <StatCardWithAccent
-            icon={Users}
-            title="Active Courses"
-            value={stats.activeCourses}
-          />
-          <StatCardWithAccent
-            icon={TrendingUp}
-            title="Students Enrolled"
-            value={`${(stats.studentsEnrolled / 1000).toFixed(1)}k`}
-          />
-          <StatCardWithAccent
-            icon={BookOpen}
-            title="Total Modules"
-            value={stats.totalModules}
-          />
-          <StatCardWithAccent
-            icon={Users}
-            title="Total Students"
-            value={`${(stats.totalStudents / 1000).toFixed(1)}k`}
-          />
-          <StatCardWithAccent
-            icon={BarChart3}
-            title="Total Earnings"
-            value={`$${(stats.totalEarnings / 1000).toFixed(0)}k+`}
-          />
+        <div className="mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-900">Lecturer Information</h2>
+          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+            <InfoItem label="Name" value={instructor?.name || "Instructor"} />
+            <InfoItem label="Department" value={instructor?.department || "-"} />
+            <InfoItem label="Courses" value={(instructor?.courses || []).join(", ") || `${courses.length} assigned`} />
+          </div>
         </div>
 
-        {/* Course Performance Section */}
-        <div className="card bg-white shadow-lg">
-          <div className="card-body">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="card-title text-2xl">
-                <BookOpen className="text-orange-600" size={28} />
-                Course Performance
-              </h2>
-              <button
-                onClick={() => navigate("/instructor/analytics")}
-                className="link link-primary text-orange-600 hover:text-orange-700 font-semibold"
-              >
-                See All Analytics →
-              </button>
+        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <StatCard title="Total Students" value={performance.students?.length || 0} icon={Users} color="text-green-600 bg-green-50" />
+          <StatCard title="Average Score" value={averageScore} icon={TrendingUp} color="text-purple-600 bg-purple-50" />
+          <StatCard title="Quizzes Created" value={quizzes.length} icon={FileQuestion} color="text-blue-600 bg-blue-50" />
+          <StatCard title="Courses" value={courses.length} icon={BookOpen} color="text-amber-600 bg-amber-50" />
+        </div>
+
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[2fr,1fr]">
+          <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Upcoming Quizzes</h3>
+                <p className="text-sm text-slate-500">Next scheduled quizzes by due date.</p>
+              </div>
+              <button onClick={() => navigate("/instructor/quizzes")} className="text-sm font-semibold text-blue-600 hover:text-blue-700">Manage</button>
             </div>
 
-            {courses.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="w-24 h-24 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-6">
-                  <BookOpen size={48} className="text-orange-400" />
-                </div>
-                <p className="text-slate-600 text-lg font-semibold mb-2">
-                  No courses yet
-                </p>
-                <p className="text-slate-500 text-sm mb-8">
-                  Create your first course to get started with your students
-                </p>
-                <button
-                  onClick={() => navigate("/instructor/courses/create")}
-                  className="btn btn-primary bg-orange-600 hover:bg-orange-700 border-none text-white"
-                >
-                  <Plus size={18} />
-                  Create Your First Course
-                </button>
-              </div>
-            ) : (
-              <div className="overflow-x-auto rounded-lg border border-slate-200">
-                <table className="table table-zebra w-full">
-                  <thead className="bg-slate-100">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-200">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Title</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Course</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Due</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 bg-white">
+                  {upcomingQuizzes.length === 0 ? (
                     <tr>
-                      <th className="text-slate-900 font-bold">Course Name</th>
-                      <th className="text-slate-900 font-bold">Enrolled</th>
-                      <th className="text-slate-900 font-bold">Rating</th>
-                      <th className="text-right text-slate-900 font-bold">
-                        Actions
-                      </th>
+                      <td colSpan={3} className="px-6 py-10 text-center text-sm text-slate-500">
+                        {loading ? "Loading..." : "No upcoming quizzes."}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {courses.map((course) => (
-                      <tr
-                        key={course.id}
-                        className="hover:bg-orange-50 transition-colors"
-                      >
-                        <td>
-                          <div>
-                            <p className="font-semibold text-slate-900">
-                              {course.title}
-                            </p>
-                            <p className="text-sm text-slate-500 mt-1">
-                              {course.description?.substring(0, 40)}...
-                            </p>
-                          </div>
-                        </td>
-                        <td>
-                          <div className="badge badge-lg badge-orange">
-                            {course.enrollmentCount || 0}
-                          </div>
-                        </td>
-                        <td>
-                          <div className="flex items-center gap-1">
-                            <Star
-                              size={16}
-                              className="text-yellow-400 fill-yellow-400"
-                            />
-                            <span className="font-semibold">4.0</span>
-                          </div>
-                        </td>
-                        <td className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() =>
-                                navigate(`/instructor/courses/${course.id}`)
-                              }
-                              className="btn btn-ghost btn-sm btn-circle text-blue-600 hover:bg-blue-100"
-                              title="View"
-                            >
-                              <Eye size={18} />
-                            </button>
-                            <button
-                              onClick={() =>
-                                navigate(
-                                  `/instructor/courses/${course.id}/edit`,
-                                )
-                              }
-                              className="btn btn-ghost btn-sm btn-circle text-green-600 hover:bg-green-100"
-                              title="Edit"
-                            >
-                              <Edit2 size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteCourse(course.id)}
-                              className="btn btn-ghost btn-sm btn-circle text-red-600 hover:bg-red-100"
-                              title="Delete"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
+                  ) : (
+                    upcomingQuizzes.map((quiz) => (
+                      <tr key={quiz.id} className="hover:bg-slate-50">
+                        <td className="px-6 py-4 text-sm font-semibold text-slate-900">{quiz.title}</td>
+                        <td className="px-6 py-4 text-sm text-slate-700">{quiz.course}</td>
+                        <td className="px-6 py-4 text-sm text-slate-700">{quiz.dueDate} {quiz.dueTime}</td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-blue-50 p-3 text-blue-600">
+                <CalendarClock size={20} />
               </div>
-            )}
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Quick Actions</h3>
+                <p className="text-sm text-slate-500">Access common instructor tasks.</p>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-3">
+              <QuickAction label="Create new quiz" onClick={() => navigate("/instructor/create-quiz")} />
+              <QuickAction label="Open quiz management" onClick={() => navigate("/instructor/quizzes")} />
+              <QuickAction label="View student performance" onClick={() => navigate("/instructor/performance")} />
+            </div>
           </div>
         </div>
       </div>
@@ -335,37 +161,35 @@ export default function InstructorDashboard() {
   );
 }
 
-// Professional Stat Card with dark modern theme and hover lift effect
-function StatCardWithAccent({ icon, title, value }) {
-  const Icon = icon;
+function InfoItem({ label, value }) {
   return (
-    <div className="relative group overflow-hidden rounded-lg bg-slate-700 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-600 hover:border-teal-500 transform hover:-translate-y-2 cursor-default">
-      {/* Enhanced hover effect background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="mt-2 text-sm font-medium text-slate-900">{value}</p>
+    </div>
+  );
+}
 
-      <div className="relative p-6">
-        {/* Header with title and icon */}
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex-1">
-            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-              {title}
-            </p>
-          </div>
-          <div className="bg-teal-600/20 rounded-lg p-3 ml-4">
-            <Icon size={22} className="text-teal-400" />
-          </div>
-        </div>
-
-        {/* Value display */}
+function StatCard({ title, value, icon: Icon, color }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-4xl font-bold text-white leading-tight">
-            {value}
-          </h3>
+          <p className="text-sm font-medium text-slate-500">{title}</p>
+          <p className="mt-2 text-3xl font-bold text-slate-900">{value}</p>
         </div>
-
-        {/* Top accent line */}
-        <div className="absolute top-0 left-0 h-0.5 w-full bg-gradient-to-r from-teal-500 to-transparent"></div>
+        <div className={`rounded-full p-3 ${color}`}>
+          <Icon size={20} />
+        </div>
       </div>
     </div>
+  );
+}
+
+function QuickAction({ label, onClick }) {
+  return (
+    <button onClick={onClick} className="w-full rounded-lg border border-slate-300 px-4 py-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100">
+      {label}
+    </button>
   );
 }
