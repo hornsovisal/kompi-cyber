@@ -8,6 +8,7 @@ import {
   BookOpen,
   BarChart3,
   Settings,
+  Plus,
 } from "lucide-react";
 
 export default function InstructorLayout({ children }) {
@@ -25,6 +26,7 @@ export default function InstructorLayout({ children }) {
 
   const navItems = [
     { label: "Dashboard", icon: Home, path: "/instructor/dashboard" },
+    { label: "Create Course", icon: Plus, path: "/instructor/create-course" },
     { label: "Courses", icon: BookOpen, path: "/instructor/courses" },
     { label: "Analytics", icon: BarChart3, path: "/instructor/analytics" },
     { label: "Settings", icon: Settings, path: "/instructor/settings" },
