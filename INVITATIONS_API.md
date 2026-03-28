@@ -5,11 +5,13 @@ This API allows teachers to invite students to courses by email, and students to
 ## Endpoints
 
 ### 1. Send Invitation (Teacher)
+
 **POST** `/api/invitations/send`
 
 Allow a teacher to send an invitation to a student (by email).
 
 #### Request Body
+
 ```json
 {
   "courseId": 1,
@@ -18,6 +20,7 @@ Allow a teacher to send an invitation to a student (by email).
 ```
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -26,6 +29,7 @@ Allow a teacher to send an invitation to a student (by email).
 ```
 
 #### Errors
+
 - **400**: Missing courseId or studentEmail, or invitation already exists
 - **403**: Not the course teacher
 - **500**: Server error
@@ -33,11 +37,13 @@ Allow a teacher to send an invitation to a student (by email).
 ---
 
 ### 2. Get Student's Invitations
+
 **GET** `/api/invitations`
 
 Get all pending and responded invitations for the current student.
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -58,16 +64,19 @@ Get all pending and responded invitations for the current student.
 ```
 
 #### Errors
+
 - **500**: Server error
 
 ---
 
 ### 3. Accept Invitation
+
 **POST** `/api/invitations/:id/accept`
 
 Student accepts an invitation and is automatically enrolled in the course.
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -77,6 +86,7 @@ Student accepts an invitation and is automatically enrolled in the course.
 ```
 
 #### Errors
+
 - **404**: Invitation not found
 - **403**: Invitation is not for this student's email
 - **400**: Invitation already accepted/rejected
@@ -85,11 +95,13 @@ Student accepts an invitation and is automatically enrolled in the course.
 ---
 
 ### 4. Reject Invitation
+
 **POST** `/api/invitations/:id/reject`
 
 Student rejects an invitation.
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -98,6 +110,7 @@ Student rejects an invitation.
 ```
 
 #### Errors
+
 - **404**: Invitation not found
 - **403**: Invitation is not for this student's email
 - **400**: Invitation already accepted/rejected
@@ -106,11 +119,13 @@ Student rejects an invitation.
 ---
 
 ### 5. Get Course Invitations (Teacher)
+
 **GET** `/api/invitations/course/:courseId`
 
 Teacher views all invitations they sent for a specific course.
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -140,17 +155,20 @@ Teacher views all invitations they sent for a specific course.
 ```
 
 #### Errors
+
 - **403**: Not the course teacher
 - **500**: Server error
 
 ---
 
 ### 6. Cancel Invitation (Teacher)
+
 **DELETE** `/api/invitations/:id`
 
 Teacher cancels a pending invitation.
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -159,17 +177,20 @@ Teacher cancels a pending invitation.
 ```
 
 #### Errors
+
 - **404**: Invitation not found or already responded
 - **500**: Server error
 
 ---
 
 ### 7. Resend Invitation (Teacher)
+
 **POST** `/api/invitations/:id/resend`
 
 Teacher resends a pending invitation (updates the invited_at timestamp).
 
 #### Response
+
 ```json
 {
   "success": true,
@@ -178,6 +199,7 @@ Teacher resends a pending invitation (updates the invited_at timestamp).
 ```
 
 #### Errors
+
 - **404**: Invitation not found or already responded
 - **500**: Server error
 
@@ -209,11 +231,13 @@ CREATE TABLE `course_invitations` (
 ## Workflow Examples
 
 ### Teacher Inviting a Student
+
 1. Teacher calls `POST /api/invitations/send` with courseId and studentEmail
 2. Invitation is created with status='pending'
 3. System should send email notification (future enhancement)
 
 ### Student Accepting Invitation
+
 1. Student calls `GET /api/invitations` to see pending invitations
 2. Student calls `POST /api/invitations/:id/accept`
 3. Invitation status changes to 'accepted'
@@ -221,6 +245,7 @@ CREATE TABLE `course_invitations` (
 5. Student can now access course content
 
 ### Teacher Managing Invitations
+
 1. Teacher calls `GET /api/invitations/course/:courseId` to see all invites for a course
 2. Teacher can `DELETE /api/invitations/:id` to cancel pending invites
 3. Teacher can `POST /api/invitations/:id/resend` to remind students
@@ -234,12 +259,8 @@ Authorization: Bearer <jwt-token>
 ```
 
 The authenticated user's role determines permissions:
-- **Teacher/Instructor**: Can send, resend, cancel invitations on their courses
-- **Student**: Can view, accept, reject their own invitations
-- **Admin**: Full access to all endpoints
 
-## Notes
-
+- **,**Notes
 - Invitations are unique per course and email address (cannot send duplicate pending invitations)
 - When a student accepts an invitation, they are automatically enrolled in the course
 - The system handles the case where a student might already be enrolled (no error on duplicate enrollment)
