@@ -4,7 +4,7 @@ const InvitationController = require("../controller/invitationController");
 const authMiddleware = require("../middleware/authMiddleware");
 
 // All routes require authentication
-router.use(authMiddleware);
+router.use(authMiddleware.authenticateToken);
 
 // Teacher sends invitation to a student
 router.post("/send", InvitationController.sendInvitation);
