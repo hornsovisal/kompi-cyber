@@ -128,7 +128,7 @@ class CertificateController {
         return res.status(400).json({ message: "Invalid course ID" });
       }
 
-      const certificate = await this.model.getCertificateByUserAndCourse(
+      let certificate = await this.model.getCertificateByUserAndCourse(
         userId,
         courseId,
       );
@@ -138,6 +138,13 @@ class CertificateController {
           message: "Certificate not found",
           exists: false,
         });
+      }
+
+      // Generate hash if missing (for existing certificates created before hash feature)
+      if (!certificate.certificate_hash) {
+        const hash = this.generateCertificateHash(certificate.certificate_code);
+        await this.model.updateCertificateHash(certificate.id, hash);
+        certificate.certificate_hash = hash;
       }
 
       return res.status(200).json({
@@ -172,7 +179,16 @@ class CertificateController {
     try {
       const userId = req.user?.sub;
 
-      const certificates = await this.model.getCertificatesByUserId(userId);
+      let certificates = await this.model.getCertificatesByUserId(userId);
+
+      // Generate hashes for any certificates missing them (backfill)
+      for (let cert of certificates) {
+        if (!cert.certificate_hash) {
+          const hash = this.generateCertificateHash(cert.certificate_code);
+          await this.model.updateCertificateHash(cert.id, hash);
+          cert.certificate_hash = hash;
+        }
+      }
 
       return res.status(200).json({
         message: "Certificates retrieved",

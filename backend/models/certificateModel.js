@@ -110,6 +110,15 @@ class CertificateModel {
     return result;
   }
 
+  // Update certificate hash (for backfilling missing hashes)
+  async updateCertificateHash(certificateId, hash) {
+    const [result] = await this.db.execute(
+      `UPDATE certificates SET certificate_hash = ? WHERE id = ?`,
+      [hash, certificateId],
+    );
+    return result;
+  }
+
   // Get course completion stats for certificate
   async getCourseCompletionStats(userId, courseId) {
     const [stats] = await this.db.execute(

@@ -110,13 +110,18 @@ export default function CertificateSection({ courseId, courseName, token }) {
       setError("Certificate not available");
       return;
     }
-    
+
     const hash = certificate.certificate_hash;
     if (hash) {
       navigate(`/certificate/${hash}`);
     } else {
-      console.error("Certificate hash not available. Full certificate object:", certificate);
-      setError("Certificate hash is missing. Please generate the certificate again.");
+      console.error(
+        "Certificate hash not available. Full certificate object:",
+        certificate,
+      );
+      setError(
+        "Certificate hash is missing. Please generate the certificate again.",
+      );
     }
   };
 
