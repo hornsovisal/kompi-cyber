@@ -369,10 +369,19 @@ export default function LearnPage() {
     );
   }, [allLessons, activeLesson]);
 
+  // Calculate progress based on completed quizzes (quiz attempts), not lesson navigation
+  const completedLessonIds = useMemo(() => {
+    const completedIds = new Set(
+      practiceHistory.map((item) => Number(item.lessonId))
+    );
+    return completedIds;
+  }, [practiceHistory]);
+
   const progressPercent = useMemo(() => {
-    if (allLessons.length === 0 || activeLessonIndex < 0) return 0;
-    return Math.round(((activeLessonIndex + 1) / allLessons.length) * 100);
-  }, [allLessons.length, activeLessonIndex]);
+    if (allLessons.length === 0) return 0;
+    // Progress = (lessons with quiz attempts / total lessons) * 100
+    return Math.round((completedLessonIds.size / allLessons.length) * 100);
+  }, [allLessons.length, completedLessonIds]);
 
   const activeModule = useMemo(() => {
     if (!activeLesson) return null;
@@ -380,13 +389,6 @@ export default function LearnPage() {
       (m) => Number(m.module_id) === Number(activeLesson.module_id),
     );
   }, [groupedModules, activeLesson]);
-
-  const completedLessonIds = useMemo(() => {
-    if (activeLessonIndex <= 0) return new Set();
-    return new Set(
-      allLessons.slice(0, activeLessonIndex).map((lesson) => Number(lesson.id)),
-    );
-  }, [allLessons, activeLessonIndex]);
 
   const estimateReadMinutes = (markdownContent) => {
     const text = (markdownContent || "").replace(/[#*_`>-]/g, " ").trim();
@@ -864,6 +866,65 @@ export default function LearnPage() {
     loadPractice();
   }, [activeTab, practiceView, activeLesson?.id, token]);
 
+  // Function to load all progress (shared by multiple useEffects)
+  const loadProgressData = async (headers) => {
+    setProgressLoading(true);
+    setProgressError("");
+    try {
+      const requests = allLessons.map((lesson) =>
+        axios
+          .get(`/api/quizzes/lesson/${lesson.id}/attempt`, {
+            baseURL: API_BASE,
+            headers,
+            timeout: REQUEST_TIMEOUT_MS,
+          })
+          .then((res) => ({ lesson, attempt: res.data?.data || null }))
+          .catch((err) => {
+            if (err.response?.status === 404) {
+              return { lesson, attempt: null };
+            }
+            throw err;
+          }),
+      );
+
+      const results = await Promise.all(requests);
+      const rows = results
+        .filter((item) => item.attempt)
+        .map((item) => ({
+          lessonId: item.lesson.id,
+          lessonTitle: item.lesson.title,
+          moduleTitle: item.lesson.module_title,
+          score: Number(item.attempt.score || 0),
+          attemptNo: item.attempt.attemptNo,
+          submittedAt: item.attempt.submittedAt,
+        }))
+        .sort(
+          (a, b) =>
+            new Date(b.submittedAt || 0).getTime() -
+            new Date(a.submittedAt || 0).getTime(),
+        );
+
+      setPracticeHistory(rows);
+    } catch (err) {
+      if (err.code === "ECONNABORTED") {
+        setProgressError(
+          "Request timed out. Please check backend/database and try again.",
+        );
+      } else if (!err.response) {
+        setProgressError(
+          `Cannot connect to backend API (${API_TARGET_LABEL})`,
+        );
+      } else {
+        setProgressError(
+          err.response?.data?.message || "Failed to load progress",
+        );
+      }
+    } finally {
+      setProgressLoading(false);
+    }
+  };
+
+  // Load progress when progress tab is active
   useEffect(() => {
     if (activeTab !== "progress") return;
     if (!token || allLessons.length === 0) {
@@ -872,66 +933,16 @@ export default function LearnPage() {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-
-    const loadProgress = async () => {
-      setProgressLoading(true);
-      setProgressError("");
-      try {
-        const requests = allLessons.map((lesson) =>
-          axios
-            .get(`/api/quizzes/lesson/${lesson.id}/attempt`, {
-              baseURL: API_BASE,
-              headers,
-              timeout: REQUEST_TIMEOUT_MS,
-            })
-            .then((res) => ({ lesson, attempt: res.data?.data || null }))
-            .catch((err) => {
-              if (err.response?.status === 404) {
-                return { lesson, attempt: null };
-              }
-              throw err;
-            }),
-        );
-
-        const results = await Promise.all(requests);
-        const rows = results
-          .filter((item) => item.attempt)
-          .map((item) => ({
-            lessonId: item.lesson.id,
-            lessonTitle: item.lesson.title,
-            moduleTitle: item.lesson.module_title,
-            score: Number(item.attempt.score || 0),
-            attemptNo: item.attempt.attemptNo,
-            submittedAt: item.attempt.submittedAt,
-          }))
-          .sort(
-            (a, b) =>
-              new Date(b.submittedAt || 0).getTime() -
-              new Date(a.submittedAt || 0).getTime(),
-          );
-
-        setPracticeHistory(rows);
-      } catch (err) {
-        if (err.code === "ECONNABORTED") {
-          setProgressError(
-            "Request timed out. Please check backend/database and try again.",
-          );
-        } else if (!err.response) {
-          setProgressError(
-            `Cannot connect to backend API (${API_TARGET_LABEL})`,
-          );
-        } else {
-          setProgressError(
-            err.response?.data?.message || "Failed to load progress",
-          );
-        }
-      } finally {
-        setProgressLoading(false);
-      }
-    };
-
-    loadProgress();
+    loadProgressData(headers);
   }, [activeTab, allLessons, token]);
+
+  // Reload progress when a quiz is submitted to update the progress bar
+  useEffect(() => {
+    if (!quizResult || !token || allLessons.length === 0) return;
+
+    const headers = { Authorization: `Bearer ${token}` };
+    loadProgressData(headers);
+  }, [quizResult, token, allLessons]);
 
   if (loading) {
     return (
