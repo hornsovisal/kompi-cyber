@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useResponsive, useBreakpoint } from '../../hooks/useResponsive';
-import { Menu, X } from 'lucide-react';
+import { useState } from "react";
+import { useResponsive, useBreakpoint } from "../../hooks/useResponsive";
+import { Menu, X } from "lucide-react";
 
 /**
  * Responsive Navigation Component
@@ -11,13 +11,13 @@ export const ResponsiveNav = ({
   navItems = [],
   rightActions = null,
   sticky = true,
-  accentColor = '#FFA500',
+  accentColor = "#FFA500",
   onNavClick = () => {},
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isMobile } = useResponsive();
 
-  const stickyClass = sticky ? 'fixed left-0 right-0 top-0 z-50' : '';
+  const stickyClass = sticky ? "fixed left-0 right-0 top-0 z-50" : "";
 
   return (
     <>
@@ -98,13 +98,13 @@ export const ResponsiveNav = ({
 export const ResponsiveGrid = ({ children, minColWidth = 300 }) => {
   const { isMobile, isTablet } = useResponsive();
 
-  const colsClass = isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : 'grid-cols-3';
+  const colsClass = isMobile
+    ? "grid-cols-1"
+    : isTablet
+      ? "grid-cols-2"
+      : "grid-cols-3";
 
-  return (
-    <div className={`grid ${colsClass} gap-6`}>
-      {children}
-    </div>
-  );
+  return <div className={`grid ${colsClass} gap-6`}>{children}</div>;
 };
 
 /**
@@ -116,7 +116,7 @@ export const HeroSection = ({
   primaryAction,
   secondaryAction,
   image,
-  backgroundGradient = 'from-[#192841] to-[#0f1a2e]',
+  backgroundGradient = "from-[#192841] to-[#0f1a2e]",
 }) => {
   const { isMobile } = useResponsive();
 
@@ -133,9 +133,7 @@ export const HeroSection = ({
             </h1>
 
             {subtitle && (
-              <p className="text-lg text-gray-300 sm:text-xl">
-                {subtitle}
-              </p>
+              <p className="text-lg text-gray-300 sm:text-xl">{subtitle}</p>
             )}
 
             {/* Actions */}
@@ -155,9 +153,7 @@ export const HeroSection = ({
 
           {/* Image */}
           {image && !isMobile && (
-            <div className="flex items-center justify-center">
-              {image}
-            </div>
+            <div className="flex items-center justify-center">{image}</div>
           )}
         </div>
       </div>
@@ -174,7 +170,9 @@ export const ResponsiveFooter = ({ sections = [] }) => {
   return (
     <footer className="border-t border-[#FFA500]/20 bg-[#192841]/50 py-12 sm:py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8 lg:px-12">
-        <div className={`grid gap-8 ${isMobile ? 'grid-cols-1' : 'grid-cols-' + sections.length}`}>
+        <div
+          className={`grid gap-8 ${isMobile ? "grid-cols-1" : "grid-cols-" + sections.length}`}
+        >
           {sections.map((section, idx) => (
             <div key={idx}>
               <h3 className="mb-4 font-bold text-white">{section.title}</h3>
