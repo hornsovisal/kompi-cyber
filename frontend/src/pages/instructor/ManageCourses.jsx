@@ -4,10 +4,12 @@
  * INSTRUCTOR:  View only their assigned courses.
  */
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, Plus, Search, Users, ShieldCheck, X, CheckCircle2, AlertCircle } from "lucide-react";
+import { BookOpen, Plus, Search, Users, ShieldCheck, X, CheckCircle2, AlertCircle, Pencil, Trash2 } from "lucide-react";
 import {
   fetchAllCourses,
   createCourse,
+  updateCourse,
+  deleteCourse,
   assignInstructor,
   fetchInstructors,
 } from "../../services/rbacService";
@@ -28,6 +30,14 @@ export default function ManageCourses() {
   const [newTitle, setNewTitle]         = useState("");
   const [newDesc, setNewDesc]           = useState("");
   const [creating, setCreating]         = useState(false);
+
+  const [editingCourse, setEditingCourse] = useState(null);
+  const [editTitle, setEditTitle]         = useState("");
+  const [editDesc, setEditDesc]           = useState("");
+  const [savingEdit, setSavingEdit]       = useState(false);
+
+  const [deletingCourse, setDeletingCourse] = useState(null);
+  const [deleting, setDeleting]             = useState(false);
 
   const [assignCourse, setAssignCourse] = useState(null);
   const [assignEmpId, setAssignEmpId]   = useState("");
@@ -67,6 +77,10 @@ export default function ManageCourses() {
 
   const handleCreateCourse = async (e) => {
     e.preventDefault();
+    if (!isCoordinator) {
+      showToast("error", "Only coordinators can create courses.");
+      return;
+    }
     if (!newTitle.trim()) return;
     setCreating(true);
     try {
@@ -82,8 +96,64 @@ export default function ManageCourses() {
     }
   };
 
+  const openEditModal = (course) => {
+    if (!isCoordinator) return;
+    setEditingCourse(course);
+    setEditTitle(course.title || "");
+    setEditDesc(course.description || "");
+  };
+
+  const handleUpdateCourse = async (e) => {
+    e.preventDefault();
+    if (!isCoordinator || !editingCourse) {
+      showToast("error", "Only coordinators can update courses.");
+      return;
+    }
+    if (!editTitle.trim()) return;
+
+    setSavingEdit(true);
+    try {
+      const updated = await updateCourse(editingCourse.id, {
+        title: editTitle.trim(),
+        description: editDesc.trim(),
+      });
+      setCourses(prev => prev.map(course => course.id === updated.id ? { ...course, ...updated } : course));
+      setEditingCourse(null);
+      setEditTitle("");
+      setEditDesc("");
+      showToast("success", `Course "${updated.title}" updated.`);
+    } catch (err) {
+      showToast("error", err.response?.data?.message || "Failed to update course.");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleDeleteCourse = async () => {
+    if (!isCoordinator || !deletingCourse) {
+      showToast("error", "Only coordinators can delete courses.");
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      await deleteCourse(deletingCourse.id);
+      setCourses(prev => prev.filter(course => course.id !== deletingCourse.id));
+      showToast("success", `Course "${deletingCourse.title}" deleted.`);
+      setDeletingCourse(null);
+    } catch (err) {
+      showToast("error", err.response?.data?.message || "Failed to delete course.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleAssignInstructor = async (e) => {
     e.preventDefault();
+    if (!isCoordinator) {
+      showToast("error", "Only coordinators can assign instructors.");
+      return;
+    }
     if (!assignEmpId) return;
     setAssigning(true);
     try {
@@ -172,7 +242,8 @@ export default function ManageCourses() {
                     <span className="text-xs text-slate-400 italic">No instructor assigned</span>
                   ) : (
                     (course.instructors || []).map(empId => {
-                      const inst = instructors.find(i => i.employeeId === empId);
+                      const inst = instructors.find(i => i.employeeId === empId)
+                        || (course.instructorDetails || []).find(i => i.employeeId === empId);
                       return (
                         <span key={empId} className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">
                           <ShieldCheck size={12} className="text-blue-500" />
@@ -184,10 +255,18 @@ export default function ManageCourses() {
                 </div>
 
                 {isCoordinator && (
-                  <div className="mt-4 pt-4 border-t border-slate-100">
+                  <div className="mt-4 flex flex-wrap gap-3 border-t border-slate-100 pt-4">
+                    <button onClick={() => openEditModal(course)}
+                      className="text-sm font-medium text-amber-600 hover:text-amber-700 flex items-center gap-1">
+                      <Pencil size={14} /> Edit
+                    </button>
                     <button onClick={() => { setAssignCourse(course); setAssignEmpId(""); }}
                       className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1">
                       <Plus size={14} /> Assign Instructor
+                    </button>
+                    <button onClick={() => setDeletingCourse(course)}
+                      className="text-sm font-medium text-red-600 hover:text-red-700 flex items-center gap-1">
+                      <Trash2 size={14} /> Delete
                     </button>
                   </div>
                 )}
@@ -244,6 +323,47 @@ export default function ManageCourses() {
               </button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {editingCourse && (
+        <Modal title={`Edit Course — ${editingCourse.title}`} onClose={() => setEditingCourse(null)}>
+          <form onSubmit={handleUpdateCourse} className="space-y-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Course Title *</label>
+              <input value={editTitle} onChange={e => setEditTitle(e.target.value)} required
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Description</label>
+              <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={4}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" />
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" onClick={() => setEditingCourse(null)} className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900">Cancel</button>
+              <button type="submit" disabled={savingEdit}
+                className="rounded-lg bg-amber-600 px-5 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-60">
+                {savingEdit ? "Saving…" : "Save Changes"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {deletingCourse && (
+        <Modal title="Delete Course" onClose={() => setDeletingCourse(null)}>
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600">
+              Are you sure you want to delete <span className="font-semibold text-slate-900">{deletingCourse.title}</span>? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" onClick={() => setDeletingCourse(null)} className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900">Cancel</button>
+              <button type="button" onClick={handleDeleteCourse} disabled={deleting}
+                className="rounded-lg bg-red-600 px-5 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60">
+                {deleting ? "Deleting…" : "Delete Course"}
+              </button>
+            </div>
+          </div>
         </Modal>
       )}
     </div>

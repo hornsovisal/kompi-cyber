@@ -8,7 +8,6 @@
  */
 
 const RbacCourseModel  = require('../models/rbacCourseModel');
-const StudentModel     = require('../models/studentModel');
 const LecturerModel    = require('../models/IntructorModel');
 
 // ── COORDINATOR ONLY ─────────────────────────────────────────────────────────
@@ -35,6 +34,54 @@ const createCourse = async (req, res) => {
   } catch (err) {
     console.error('[rbacCourseController] createCourse error:', err);
     return res.status(500).json({ success: false, message: 'Failed to create course.' });
+  }
+};
+
+/**
+ * PUT /api/rbac/courses/:id
+ * Update a course. Coordinator only.
+ */
+const updateCourse = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description } = req.body;
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({ success: false, message: 'Title is required.' });
+    }
+
+    const updated = await RbacCourseModel.updateCourse(id, {
+      title,
+      description: description || '',
+    });
+
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'Course not found.' });
+    }
+
+    return res.json({ success: true, data: updated, message: 'Course updated successfully.' });
+  } catch (err) {
+    console.error('[rbacCourseController] updateCourse error:', err);
+    return res.status(500).json({ success: false, message: 'Failed to update course.' });
+  }
+};
+
+/**
+ * DELETE /api/rbac/courses/:id
+ * Delete a course. Coordinator only.
+ */
+const deleteCourse = async (req, res) => {
+  try {
+    const deleted = await RbacCourseModel.deleteCourse(req.params.id);
+
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'Course not found.' });
+    }
+
+    return res.json({ success: true, message: 'Course deleted successfully.' });
+  } catch (err) {
+    console.error('[rbacCourseController] deleteCourse error:', err);
+    return res.status(500).json({ success: false, message: 'Failed to delete course.' });
   }
 };
 
@@ -133,35 +180,13 @@ const assignInstructor = async (req, res) => {
 
 /**
  * POST /api/rbac/courses/:courseId/invite-student
- * Instructor invites a student to their course by email.
- * Body: { email, name? }
+ * Deprecated in favor of rbacInvitationController.sendInvitation.
  */
 const inviteStudent = async (req, res) => {
   try {
-    const { courseId } = req.params;
-    const { email, name } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ success: false, message: 'Student email is required.' });
-    }
-
-    // Verify instructor is assigned to this course
-    const course = await RbacCourseModel.getCourseById(courseId);
-    if (!course) {
-      return res.status(404).json({ success: false, message: 'Course not found.' });
-    }
-    if (!course.instructors.includes(req.user.employeeId)) {
-      return res.status(403).json({ success: false, message: 'You are not assigned to this course.' });
-    }
-
-    // Add student via StudentModel, then add to course
-    const student = StudentModel.inviteStudent(email.trim().toLowerCase(), name, courseId);
-    await RbacCourseModel.addStudent(courseId, student.id);
-
-    return res.status(201).json({
-      success: true,
-      data: student,
-      message: `${student.name} has been invited to the course.`,
+    return res.status(410).json({
+      success: false,
+      message: 'Direct invite is no longer supported. Use the RBAC invitation endpoints instead.',
     });
   } catch (err) {
     console.error('[rbacCourseController] inviteStudent error:', err);
@@ -213,6 +238,8 @@ const listInstructors = async (req, res) => {
 
 module.exports = {
   createCourse,
+  updateCourse,
+  deleteCourse,
   getAllCourses,
   getCourseById,
   assignInstructor,

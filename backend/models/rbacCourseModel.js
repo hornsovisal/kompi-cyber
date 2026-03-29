@@ -94,6 +94,60 @@ class RbacCourseModel {
     return course;
   }
 
+  async updateCourse(courseId, updates = {}) {
+    const course = await this.getCourseById(courseId);
+    if (!course) return null;
+
+    const nextCourse = {
+      ...course,
+      title: typeof updates.title === 'string' ? updates.title.trim() || course.title : course.title,
+      description: typeof updates.description === 'string' ? updates.description.trim() : course.description,
+    };
+
+    if (useSupabase()) {
+      const { data, error } = await supabase
+        .from('rbac_courses')
+        .update({
+          title: nextCourse.title,
+          description: nextCourse.description,
+        })
+        .eq('id', courseId)
+        .select()
+        .single();
+
+      if (!error && data) {
+        const normalized = this._normalize(data);
+        const idx = courses.findIndex(c => c.id === courseId);
+        if (idx !== -1) courses[idx] = normalized;
+        return normalized;
+      }
+      console.warn('[RbacCourseModel] Supabase update failed, using in-memory:', error?.message);
+    }
+
+    const idx = courses.findIndex(c => c.id === courseId);
+    if (idx !== -1) courses[idx] = nextCourse;
+    return nextCourse;
+  }
+
+  async deleteCourse(courseId) {
+    const course = await this.getCourseById(courseId);
+    if (!course) return false;
+
+    if (useSupabase()) {
+      const { error } = await supabase
+        .from('rbac_courses')
+        .delete()
+        .eq('id', courseId);
+
+      if (error) {
+        console.warn('[RbacCourseModel] Supabase delete failed, using in-memory:', error?.message);
+      }
+    }
+
+    courses = courses.filter(c => c.id !== courseId);
+    return true;
+  }
+
   // ── READ ────────────────────────────────────────────────────────────────────
 
   async getAllCourses() {

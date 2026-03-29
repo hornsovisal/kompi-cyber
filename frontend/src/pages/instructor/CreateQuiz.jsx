@@ -1,20 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
-import { useInstructorAPI } from "../../hooks/useInstructorAPI";
+import { fetchAllCourses, fetchRbacQuizById, createRbacQuiz, updateRbacQuiz } from "../../services/rbacService";
 
 export default function CreateQuiz() {
   const navigate = useNavigate();
   const { id, lessonId } = useParams();
   const quizId = id || lessonId;
-  const { fetchInstructorCourses, fetchQuizById, createQuiz, updateQuiz, loading, error, clearError } = useInstructorAPI();
 
   const [courses, setCourses] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({
     title: "",
     description: "",
-    course: "",
+    courseId: "",
     dueDate: "",
     dueTime: "",
   });
@@ -24,27 +25,31 @@ export default function CreateQuiz() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const courseData = await fetchInstructorCourses();
+        setLoading(true);
+        setError("");
+        const courseData = await fetchAllCourses();
         setCourses(courseData);
 
         if (!quizId && courseData[0]) {
-          setForm((prev) => ({ ...prev, course: prev.course || courseData[0].title || String(courseData[0].id) }));
+          setForm((prev) => ({ ...prev, courseId: prev.courseId || String(courseData[0].id) }));
         }
 
         if (quizId) {
-          const quiz = await fetchQuizById(quizId);
+          const quiz = await fetchRbacQuizById(quizId);
           if (quiz) {
             setForm({
               title: quiz.title || "",
               description: quiz.description || "",
-              course: quiz.course || "",
+              courseId: quiz.courseId || "",
               dueDate: quiz.dueDate || "",
               dueTime: quiz.dueTime || "",
             });
           }
         }
-      } catch (_) {
-        // error handled by hook
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to load quiz form.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -60,14 +65,15 @@ export default function CreateQuiz() {
     event.preventDefault();
     try {
       setSaving(true);
+      setError("");
       if (isEditMode) {
-        await updateQuiz(quizId, form);
+        await updateRbacQuiz(quizId, form);
       } else {
-        await createQuiz(form);
+        await createRbacQuiz(form);
       }
       navigate("/instructor/quizzes");
-    } catch (_) {
-      // error handled by hook
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to save quiz.");
     } finally {
       setSaving(false);
     }
@@ -96,7 +102,7 @@ export default function CreateQuiz() {
             <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
               <div className="flex items-center justify-between gap-4">
                 <span>{error}</span>
-                <button type="button" onClick={clearError} className="font-semibold text-red-800">Dismiss</button>
+                <button type="button" onClick={() => setError("")} className="font-semibold text-red-800">Dismiss</button>
               </div>
             </div>
           )}
@@ -107,11 +113,11 @@ export default function CreateQuiz() {
             </Field>
 
             <Field label="Course">
-              <select name="course" value={form.course} onChange={handleChange} required className="w-full rounded-lg border border-slate-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+              <select name="courseId" value={form.courseId} onChange={handleChange} required className="w-full rounded-lg border border-slate-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
                 <option value="">Select course</option>
                 {courses.map((course) => {
-                  const value = course.title || String(course.id);
-                  return <option key={course.id} value={value}>{value}</option>;
+                  const value = String(course.id);
+                  return <option key={course.id} value={value}>{course.title || value}</option>;
                 })}
               </select>
             </Field>
@@ -141,6 +147,7 @@ export default function CreateQuiz() {
               {saving ? "Saving..." : isEditMode ? "Update Quiz" : "Create Quiz"}
             </button>
           </div>
+          <p className="mt-4 text-xs text-slate-500">New quizzes are created in a closed state. Open them later from quiz management when ready for students.</p>
         </form>
       </div>
     </div>
