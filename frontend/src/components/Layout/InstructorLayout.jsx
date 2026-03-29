@@ -30,7 +30,7 @@ export default function InstructorLayout({ children }) {
     { label: 'Courses', icon: BookOpen, path: '/instructor/courses' },
     { label: 'Quizzes', icon: FileQuestion, path: '/instructor/quizzes' },
     { label: 'Performance', icon: Users, path: '/instructor/performance' },
-    { label: 'Analytics', icon: BarChart3, path: '/instructor/dashboard' },
+    { label: 'Analytics', icon: BarChart3, path: '/instructor/analytics' },
     { label: 'Settings', icon: Settings, path: '/instructor/settings' },
   ];
 

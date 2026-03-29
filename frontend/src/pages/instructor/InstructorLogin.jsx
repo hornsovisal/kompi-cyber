@@ -161,7 +161,7 @@ export default function InstructorLogin() {
     localStorage.setItem("instructor", JSON.stringify(instructorData));
     localStorage.setItem("user", JSON.stringify(instructorData));
     setStep("success");
-    setTimeout(() => navigate("/instructor/dashboard"), 1200);
+    setTimeout(() => navigate("/instructor/dashboard", { replace: true }), 300);
   };
 
   // ── OTP helpers
