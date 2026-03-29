@@ -535,13 +535,13 @@ const loginInstructor = async (req, res) => {
     //   });
     // }
 
-    // Generate JWT token
+    // Generate JWT token — use the actual role from the model
     const token = jwt.sign(
       {
         sub: lecturer.id,
         id: lecturer.id,
         email: lecturer.email,
-        role: 'instructor',
+        role: lecturer.role || 'instructor',  // 'instructor' | 'coordinator'
         department: lecturer.department,
         employeeId: lecturer.employeeId,
       },
@@ -559,6 +559,7 @@ const loginInstructor = async (req, res) => {
         department: lecturer.department,
         courses: lecturer.courses,
         employeeId: lecturer.employeeId,
+        role: lecturer.role || 'instructor',
         isVerified: lecturer.isVerified,
       },
     });

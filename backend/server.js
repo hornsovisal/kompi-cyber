@@ -20,6 +20,7 @@ const submissionRoutes = require("./routes/submissionRoutes");
 const instructorRoutes = require("./routes/instructorRoutes");
 const certificateRoutes = require("./routes/certificateRoutes");
 const invitationRoutes = require("./routes/invitationRoutes");
+const rbacRoutes = require("./routes/rbacRoutes");
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use("/api/submissions", submissionRoutes);
 app.use("/api/instructor", instructorRoutes);
 app.use("/api/certificates", certificateRoutes);
 app.use("/api/invitations", invitationRoutes);
+app.use("/api/rbac", rbacRoutes);  // RBAC — role-based instructor/coordinator system
 
 const PORT = process.env.PORT || 5000;
 

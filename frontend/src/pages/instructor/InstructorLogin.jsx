@@ -146,7 +146,7 @@ export default function InstructorLogin() {
     }
   };
 
-  // ── Success — stores token + instructor, redirects to InstructorDashboard
+  // ── Success — stores token + instructor (with role), redirects to InstructorDashboard
   const loginSuccess = (inst) => {
     localStorage.setItem("token", inst.token);
     const instructorData = {
@@ -156,6 +156,7 @@ export default function InstructorLogin() {
       department: inst.department,
       courses: inst.courses || [],
       employeeId: inst.employeeId,
+      role: inst.role || 'instructor',   // ← store role for UI gating
       isVerified: inst.isVerified,
     };
     localStorage.setItem("instructor", JSON.stringify(instructorData));

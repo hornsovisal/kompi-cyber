@@ -1,17 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, LogOut, Home, BookOpen, BarChart3, Settings, FileQuestion, Users } from 'lucide-react';
+import { Menu, X, LogOut, Home, BookOpen, BarChart3, Settings, FileQuestion, Users, ShieldCheck, PlusCircle } from 'lucide-react';
 
 export default function InstructorLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Read instructor and role from localStorage
+  const instructor = useMemo(() => {
+    try { return JSON.parse(localStorage.getItem('instructor') || 'null'); } catch { return null; }
+  }, []);
+
+  const role = instructor?.role || 'instructor'; // 'instructor' | 'coordinator'
+  const isCoordinator = role === 'coordinator';
+
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const instructor = localStorage.getItem('instructor');
-
-    if (!token || !instructor) {
+    const inst = localStorage.getItem('instructor');
+    if (!token || !inst) {
       navigate('/instructor/login', { replace: true });
     }
   }, [navigate]);
@@ -25,14 +32,27 @@ export default function InstructorLayout({ children }) {
 
   const isActive = (path) => location.pathname === path;
 
-  const navItems = [
-    { label: 'Dashboard', icon: Home, path: '/instructor/dashboard' },
-    { label: 'Courses', icon: BookOpen, path: '/instructor/courses' },
-    { label: 'Quizzes', icon: FileQuestion, path: '/instructor/quizzes' },
-    { label: 'Performance', icon: Users, path: '/instructor/performance' },
-    { label: 'Analytics', icon: BarChart3, path: '/instructor/analytics' },
-    { label: 'Settings', icon: Settings, path: '/instructor/settings' },
+  // ── Coordinator Nav ──────────────────────────────────────────────────────
+  const coordinatorNav = [
+    { label: 'Dashboard',       icon: Home,        path: '/instructor/dashboard' },
+    { label: 'Manage Courses',  icon: BookOpen,    path: '/instructor/courses' },
+    { label: 'Assign Instructors', icon: ShieldCheck, path: '/instructor/courses' },
+    { label: 'All Quizzes',     icon: FileQuestion,path: '/instructor/quizzes' },
+    { label: 'Analytics',       icon: BarChart3,   path: '/instructor/analytics' },
+    { label: 'Settings',        icon: Settings,    path: '/instructor/settings' },
   ];
+
+  // ── Instructor Nav ───────────────────────────────────────────────────────
+  const instructorNav = [
+    { label: 'Dashboard',       icon: Home,        path: '/instructor/dashboard' },
+    { label: 'My Courses',      icon: BookOpen,    path: '/instructor/courses' },
+    { label: 'My Quizzes',      icon: FileQuestion,path: '/instructor/quizzes' },
+    { label: 'Students',        icon: Users,       path: '/instructor/students' },
+    { label: 'Performance',     icon: BarChart3,   path: '/instructor/performance' },
+    { label: 'Settings',        icon: Settings,    path: '/instructor/settings' },
+  ];
+
+  const navItems = isCoordinator ? coordinatorNav : instructorNav;
 
   return (
     <div className="flex h-screen bg-slate-50">
@@ -44,16 +64,30 @@ export default function InstructorLayout({ children }) {
       >
         <div className="p-6">
           <h1 className="text-xl font-bold">KOMPI-CYBER</h1>
-          <p className="text-slate-400 text-xs mt-1">Instructor Portal</p>
+          <p className="text-slate-400 text-xs mt-1">
+            {isCoordinator ? '🎓 Program Coordinator' : '👨‍🏫 Instructor Portal'}
+          </p>
         </div>
 
-        <nav className="mt-8">
+        {/* Role badge */}
+        <div className="mx-4 mb-4">
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+            isCoordinator
+              ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
+              : 'bg-blue-600/20 text-blue-300 border border-blue-500/30'
+          }`}>
+            <ShieldCheck size={12} />
+            {isCoordinator ? 'Coordinator' : 'Instructor'}
+          </span>
+        </div>
+
+        <nav className="mt-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.path);
             return (
               <button
-                key={item.path}
+                key={item.label}
                 onClick={() => {
                   navigate(item.path);
                   if (window.innerWidth < 1024) setSidebarOpen(false);
@@ -69,9 +103,26 @@ export default function InstructorLayout({ children }) {
               </button>
             );
           })}
+
+          {/* Coordinator-only: Create Course shortcut */}
+          {isCoordinator && (
+            <button
+              onClick={() => { navigate('/instructor/create-course'); if (window.innerWidth < 1024) setSidebarOpen(false); }}
+              className="w-full px-6 py-3 flex items-center gap-3 text-emerald-400 hover:bg-slate-800 transition-colors mt-2 border-t border-slate-700"
+            >
+              <PlusCircle size={20} />
+              <span className="font-medium">+ New Course</span>
+            </button>
+          )}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-slate-700">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700">
+          {instructor && (
+            <div className="mb-3 px-2">
+              <p className="text-sm font-semibold text-white truncate">{instructor.name}</p>
+              <p className="text-xs text-slate-400 truncate">{instructor.department}</p>
+            </div>
+          )}
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 text-slate-300 hover:text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors"

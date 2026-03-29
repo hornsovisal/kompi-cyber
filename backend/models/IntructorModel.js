@@ -1,5 +1,6 @@
 // In-memory lecturer storage for demonstration
 let lecturers = [
+  // ── INSTRUCTORS ──────────────────────────────────────────────────
   {
     id: 1,
     name: "Dr. Sarah Johnson",
@@ -8,6 +9,7 @@ let lecturers = [
     department: "Network Security",
     courses: ["network-security"],
     employeeId: "LEC001",
+    role: "instructor",
     isVerified: true,
     verificationToken: null,
     resetToken: null,
@@ -22,6 +24,7 @@ let lecturers = [
     department: "Web Security",
     courses: ["web-security"],
     employeeId: "LEC002",
+    role: "instructor",
     isVerified: true,
     verificationToken: null,
     resetToken: null,
@@ -36,6 +39,7 @@ let lecturers = [
     department: "Incident Response",
     courses: ["incident-response"],
     employeeId: "LEC003",
+    role: "instructor",
     isVerified: true,
     verificationToken: null,
     resetToken: null,
@@ -50,6 +54,7 @@ let lecturers = [
     department: "Introduction to Linux",
     courses: ["intro-to-linux-course"],
     employeeId: "LEC004",
+    role: "instructor",
     isVerified: true,
     verificationToken: null,
     resetToken: null,
@@ -64,11 +69,44 @@ let lecturers = [
     department: "Introduction to Cybersecurity",
     courses: ["intro-to-cyber-course"],
     employeeId: "LEC005",
+    role: "instructor",
     isVerified: true,
     verificationToken: null,
     resetToken: null,
     resetTokenExpiry: null,
     createdAt: new Date("2024-02-15")
+  },
+
+  // ── PROGRAM COORDINATORS ─────────────────────────────────────────
+  {
+    id: 6,
+    name: "Dr. Phirum Meas",
+    email: "coordinator1@cadt.edu.kh",
+    password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
+    department: "Program Coordination",
+    courses: [],
+    employeeId: "COORD001",
+    role: "coordinator",
+    isVerified: true,
+    verificationToken: null,
+    resetToken: null,
+    resetTokenExpiry: null,
+    createdAt: new Date("2024-01-01")
+  },
+  {
+    id: 7,
+    name: "Ms. Sokha Lim",
+    email: "coordinator2@cadt.edu.kh",
+    password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
+    department: "Program Coordination",
+    courses: [],
+    employeeId: "COORD002",
+    role: "coordinator",
+    isVerified: true,
+    verificationToken: null,
+    resetToken: null,
+    resetTokenExpiry: null,
+    createdAt: new Date("2024-01-01")
   }
 ];
 
@@ -152,7 +190,7 @@ class LecturerModel {
     return null;
   }
 
-  // Get all lecturers (for admin purposes)
+  // Get all lecturers (for admin purposes) — now includes role
   async getAllLecturers() {
     return lecturers.map(lecturer => ({
       id: lecturer.id,
@@ -160,14 +198,52 @@ class LecturerModel {
       email: lecturer.email,
       department: lecturer.department,
       employeeId: lecturer.employeeId,
+      role: lecturer.role || 'instructor',
       isVerified: lecturer.isVerified,
       createdAt: lecturer.createdAt
     }));
   }
 
+  // Get only instructors (role = "instructor")
+  async getAllInstructors() {
+    return lecturers
+      .filter(l => l.role === 'instructor')
+      .map(l => ({
+        id: l.id,
+        name: l.name,
+        email: l.email,
+        department: l.department,
+        employeeId: l.employeeId,
+        courses: l.courses || [],
+      }));
+  }
+
+  // Get only coordinators (role = "coordinator")
+  async getAllCoordinators() {
+    return lecturers
+      .filter(l => l.role === 'coordinator')
+      .map(l => ({
+        id: l.id,
+        name: l.name,
+        email: l.email,
+        department: l.department,
+        employeeId: l.employeeId,
+      }));
+  }
+
   // Get lecturer by employee ID
   async findLecturerByEmployeeId(employeeId) {
     return lecturers.find(lecturer => lecturer.employeeId === employeeId);
+  }
+
+  // Assign a course slug to an instructor (in-memory only)
+  async assignCourseToInstructor(instructorId, courseSlug) {
+    const lecturer = lecturers.find(l => l.id === parseInt(instructorId));
+    if (!lecturer) return null;
+    if (!lecturer.courses.includes(courseSlug)) {
+      lecturer.courses.push(courseSlug);
+    }
+    return lecturer;
   }
 }
 
