@@ -48,12 +48,20 @@ class CourseController {
         level,
         duration_hrs,
         is_published,
+        course_type = "online-led",
       } = req.body;
 
       if (!domain_id || !title) {
         return res
           .status(400)
           .json({ message: "domain_id and title are required" });
+      }
+
+      // Validate course_type
+      if (!["online-led", "instructor-led"].includes(course_type)) {
+        return res.status(400).json({
+          message: "course_type must be 'online-led' or 'instructor-led'",
+        });
       }
 
       const newId = await this.courseModel.createCourse({
@@ -64,6 +72,7 @@ class CourseController {
         level,
         duration_hrs,
         is_published,
+        course_type,
         created_by: req.user?.sub,
       });
 

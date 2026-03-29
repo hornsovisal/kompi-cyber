@@ -80,6 +80,7 @@ class CourseModel {
       level = "beginner",
       duration_hrs = 0,
       is_published = 0,
+      course_type = "online-led",
       created_by,
     } = payload;
 
@@ -92,8 +93,14 @@ class CourseModel {
       values.push(cover_image_url);
     }
 
-    columns.push("level", "duration_hrs", "is_published", "created_by");
-    values.push(level, duration_hrs, is_published, created_by);
+    columns.push(
+      "level",
+      "duration_hrs",
+      "course_type",
+      "is_published",
+      "created_by",
+    );
+    values.push(level, duration_hrs, course_type, is_published, created_by);
 
     const placeholders = columns.map(() => "?").join(", ");
 
@@ -114,6 +121,7 @@ class CourseModel {
       "description",
       "level",
       "duration_hrs",
+      "course_type",
       "is_published",
     ];
 
