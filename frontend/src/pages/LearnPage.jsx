@@ -22,7 +22,7 @@ function MarkdownBlock({ content }) {
       elements.push(
         <ul
           key={`ul-${key}`}
-          className="mb-5 list-disc space-y-1 pl-6 text-slate-700"
+          className="mb-5 list-disc space-y-1 pl-6 text-blue-100"
         >
           {listItems.map((item, idx) => (
             <li key={`li-${key}-${idx}`}>{renderInline(item)}</li>
@@ -39,7 +39,7 @@ function MarkdownBlock({ content }) {
       elements.push(
         <pre
           key={`code-${key}`}
-          className="mb-5 overflow-x-auto rounded-lg bg-slate-900 p-4 text-sm text-slate-100"
+          className="mb-5 overflow-x-auto rounded-lg bg-slate-950 p-4 text-sm text-cyan-300 border border-blue-900/50"
         >
           <code className="font-mono">{code}</code>
         </pre>,
@@ -55,7 +55,7 @@ function MarkdownBlock({ content }) {
       elements.push(
         <blockquote
           key={`quote-${key}`}
-          className="mb-5 border-l-4 border-slate-300 bg-slate-100 py-2 pl-4 pr-4 italic text-slate-700"
+          className="mb-5 border-l-4 border-cyan-500/50 bg-blue-900/20 py-2 pl-4 pr-4 italic text-blue-200"
         >
           {renderInline(quote)}
         </blockquote>,
@@ -87,28 +87,28 @@ function MarkdownBlock({ content }) {
     elements.push(
       <div
         key={`table-${key}`}
-        className="mb-5 overflow-x-auto rounded-lg border border-slate-200"
+        className="mb-5 overflow-x-auto rounded-lg border border-blue-900/50"
       >
-        <table className="min-w-full divide-y divide-slate-200">
-          <thead className="bg-slate-100">
+        <table className="min-w-full divide-y divide-blue-900/30">
+          <thead className="bg-blue-900/30">
             <tr>
               {headers.map((header, idx) => (
                 <th
                   key={`th-${idx}`}
-                  className="px-4 py-3 text-left font-semibold text-slate-900"
+                  className="px-4 py-3 text-left font-semibold text-cyan-300"
                 >
                   {renderInline(header)}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200 bg-white">
+          <tbody className="divide-y divide-blue-900/30 bg-blue-900/10">
             {rows.map((row, rowIdx) => (
               <tr key={`tr-${rowIdx}`}>
                 {row.map((cell, cellIdx) => (
                   <td
                     key={`td-${rowIdx}-${cellIdx}`}
-                    className="px-4 py-3 text-slate-700"
+                    className="px-4 py-3 text-blue-100"
                   >
                     {renderInline(cell)}
                   </td>
@@ -152,13 +152,13 @@ function MarkdownBlock({ content }) {
       const matched = m.text;
       if (matched.startsWith("**") && matched.endsWith("**")) {
         parts.push(
-          <strong key={`b-${key++}`} className="font-bold text-slate-900">
+          <strong key={`b-${key++}`} className="font-bold text-white">
             {matched.slice(2, -2)}
           </strong>,
         );
       } else if (matched.startsWith("__") && matched.endsWith("__")) {
         parts.push(
-          <strong key={`b-${key++}`} className="font-bold text-slate-900">
+          <strong key={`b-${key++}`} className="font-bold text-white">
             {matched.slice(2, -2)}
           </strong>,
         );
@@ -166,20 +166,20 @@ function MarkdownBlock({ content }) {
         parts.push(
           <code
             key={`c-${key++}`}
-            className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-sm text-slate-900"
+            className="rounded bg-blue-900/40 px-1.5 py-0.5 font-mono text-sm text-cyan-300 border border-blue-800/50"
           >
             {matched.slice(1, -1)}
           </code>,
         );
       } else if (matched.startsWith("*") && matched.endsWith("*")) {
         parts.push(
-          <em key={`i-${key++}`} className="italic text-slate-800">
+          <em key={`i-${key++}`} className="italic text-slate-200">
             {matched.slice(1, -1)}
           </em>,
         );
       } else if (matched.startsWith("_") && matched.endsWith("_")) {
         parts.push(
-          <em key={`i-${key++}`} className="italic text-slate-800">
+          <em key={`i-${key++}`} className="italic text-slate-200">
             {matched.slice(1, -1)}
           </em>,
         );
@@ -256,10 +256,7 @@ function MarkdownBlock({ content }) {
 
     if (trimmed.startsWith("### ")) {
       elements.push(
-        <h3
-          key={`h3-${i}`}
-          className="mb-2 mt-6 text-xl font-bold text-slate-900"
-        >
+        <h3 key={`h3-${i}`} className="mb-2 mt-6 text-xl font-bold text-white">
           {renderInline(trimmed.slice(4))}
         </h3>,
       );
@@ -268,10 +265,7 @@ function MarkdownBlock({ content }) {
 
     if (trimmed.startsWith("## ")) {
       elements.push(
-        <h2
-          key={`h2-${i}`}
-          className="mb-3 mt-7 text-2xl font-bold text-slate-900"
-        >
+        <h2 key={`h2-${i}`} className="mb-3 mt-7 text-2xl font-bold text-white">
           {renderInline(trimmed.slice(3))}
         </h2>,
       );
@@ -282,7 +276,7 @@ function MarkdownBlock({ content }) {
       elements.push(
         <h1
           key={`h1-${i}`}
-          className="mb-4 mt-2 text-3xl font-extrabold text-slate-900"
+          className="mb-4 mt-2 text-3xl font-extrabold text-white"
         >
           {renderInline(trimmed.slice(2))}
         </h1>,
@@ -291,7 +285,7 @@ function MarkdownBlock({ content }) {
     }
 
     elements.push(
-      <p key={`p-${i}`} className="mb-4 text-[19px] leading-9 text-slate-700">
+      <p key={`p-${i}`} className="mb-4 text-[19px] leading-9 text-blue-100">
         {renderInline(trimmed)}
       </p>,
     );
@@ -307,6 +301,16 @@ function MarkdownBlock({ content }) {
 export default function LearnPage() {
   const { courseId, lessonId } = useParams();
   const navigate = useNavigate();
+
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem("theme");
+    return saved ? saved === "dark" : true;
+  });
+
+  // Save theme preference to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
 
   const [activeTab, setActiveTab] = useState("learn");
   const [course, setCourse] = useState(null);
@@ -991,14 +995,96 @@ export default function LearnPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#171717] p-0">
-      <div className="min-h-screen overflow-hidden bg-[#ECEEF2] shadow-2xl ring-1 ring-black/10">
-        <header className="flex items-center justify-between bg-[#032A56] px-4 py-3 text-white md:px-6">
-          <Link to="/dashboard" className="flex items-center hover:opacity-80 transition">
-            <img src={logo} alt="Kompi-Cyber" className="h-10" />
-          </Link>
+    <div
+      className={`min-h-screen p-0 ${
+        isDarkMode ? "bg-[#0A1628]" : "bg-white"
+      }`}
+    >
+      <div
+        className={`min-h-screen overflow-hidden shadow-2xl ${
+          isDarkMode ? "bg-[#0F1E32]" : "bg-gray-50"
+        }`}
+      >
+        {/* Header */}
+        <header
+          className={`sticky top-0 z-50 border-b backdrop-blur-lg px-4 py-4 shadow-lg md:px-8 transition-all duration-500 ${
+            isDarkMode
+              ? "border-blue-900/50 bg-gradient-to-r from-[#032A56] to-[#061633]"
+              : "border-gray-200/60 bg-gradient-to-r from-white via-gray-50 to-white"
+          }`}
+        >
+          <div className="flex items-center justify-between gap-4">
+            {/* Logo */}
+            <Link
+              to="/dashboard"
+              className="group flex items-center hover:opacity-90 transition-opacity"
+            >
+              <img
+                src={logo}
+                alt="Kompi-Cyber"
+                className="h-10 w-auto group-hover:scale-105 transition-transform duration-200"
+              />
+            </Link>
 
-          <div className="rounded-full bg-[#012149] p-1">
+            {/* Center Navigation Tabs */}
+            <div
+              className={`hidden md:flex items-center gap-1 rounded-full p-1.5 border transition-all duration-500 ${
+                isDarkMode
+                  ? "bg-[#0D3A6B]/40 border-blue-500/20"
+                  : "bg-gray-200/40 border-gray-400/30"
+              }`}
+            >
+              {["learn", "practice", "progress"].map((tab) => {
+                const isActive = activeTab === tab;
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => {
+                      setActiveTab(tab);
+                      if (tab === "practice") {
+                        setPracticeView("list");
+                      }
+                    }}
+                    className={`relative px-6 py-2.5 text-sm font-medium capitalize transition-all duration-200 rounded-full ${
+                      isActive
+                        ? "bg-amber-500 text-slate-900 shadow-lg shadow-amber-500/30 font-bold"
+                        : isDarkMode
+                        ? "text-blue-200 hover:bg-blue-500/20 hover:text-blue-100"
+                        : "text-gray-700 hover:bg-gray-300/30 hover:text-gray-900"
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Right Actions */}
+            <div className="flex items-center gap-4">
+              <Link
+                to="/dashboard"
+                className="hidden sm:inline-flex text-sm font-medium text-blue-300 hover:text-amber-400 transition-colors duration-200 items-center gap-2"
+              >
+                <span>Dashboard</span>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
+                </svg>
+              </Link>
+            </div>
+          </div>
+
+          {/* Mobile Tab Navigation */}
+          <div className="md:hidden flex items-center gap-1 bg-[#0D3A6B]/40 rounded-full p-1 mt-4 border border-blue-500/20">
             {["learn", "practice", "progress"].map((tab) => {
               const isActive = activeTab === tab;
               return (
@@ -1010,10 +1096,10 @@ export default function LearnPage() {
                       setPracticeView("list");
                     }
                   }}
-                  className={`rounded-full px-4 py-1.5 text-xs font-semibold capitalize transition md:px-5 ${
+                  className={`flex-1 px-3 py-2 text-xs font-medium capitalize transition-all rounded-full ${
                     isActive
-                      ? "bg-amber-400 text-slate-900"
-                      : "text-blue-100 hover:bg-white/10 hover:text-white"
+                      ? "bg-amber-500 text-slate-900 shadow-lg font-bold"
+                      : "text-blue-200 hover:bg-blue-500/20"
                   }`}
                 >
                   {tab}
@@ -1021,77 +1107,95 @@ export default function LearnPage() {
               );
             })}
           </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              to="/dashboard"
-              className="text-xs font-medium text-blue-100 hover:text-white"
-            >
-              Dashboard
-            </Link>
-          </div>
         </header>
 
-        <div className="flex min-h-[calc(100vh-4.5rem)]">
-          <aside className="hidden w-[320px] shrink-0 overflow-y-auto bg-[#061632] text-white lg:block">
-            <div className="border-b border-white/10 bg-gradient-to-b from-[#0a2851] to-[#061632] px-5 py-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-amber-300">
+        <div className="flex min-h-[calc(100vh-5.5rem)]">
+          {/* Dark Mode Sidebar */}
+          <aside className="hidden w-[340px] shrink-0 overflow-y-auto border-r border-blue-900/30 bg-gradient-to-b from-[#0F1E32] to-[#132844] lg:block">
+            {/* Course Info Card */}
+            <div className="border-b border-blue-900/30 bg-gradient-to-b from-[#0D3A6B]/50 to-[#0F1E32] px-6 py-6">
+              <div className="inline-block rounded-lg bg-blue-900/40 px-3 py-1 text-xs font-medium text-cyan-400 uppercase tracking-wide border border-cyan-500/30">
                 Current Course
-              </p>
-              <h2 className="mt-1 text-lg font-semibold leading-snug">
+              </div>
+              <h2 className="mt-3 text-xl font-bold text-white leading-snug">
                 {course?.title || "Course"}
               </h2>
 
               {activeModule && (
-                <p className="mt-1 text-xs text-blue-200/90">
-                  In progress: {activeModule.module_title}
+                <p className="mt-2 text-sm text-blue-200">
+                  📚 {activeModule.module_title}
                 </p>
               )}
 
-              <div className="mt-3">
-                <div className="mb-1 flex items-center justify-between text-[11px] text-blue-100">
-                  <span>Progress</span>
-                  <span>{progressPercent}%</span>
+              {/* Progress Bar */}
+              <div className="mt-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-cyan-300 uppercase tracking-wider">
+                    Progress
+                  </span>
+                  <span className="inline-flex items-center justify-center h-7 w-7 rounded-full bg-cyan-500/20 text-xs font-bold text-cyan-400 border border-cyan-500/50">
+                    {progressPercent}%
+                  </span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-white/15">
+                <div className="h-2.5 overflow-hidden rounded-full bg-slate-800/50 border border-cyan-500/20">
                   <div
-                    className="h-full rounded-full bg-amber-400"
+                    className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 shadow-lg shadow-cyan-500/40 transition-all duration-500"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
               </div>
 
-              <div className="mt-4 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-blue-200">
-                  Course Content
-                </p>
-                <p className="mt-1 text-xs text-slate-300">
-                  {allLessons.length} lessons across {groupedModules.length}{" "}
-                  modules
-                </p>
+              {/* Course Stats */}
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <div className="rounded-lg bg-[#0D3A6B]/50 border border-blue-700/50 px-3 py-2">
+                  <p className="text-[10px] font-semibold text-blue-400 uppercase tracking-wide">
+                    Lessons
+                  </p>
+                  <p className="mt-1 text-lg font-bold text-white">
+                    {allLessons.length}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-[#0D3A6B]/50 border border-cyan-500/30 px-3 py-2">
+                  <p className="text-[10px] font-semibold text-cyan-400 uppercase tracking-wide">
+                    Completed
+                  </p>
+                  <p className="mt-1 text-lg font-bold text-cyan-400">
+                    {completedLessonIds.size}
+                  </p>
+                </div>
               </div>
             </div>
 
+            {/* Lessons List */}
             <div className="px-0 py-2">
+              <div className="border-b border-blue-900/30 px-6 py-4">
+                <p className="text-xs font-bold text-white uppercase tracking-wider">
+                  Course Content
+                </p>
+                <p className="mt-1 text-xs text-blue-300">
+                  {allLessons.length} lessons • {groupedModules.length} modules
+                </p>
+              </div>
+
               {groupedModules.map((module) => (
                 <div
                   key={module.module_id}
-                  className="border-b border-white/10"
+                  className="border-b border-blue-900/30 hover:bg-blue-900/20 transition"
                 >
                   <button
                     onClick={() => toggleModule(Number(module.module_id))}
-                    className="flex w-full items-center justify-between px-5 py-3 text-left transition hover:bg-white/5"
+                    className="flex w-full items-center justify-between px-6 py-4 text-left hover:bg-blue-900/30"
                   >
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.15em] text-blue-300">
+                    <div className="flex-1">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">
                         Module {module.module_order}
                       </p>
-                      <h3 className="text-sm font-semibold text-white">
+                      <h3 className="text-sm font-semibold text-white mt-1">
                         {module.module_title}
                       </h3>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[10px] text-slate-300">
+                    <div className="flex items-center gap-3 ml-2">
+                      <span className="text-xs font-medium text-blue-300">
                         {
                           module.lessons.filter((lesson) =>
                             completedLessonIds.has(Number(lesson.id)),
@@ -1099,14 +1203,14 @@ export default function LearnPage() {
                         }
                         /{module.lessons.length}
                       </span>
-                      <span className="text-xs text-blue-200">
-                        {expandedModules[Number(module.module_id)] ? "-" : "+"}
+                      <span className="text-sm text-cyan-400 transition-transform">
+                        {expandedModules[Number(module.module_id)] ? "−" : "+"}
                       </span>
                     </div>
                   </button>
 
                   {expandedModules[Number(module.module_id)] && (
-                    <div className="pb-2">
+                    <div className="bg-blue-900/10 py-2">
                       {[...module.lessons]
                         .sort(
                           (a, b) =>
@@ -1123,42 +1227,44 @@ export default function LearnPage() {
                             <button
                               key={lesson.id}
                               onClick={() => openLesson(lesson.id)}
-                              className={`w-full border-l-2 px-5 py-3 text-left transition ${
+                              className={`w-full px-6 py-3 text-left transition-all border-l-4 ${
                                 isActive
-                                  ? "border-amber-400 bg-gradient-to-r from-white/12 to-white/5 text-white"
-                                  : "border-transparent text-slate-300 hover:bg-white/5 hover:text-white"
+                                  ? "border-cyan-500 bg-blue-900/40 "
+                                  : "border-transparent hover:bg-blue-900/20"
                               }`}
                             >
                               <div className="flex items-start gap-3">
                                 <span
-                                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ${
+                                  className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all ${
                                     isActive
-                                      ? "bg-amber-400 text-slate-900"
+                                      ? "bg-cyan-500 text-slate-900 ring-2 ring-cyan-400/30"
                                       : isCompleted
-                                        ? "bg-emerald-500/90 text-white"
-                                        : "bg-white/10 text-slate-300"
+                                        ? "bg-emerald-500 text-white"
+                                        : "bg-slate-700 text-slate-300"
                                   }`}
                                 >
                                   {isCompleted
-                                    ? "V"
-                                    : lesson.lesson_order || "-"}
+                                    ? "✓"
+                                    : lesson.lesson_order || ""}
                                 </span>
-                                <div className="min-w-0">
-                                  <p className="line-clamp-2 text-sm font-medium leading-snug">
+                                <div className="min-w-0 flex-1">
+                                  <p
+                                    className={`line-clamp-2 text-sm font-medium leading-snug ${isActive ? "text-cyan-300" : "text-blue-100"}`}
+                                  >
                                     {lesson.title}
                                   </p>
-                                  <div className="mt-1 flex items-center gap-2 text-[10px] uppercase tracking-wider text-slate-400">
+                                  <div className="mt-1 flex items-center gap-2 text-[11px] text-blue-300">
                                     <span>
-                                      {estimateReadMinutes(lesson.content_md)}{" "}
+                                      ⏱ {estimateReadMinutes(lesson.content_md)}{" "}
                                       min
                                     </span>
-                                    <span className="h-1 w-1 rounded-full bg-slate-500" />
+                                    <span>•</span>
                                     <span>
                                       {isActive
-                                        ? "Current"
+                                        ? "📖 Reading"
                                         : isCompleted
-                                          ? "Done"
-                                          : "Pending"}
+                                          ? "✅ Done"
+                                          : "⏳ Pending"}
                                     </span>
                                   </div>
                                 </div>
@@ -1172,20 +1278,20 @@ export default function LearnPage() {
               ))}
 
               {groupedModules.length === 0 && (
-                <p className="px-5 py-4 text-xs text-slate-300">
+                <p className="px-6 py-4 text-xs text-blue-400">
                   No lessons available yet.
                 </p>
               )}
             </div>
           </aside>
 
-          <main className="relative flex-1 overflow-y-auto bg-[#ECEEF2]">
-            <div className="w-full px-5 pb-28 pt-8 md:px-10">
-              <section className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:hidden">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-slate-500">
+          <main className="relative flex-1 overflow-y-auto bg-gradient-to-br from-[#0F1E32] via-[#132844] to-[#0F1E32]">
+            <div className="w-full px-6 pb-28 pt-10 md:px-12">
+              <section className="mb-6 rounded-xl border border-blue-900/50 bg-[#0D3A6B]/20 p-4 shadow-lg lg:hidden">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-cyan-400">
                   Modules
                 </p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-blue-300">
                   {groupedModules.length} modules • {allLessons.length} lessons
                 </p>
 
@@ -1197,27 +1303,27 @@ export default function LearnPage() {
                     return (
                       <div
                         key={module.module_id}
-                        className="overflow-hidden rounded-lg border border-slate-200"
+                        className="overflow-hidden rounded-lg border border-blue-900/50"
                       >
                         <button
                           onClick={() => toggleModule(moduleId)}
-                          className="flex w-full items-center justify-between bg-slate-50 px-3 py-2 text-left"
+                          className="flex w-full items-center justify-between bg-[#0D3A6B]/40 px-3 py-2 text-left hover:bg-blue-900/30"
                         >
                           <div>
-                            <p className="text-[10px] uppercase tracking-[0.12em] text-slate-500">
+                            <p className="text-[10px] uppercase tracking-[0.12em] text-cyan-400">
                               Module {module.module_order}
                             </p>
-                            <p className="text-sm font-semibold text-slate-900">
+                            <p className="text-sm font-semibold text-white">
                               {module.module_title}
                             </p>
                           </div>
-                          <span className="text-xs font-semibold text-slate-500">
+                          <span className="text-xs font-semibold text-blue-300">
                             {isOpen ? "Hide" : "Show"}
                           </span>
                         </button>
 
                         {isOpen && (
-                          <div className="divide-y divide-slate-100 bg-white">
+                          <div className="divide-y divide-blue-900/30 bg-[#0F1E32]/50">
                             {[...module.lessons]
                               .sort(
                                 (a, b) =>
@@ -1234,8 +1340,8 @@ export default function LearnPage() {
                                     onClick={() => openLesson(lesson.id)}
                                     className={`w-full px-3 py-2 text-left text-sm transition ${
                                       isActive
-                                        ? "bg-blue-50 font-semibold text-blue-700"
-                                        : "text-slate-700 hover:bg-slate-50"
+                                        ? "bg-blue-900/40 font-semibold text-cyan-400 border-l-2 border-cyan-500"
+                                        : "text-blue-200 hover:bg-blue-900/20"
                                     }`}
                                   >
                                     Lesson {lesson.lesson_order || "-"}:{" "}
@@ -1250,14 +1356,14 @@ export default function LearnPage() {
                   })}
 
                   {groupedModules.length === 0 && (
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-blue-400">
                       No modules available.
                     </p>
                   )}
                 </div>
               </section>
 
-              <div className="mb-5 text-[11px] font-semibold uppercase tracking-[0.13em] text-slate-400">
+              <div className="mb-5 text-[11px] font-semibold uppercase tracking-[0.13em] text-cyan-400">
                 {activeTab === "learn" && (
                   <>
                     Home &gt; Module {activeLesson?.module_order || "-"} &gt;
@@ -1275,12 +1381,12 @@ export default function LearnPage() {
 
               {activeTab === "learn" && (
                 <>
-                  <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
+                  <section className="mb-6 rounded-2xl border border-blue-900/50 bg-[#0D3A6B]/20 p-4 shadow-lg md:p-5">
                     <div className="mb-3 flex items-center justify-between gap-3">
-                      <h2 className="text-sm font-bold uppercase tracking-[0.12em] text-slate-600">
+                      <h2 className="text-sm font-bold uppercase tracking-[0.12em] text-cyan-400">
                         All Modules
                       </h2>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-blue-300">
                         {groupedModules.length} modules • {allLessons.length}{" "}
                         lessons
                       </p>
@@ -1309,17 +1415,17 @@ export default function LearnPage() {
                             }}
                             className={`rounded-xl border px-4 py-3 text-left transition ${
                               isCurrent
-                                ? "border-blue-200 bg-blue-50"
-                                : "border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white"
+                                ? "border-cyan-500/50 bg-blue-900/30"
+                                : "border-blue-900/50 bg-[#0D3A6B]/20 hover:border-cyan-500/30 hover:bg-blue-900/20"
                             }`}
                           >
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-500">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-cyan-400">
                               Module {module.module_order}
                             </p>
-                            <p className="mt-1 text-sm font-semibold text-slate-900">
+                            <p className="mt-1 text-sm font-semibold text-white">
                               {module.module_title}
                             </p>
-                            <p className="mt-2 text-xs text-slate-500">
+                            <p className="mt-2 text-xs text-blue-300">
                               {module.lessons.length} lessons • {doneCount}{" "}
                               completed
                             </p>
@@ -1328,18 +1434,18 @@ export default function LearnPage() {
                       })}
 
                       {groupedModules.length === 0 && (
-                        <p className="text-sm text-slate-500">
+                        <p className="text-sm text-blue-400">
                           No modules available for this course.
                         </p>
                       )}
                     </div>
                   </section>
 
-                  <h1 className="max-w-4xl text-3xl font-extrabold leading-tight text-slate-900 md:text-5xl">
+                  <h1 className="max-w-4xl text-3xl font-extrabold leading-tight text-white md:text-5xl">
                     {activeLesson?.title || "Select a lesson"}
                   </h1>
 
-                  <div className="mt-4 flex flex-wrap items-center gap-5 border-b border-slate-300 pb-5 text-sm text-slate-500">
+                  <div className="mt-4 flex flex-wrap items-center gap-5 border-b border-blue-900/50 pb-5 text-sm text-blue-300">
                     <span>
                       {estimateReadMinutes(activeLesson?.content_md)} min read
                     </span>
@@ -1347,11 +1453,11 @@ export default function LearnPage() {
                     <span>Beginner Friendly</span>
                   </div>
 
-                  <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm md:p-9">
+                  <div className="mt-8 rounded-2xl bg-[#0D3A6B]/20 border border-blue-900/50 p-6 shadow-lg md:p-9">
                     {activeLesson?.content_md ? (
                       <MarkdownBlock content={activeLesson.content_md} />
                     ) : (
-                      <p className="text-slate-500">No lesson selected.</p>
+                      <p className="text-blue-400">No lesson selected.</p>
                     )}
                   </div>
                 </>
@@ -1361,102 +1467,139 @@ export default function LearnPage() {
                 <>
                   {practiceView === "list" ? (
                     <>
-                      <h1 className="max-w-4xl text-3xl font-extrabold leading-tight text-slate-900 md:text-5xl">
+                      <h1 className="max-w-4xl text-3xl font-extrabold leading-tight text-white md:text-5xl">
                         Practice &amp; Assessments
                       </h1>
 
-                      <div className="mt-2 text-sm text-slate-500">
+                      <div className="mt-2 text-sm text-blue-300">
                         Access quizzes and tests for each course module.
                       </div>
 
                       <div className="mt-6 grid gap-3 md:grid-cols-3">
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-4">
-                          <p className="text-xs text-slate-500">
-                            Available Now
-                          </p>
-                          <p className="mt-1 text-2xl font-bold text-slate-900">
+                        <div className="rounded-xl border border-blue-900/50 bg-[#0D3A6B]/40 px-4 py-4">
+                          <p className="text-xs text-cyan-400">Available Now</p>
+                          <p className="mt-1 text-2xl font-bold text-white">
                             {practiceStats.available}
                           </p>
                         </div>
-                        <div className="rounded-xl border border-slate-200 bg-amber-50 px-4 py-4">
-                          <p className="text-xs text-slate-500">Upcoming Due</p>
-                          <p className="mt-1 text-2xl font-bold text-slate-900">
+                        <div className="rounded-xl border border-cyan-500/30 bg-blue-900/30 px-4 py-4">
+                          <p className="text-xs text-blue-300">Upcoming Due</p>
+                          <p className="mt-1 text-2xl font-bold text-cyan-400">
                             {practiceStats.upcoming}
                           </p>
                         </div>
-                        <div className="rounded-xl border border-slate-200 bg-emerald-50 px-4 py-4">
-                          <p className="text-xs text-slate-500">Completed</p>
-                          <p className="mt-1 text-2xl font-bold text-slate-900">
+                        <div className="rounded-xl border border-emerald-500/30 bg-emerald-900/20 px-4 py-4">
+                          <p className="text-xs text-emerald-300">Completed</p>
+                          <p className="mt-1 text-2xl font-bold text-emerald-400">
                             {practiceStats.completed}/{practiceItems.length}
                           </p>
                         </div>
                       </div>
 
                       {practiceListLoading && (
-                        <div className="mt-8 rounded-2xl bg-white p-6 text-slate-500 shadow-sm">
+                        <div className="mt-8 rounded-2xl bg-[#0D3A6B]/20 border border-blue-900/50 p-6 text-blue-400 shadow-lg">
                           Loading practice assessments...
                         </div>
                       )}
 
                       {practiceListError && (
-                        <div className="mt-8 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-red-700">
+                        <div className="mt-8 rounded-xl border border-red-900/50 bg-red-900/20 px-5 py-4 text-red-400">
                           {practiceListError}
                         </div>
                       )}
 
                       {!practiceListLoading && !practiceListError && (
-                        <div className="mt-6 space-y-3">
+                        <div className="mt-8 grid gap-4">
                           {practiceItems.map((item) => {
                             const score = Number(item.attempt?.score || 0);
                             const isDone = !!item.attempt;
+                            const isPassed = score >= 70;
 
                             return (
                               <div
                                 key={item.lessonId}
-                                className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm"
+                                className="group relative rounded-xl border border-blue-900/50 bg-gradient-to-br from-[#0D3A6B]/30 to-[#0F1E32] px-6 py-5 shadow-lg hover:shadow-xl hover:border-cyan-500/50 transition-all duration-200"
                               >
-                                <div>
-                                  <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-500">
-                                    Module {item.moduleOrder}
-                                  </p>
-                                  <h3 className="text-base font-bold text-slate-900">
-                                    Quiz: {item.lessonTitle}
-                                  </h3>
-                                  <p className="mt-1 text-xs text-slate-500">
-                                    {item.durationMin} min •{" "}
-                                    {item.questionCount} questions
-                                  </p>
-                                </div>
-
-                                <div className="flex items-center gap-3">
-                                  {isDone && (
-                                    <div className="text-right">
-                                      <p className="text-lg font-bold text-slate-900">
-                                        {score}%
-                                      </p>
-                                      <p className="text-[10px] uppercase tracking-wider text-slate-500">
-                                        Score
-                                      </p>
+                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <span className="inline-block px-2.5 py-1 rounded-full bg-blue-900/50 text-xs font-semibold text-cyan-400 uppercase tracking-wide border border-cyan-500/30">
+                                        Module {item.moduleOrder}
+                                      </span>
+                                      {isDone && (
+                                        <span
+                                          className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${
+                                            isPassed
+                                              ? "bg-emerald-900/50 text-emerald-400 border border-emerald-500/30"
+                                              : "bg-yellow-900/50 text-yellow-400 border border-yellow-500/30"
+                                          }`}
+                                        >
+                                          {isPassed ? "✓ Passed" : "Retry"}
+                                        </span>
+                                      )}
                                     </div>
-                                  )}
+                                    <h3 className="text-lg font-bold text-white">
+                                      {item.lessonTitle}
+                                    </h3>
+                                    <div className="mt-2 flex items-center gap-3 text-sm text-blue-300">
+                                      <span className="flex items-center gap-1">
+                                        <span>⏱</span> {item.durationMin} min
+                                      </span>
+                                      <span>•</span>
+                                      <span className="flex items-center gap-1">
+                                        <span>❓</span> {item.questionCount}{" "}
+                                        questions
+                                      </span>
+                                    </div>
+                                  </div>
 
-                                  <button
-                                    onClick={async () => {
-                                      await openLesson(item.lessonId);
-                                      setPracticeView("quiz");
-                                    }}
-                                    className="rounded-lg bg-[#0A4D98] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#083f7c]"
-                                  >
-                                    {isDone ? "Review" : "Start Now"}
-                                  </button>
+                                  <div className="flex items-center gap-4 md:flex-col md:items-end">
+                                    {isDone && (
+                                      <div className="text-center">
+                                        <div
+                                          className={`inline-flex items-center justify-center h-16 w-16 rounded-full text-2xl font-bold transition-all ${
+                                            isPassed
+                                              ? "bg-emerald-900/50 text-emerald-400 border border-emerald-500/30"
+                                              : "bg-yellow-900/50 text-yellow-400 border border-yellow-500/30"
+                                          }`}
+                                        >
+                                          {score}%
+                                        </div>
+                                        <p className="text-xs font-medium text-blue-300 mt-2">
+                                          Your Score
+                                        </p>
+                                      </div>
+                                    )}
+
+                                    <button
+                                      onClick={async () => {
+                                        await openLesson(item.lessonId);
+                                        setPracticeView("quiz");
+                                      }}
+                                      className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 ${
+                                        isDone
+                                          ? "bg-blue-900/50 text-blue-300 hover:bg-blue-900/70 border border-blue-700/50"
+                                          : "bg-cyan-600 text-slate-900 hover:bg-cyan-500 shadow-lg shadow-cyan-500/30"
+                                      }`}
+                                    >
+                                      {isDone ? "Review" : "Start Quiz"}
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             );
                           })}
 
                           {practiceItems.length === 0 && (
-                            <div className="rounded-xl border border-slate-200 bg-white px-4 py-6 text-center text-slate-500">
-                              No practice quizzes available for this course yet.
+                            <div className="rounded-xl border border-blue-900/50 bg-[#0D3A6B]/20 px-8 py-12 text-center">
+                              <div className="text-4xl mb-3">📚</div>
+                              <p className="text-blue-300 mb-2">
+                                No practice quizzes available yet
+                              </p>
+                              <p className="text-sm text-blue-400">
+                                Check back later as quizzes are added to this
+                                course
+                              </p>
                             </div>
                           )}
                         </div>
@@ -1467,17 +1610,17 @@ export default function LearnPage() {
                       <div className="mb-4">
                         <button
                           onClick={() => setPracticeView("list")}
-                          className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                          className="rounded-lg border border-blue-700/50 px-3 py-1.5 text-xs font-semibold text-blue-300 hover:bg-blue-900/30"
                         >
                           Back to Assessments
                         </button>
                       </div>
 
-                      <h1 className="max-w-4xl text-3xl font-extrabold leading-tight text-slate-900 md:text-5xl">
+                      <h1 className="max-w-4xl text-3xl font-extrabold leading-tight text-white md:text-5xl">
                         Practice: {activeLesson?.title || "Select a lesson"}
                       </h1>
 
-                      <div className="mt-4 border-b border-slate-300 pb-5 text-sm text-slate-500">
+                      <div className="mt-4 border-b border-blue-900/50 pb-5 text-sm text-blue-300">
                         Answer all questions, then submit to record your score
                         in Progress.
                       </div>
@@ -1492,13 +1635,13 @@ export default function LearnPage() {
                       )}
 
                       {quizLoading && (
-                        <div className="mt-8 rounded-2xl bg-white p-6 text-slate-500 shadow-sm">
+                        <div className="mt-8 rounded-2xl bg-[#0D3A6B]/20 border border-blue-900/50 p-6 text-blue-400 shadow-lg">
                           Loading practice questions...
                         </div>
                       )}
 
                       {quizError && (
-                        <div className="mt-8 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-red-700">
+                        <div className="mt-8 rounded-xl border border-red-900/50 bg-red-900/20 px-5 py-4 text-red-400">
                           {quizError}
                         </div>
                       )}
@@ -1508,9 +1651,9 @@ export default function LearnPage() {
                           {quizQuestions.map((question, index) => (
                             <div
                               key={question.id}
-                              className="rounded-2xl bg-white p-6 shadow-sm"
+                              className="rounded-2xl bg-[#0D3A6B]/20 border border-blue-900/50 p-6 shadow-lg"
                             >
-                              <h2 className="text-lg font-bold text-slate-900">
+                              <h2 className="text-lg font-bold text-white">
                                 Q{index + 1}. {question.question_text}
                               </h2>
                               <div className="mt-4 space-y-3">
@@ -1520,8 +1663,8 @@ export default function LearnPage() {
                                     className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm transition ${
                                       Number(selectedAnswers[question.id]) ===
                                       Number(option.id)
-                                        ? "border-cadtBlue bg-blue-50 text-cadtNavy"
-                                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                                        ? "border-cyan-500/50 bg-blue-900/40 text-cyan-300"
+                                        : "border-blue-900/50 bg-blue-900/10 text-blue-100 hover:border-cyan-500/30"
                                     }`}
                                   >
                                     <input
@@ -1550,7 +1693,7 @@ export default function LearnPage() {
                             <button
                               onClick={handleSubmitPractice}
                               disabled={submittingQuiz}
-                              className="rounded-lg bg-[#0A4D98] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#083f7c] disabled:opacity-60"
+                              className="rounded-lg bg-cyan-600 px-6 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-cyan-500 disabled:opacity-60 shadow-lg shadow-cyan-600/30"
                             >
                               {submittingQuiz
                                 ? "Submitting..."
@@ -1566,90 +1709,90 @@ export default function LearnPage() {
 
               {activeTab === "progress" && (
                 <>
-                  <h1 className="max-w-4xl text-3xl font-extrabold leading-tight text-slate-900 md:text-5xl">
+                  <h1 className="max-w-4xl text-3xl font-extrabold leading-tight text-white md:text-5xl">
                     Practice Progress
                   </h1>
 
                   <div className="mt-7 grid gap-4 md:grid-cols-3">
-                    <div className="rounded-2xl border border-cadtLine bg-white p-5 shadow-sm">
-                      <p className="text-xs uppercase tracking-wider text-slate-500">
+                    <div className="rounded-2xl border border-cyan-500/30 bg-blue-900/30 p-5 shadow-lg">
+                      <p className="text-xs uppercase tracking-wider text-cyan-400">
                         Attempts
                       </p>
-                      <p className="mt-2 text-3xl font-bold text-cadtNavy">
+                      <p className="mt-2 text-3xl font-bold text-white">
                         {practiceHistory.length}
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-cadtLine bg-white p-5 shadow-sm">
-                      <p className="text-xs uppercase tracking-wider text-slate-500">
+                    <div className="rounded-2xl border border-blue-700/50 bg-[#0D3A6B]/40 p-5 shadow-lg">
+                      <p className="text-xs uppercase tracking-wider text-blue-300">
                         Average Score
                       </p>
-                      <p className="mt-2 text-3xl font-bold text-cadtNavy">
+                      <p className="mt-2 text-3xl font-bold text-cyan-400">
                         {averagePracticeScore}%
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-cadtLine bg-white p-5 shadow-sm">
-                      <p className="text-xs uppercase tracking-wider text-slate-500">
+                    <div className="rounded-2xl border border-emerald-500/30 bg-emerald-900/20 p-5 shadow-lg">
+                      <p className="text-xs uppercase tracking-wider text-emerald-300">
                         Best Score
                       </p>
-                      <p className="mt-2 text-3xl font-bold text-cadtNavy">
+                      <p className="mt-2 text-3xl font-bold text-emerald-400">
                         {highestPracticeScore}%
                       </p>
                     </div>
                   </div>
 
                   {progressLoading && (
-                    <div className="mt-8 rounded-2xl bg-white p-6 text-slate-500 shadow-sm">
+                    <div className="mt-8 rounded-2xl bg-[#0D3A6B]/20 border border-blue-900/50 p-6 text-blue-400 shadow-lg">
                       Loading practice history...
                     </div>
                   )}
 
                   {progressError && (
-                    <div className="mt-8 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-red-700">
+                    <div className="mt-8 rounded-xl border border-red-900/50 bg-red-900/20 px-5 py-4 text-red-400">
                       {progressError}
                     </div>
                   )}
 
                   {!progressLoading && !progressError && (
-                    <div className="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <div className="mt-8 overflow-hidden rounded-2xl border border-blue-900/50 bg-[#0D3A6B]/10 shadow-lg">
                       <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-slate-200 text-sm">
-                          <thead className="bg-slate-50">
+                        <table className="min-w-full divide-y divide-blue-900/30 text-sm">
+                          <thead className="bg-blue-900/30">
                             <tr>
-                              <th className="px-4 py-3 text-left font-semibold text-slate-600">
+                              <th className="px-4 py-3 text-left font-semibold text-cyan-400">
                                 Lesson
                               </th>
-                              <th className="px-4 py-3 text-left font-semibold text-slate-600">
+                              <th className="px-4 py-3 text-left font-semibold text-cyan-400">
                                 Module
                               </th>
-                              <th className="px-4 py-3 text-left font-semibold text-slate-600">
+                              <th className="px-4 py-3 text-left font-semibold text-cyan-400">
                                 Attempt
                               </th>
-                              <th className="px-4 py-3 text-left font-semibold text-slate-600">
+                              <th className="px-4 py-3 text-left font-semibold text-cyan-400">
                                 Score
                               </th>
-                              <th className="px-4 py-3 text-left font-semibold text-slate-600">
+                              <th className="px-4 py-3 text-left font-semibold text-cyan-400">
                                 Submitted
                               </th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-100">
+                          <tbody className="divide-y divide-blue-900/30">
                             {practiceHistory.map((row) => (
-                              <tr key={row.lessonId}>
-                                <td className="px-4 py-3 font-medium text-slate-800">
+                              <tr key={row.lessonId} className="bg-blue-900/5">
+                                <td className="px-4 py-3 font-medium text-blue-100">
                                   {row.lessonTitle}
                                 </td>
-                                <td className="px-4 py-3 text-slate-600">
+                                <td className="px-4 py-3 text-blue-300">
                                   {row.moduleTitle || "-"}
                                 </td>
-                                <td className="px-4 py-3 text-slate-600">
+                                <td className="px-4 py-3 text-blue-300">
                                   #{row.attemptNo}
                                 </td>
                                 <td className="px-4 py-3">
-                                  <span className="rounded-md bg-blue-50 px-2 py-1 font-semibold text-cadtBlue">
+                                  <span className="rounded-md bg-blue-900/50 px-2 py-1 font-semibold text-cyan-400 border border-cyan-500/30">
                                     {row.score}%
                                   </span>
                                 </td>
-                                <td className="px-4 py-3 text-slate-500">
+                                <td className="px-4 py-3 text-blue-400">
                                   {row.submittedAt
                                     ? new Date(row.submittedAt).toLocaleString()
                                     : "-"}
@@ -1661,7 +1804,7 @@ export default function LearnPage() {
                       </div>
 
                       {practiceHistory.length === 0 && (
-                        <p className="px-4 py-6 text-center text-slate-500">
+                        <p className="px-4 py-6 text-center text-blue-400">
                           No practice records yet. Complete a practice quiz to
                           see progress here.
                         </p>
@@ -1681,21 +1824,21 @@ export default function LearnPage() {
             </div>
 
             {activeTab === "learn" && (
-              <div className="fixed bottom-6 left-1/2 z-20 w-[calc(100%-2rem)] max-w-none -translate-x-1/2 rounded-xl border border-slate-200 bg-white/95 p-3 shadow-xl backdrop-blur lg:w-[calc(100%-22rem)]">
+              <div className="fixed bottom-6 left-1/2 z-20 w-[calc(100%-2rem)] max-w-none -translate-x-1/2 rounded-xl border border-blue-900/50 bg-[#0F1E32]/95 p-3 shadow-xl backdrop-blur lg:w-[calc(100%-22rem)]">
                 <div className="flex items-center justify-between gap-3">
                   <button
                     onClick={() => openLessonByOffset(-1)}
                     disabled={activeLessonIndex <= 0}
-                    className="rounded-lg px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-lg px-4 py-2 text-sm font-medium text-blue-400 hover:bg-blue-900/30 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Previous
                   </button>
 
                   <div className="hidden min-w-0 flex-1 px-2 md:block">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-400">
                       Up next
                     </p>
-                    <p className="truncate text-sm font-semibold text-slate-700">
+                    <p className="truncate text-sm font-semibold text-blue-100">
                       {allLessons[activeLessonIndex + 1]?.title ||
                         "You reached the last lesson"}
                     </p>
@@ -1707,7 +1850,7 @@ export default function LearnPage() {
                         ? openLessonByOffset(1)
                         : navigate("/dashboard")
                     }
-                    className="rounded-lg bg-[#0A4D98] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#083f7c]"
+                    className="rounded-lg bg-cyan-600 px-5 py-2 text-sm font-semibold text-slate-900 transition hover:bg-cyan-500 shadow-lg shadow-cyan-600/30"
                   >
                     {allLessons[activeLessonIndex + 1]
                       ? "Complete and Continue"
