@@ -73,7 +73,7 @@ async function generateCertificate(certificateData) {
   try {
     const logoPath = path.join(
       __dirname,
-      "../../frontend/src/kompi-cyber-logo.png",
+      "../../frontend/src/assets/logos/logo-blue.svg",
     );
     if (fs.existsSync(logoPath)) {
       doc.image(logoPath, 35, 15, { width: 50, height: 50 });

@@ -1,14 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import logo from "../kompi-cyber-logo-slide.svg";
+import logo from "../assets/logos/logo-blue.svg";
 import CertificateSection from "../components/CertificateSection";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const API_TARGET_LABEL = import.meta.env.VITE_API_URL || "Vite /api proxy";
 const REQUEST_TIMEOUT_MS = 10000;
 
-function MarkdownBlock({ content, isDarkMode = true }) {
+function MarkdownBlock({
+  content,
+  isDarkMode = true,
+  checklistState = {},
+  onChecklistChange = () => {},
+}) {
   const lines = (content || "").split("\n");
   const elements = [];
   let listItems = [];
@@ -19,16 +24,76 @@ function MarkdownBlock({ content, isDarkMode = true }) {
 
   const flushList = (key) => {
     if (listItems.length > 0) {
-      elements.push(
-        <ul
-          key={`ul-${key}`}
-          className={`mb-5 list-disc space-y-1 pl-6 ${isDarkMode ? "text-blue-100" : "text-gray-700"}`}
-        >
-          {listItems.map((item, idx) => (
-            <li key={`li-${key}-${idx}`}>{renderInline(item)}</li>
-          ))}
-        </ul>,
+      // Check if any items are checkboxes
+      const hasCheckboxes = listItems.some(
+        (item) => typeof item === "object" && item.isChecked !== undefined,
       );
+
+      if (hasCheckboxes) {
+        // Render as checklist
+        elements.push(
+          <ul
+            key={`ul-${key}`}
+            className={`mb-5 space-y-2 pl-6 list-none ${isDarkMode ? "text-blue-100" : "text-gray-700"}`}
+          >
+            {listItems.map((item, idx) => {
+              const itemObj = typeof item === "object" ? item : null;
+              const itemText = typeof item === "object" ? item.text : item;
+              const isChecked = itemObj?.isChecked || false;
+              const checklistId = `checklist-${key}-${idx}`;
+              const stateChecked =
+                checklistState[checklistId] !== undefined
+                  ? checklistState[checklistId]
+                  : isChecked;
+
+              return (
+                <li key={`li-${key}-${idx}`} className="flex items-start gap-3">
+                  <input
+                    id={checklistId}
+                    type="checkbox"
+                    checked={stateChecked}
+                    onChange={(e) =>
+                      onChecklistChange(checklistId, e.target.checked)
+                    }
+                    className={`mt-1 w-5 h-5 rounded border-2 cursor-pointer ${
+                      isDarkMode
+                        ? stateChecked
+                          ? "bg-green-600 border-green-500"
+                          : "border-blue-400 bg-transparent"
+                        : stateChecked
+                          ? "bg-green-500 border-green-600"
+                          : "border-gray-400 bg-white"
+                    }`}
+                  />
+                  <span
+                    className={
+                      stateChecked
+                        ? isDarkMode
+                          ? "line-through text-blue-300"
+                          : "line-through text-gray-600"
+                        : ""
+                    }
+                  >
+                    {renderInline(itemText)}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>,
+        );
+      } else {
+        // Render as regular bullet list
+        elements.push(
+          <ul
+            key={`ul-${key}`}
+            className={`mb-5 list-disc space-y-1 pl-6 ${isDarkMode ? "text-blue-100" : "text-gray-700"}`}
+          >
+            {listItems.map((item, idx) => (
+              <li key={`li-${key}-${idx}`}>{renderInline(item)}</li>
+            ))}
+          </ul>,
+        );
+      }
       listItems = [];
     }
   };
@@ -263,6 +328,26 @@ function MarkdownBlock({ content, isDarkMode = true }) {
       return;
     }
 
+    // Handle horizontal rules
+    if (trimmed === "---" || trimmed === "***" || trimmed === "___") {
+      flushList(i);
+      elements.push(
+        <hr
+          key={`hr-${i}`}
+          className={`mb-6 mt-6 border-t-2 ${isDarkMode ? "border-blue-700/50" : "border-gray-300"}`}
+        />,
+      );
+      return;
+    }
+
+    // Handle checkboxes
+    if (trimmed.startsWith("- [ ] ") || trimmed.startsWith("- [x] ")) {
+      const isChecked = trimmed.startsWith("- [x] ");
+      const text = trimmed.slice(6);
+      listItems.push({ text, isChecked });
+      return;
+    }
+
     if (trimmed.startsWith("- ")) {
       listItems.push(trimmed.slice(2));
       return;
@@ -360,8 +445,43 @@ export default function LearnPage() {
   const [practiceItems, setPracticeItems] = useState([]);
   const [practiceListLoading, setPracticeListLoading] = useState(false);
   const [practiceListError, setPracticeListError] = useState("");
+  const [checklistState, setChecklistState] = useState(() => {
+    // Initialize from localStorage if available
+    if (activeLesson?.id) {
+      const saved = localStorage.getItem(`checklist-${activeLesson.id}`);
+      return saved ? JSON.parse(saved) : {};
+    }
+    return {};
+  });
+
+  const handleChecklistChange = (checklistId, checked) => {
+    setChecklistState((prev) => {
+      const updated = {
+        ...prev,
+        [checklistId]: checked,
+      };
+      // Save to localStorage
+      if (activeLesson?.id) {
+        localStorage.setItem(
+          `checklist-${activeLesson.id}`,
+          JSON.stringify(updated),
+        );
+      }
+      return updated;
+    });
+  };
 
   const token = sessionStorage.getItem("token");
+
+  // Load checklist state from localStorage when lesson changes
+  useEffect(() => {
+    if (activeLesson?.id) {
+      const saved = localStorage.getItem(`checklist-${activeLesson.id}`);
+      setChecklistState(saved ? JSON.parse(saved) : {});
+    } else {
+      setChecklistState({});
+    }
+  }, [activeLesson?.id]);
 
   const groupedModules = useMemo(() => {
     const map = new Map();
@@ -1726,6 +1846,8 @@ export default function LearnPage() {
                       <MarkdownBlock
                         content={activeLesson.content_md}
                         isDarkMode={isDarkMode}
+                        checklistState={checklistState}
+                        onChecklistChange={handleChecklistChange}
                       />
                     ) : (
                       <p

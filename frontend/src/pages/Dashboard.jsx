@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, NavLink, useParams } from "react-router-dom";
 import axios from "axios";
-import logo from "../kompi-cyber-logo-slide.svg";
+import logo from "../assets/logos/logo-blue.svg";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const API_TARGET_LABEL = import.meta.env.VITE_API_URL || "Vite /api proxy";
@@ -214,9 +214,8 @@ export default function Dashboard() {
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("user");
-    sessionStorage.removeItem("sessionExpires");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/");
   };
 
@@ -784,7 +783,7 @@ export default function Dashboard() {
                       >
                         <path d="M11.99 5V1h-1v4H7.58H6v1h.58H8v10c0 .89.39 1.68 1 2.22V19h1v-1.78c.61-.54 1-1.33 1-2.22V6h2.42H18v-1h-1.58V5h-4.01zm1 12H9V7h3.99v10z" />
                       </svg>
-                      {course.duration_hrs ?? 0}h
+                      {course.duration_hrs}h
                     </span>
                   </div>
 
