@@ -122,9 +122,10 @@ export default function Dashboard() {
     "User";
 
   useEffect(() => {
-    // Get user from localStorage
-    const storedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
+    // Get user from sessionStorage and check expiration
+    const storedUser = sessionStorage.getItem("user");
+    const token = sessionStorage.getItem("token");
+    const sessionExpires = sessionStorage.getItem("sessionExpires");
 
     if (!storedUser || !token) {
       navigate("/login");
@@ -173,8 +174,9 @@ export default function Dashboard() {
         }
       } catch (err) {
         if (err.response?.status === 401) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
+          sessionStorage.removeItem("token");
+          sessionStorage.removeItem("user");
+          sessionStorage.removeItem("sessionExpires");
           navigate("/login");
           return;
         }
@@ -212,8 +214,9 @@ export default function Dashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("sessionExpires");
     navigate("/");
   };
 
