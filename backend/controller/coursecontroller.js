@@ -58,9 +58,10 @@ class CourseController {
       }
 
       // Validate course_type
-      if (!["online-led", "instructor-led"].includes(course_type)) {
+      if (!["online-led", "instructor-led", "both"].includes(course_type)) {
         return res.status(400).json({
-          message: "course_type must be 'online-led' or 'instructor-led'",
+          message:
+            "course_type must be 'online-led', 'instructor-led', or 'both'",
         });
       }
 
