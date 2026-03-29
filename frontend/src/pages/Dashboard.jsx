@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, NavLink, useParams } from "react-router-dom";
 import axios from "axios";
-import logo from "../assets/logos/logo-blue.svg";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const API_TARGET_LABEL = import.meta.env.VITE_API_URL || "Vite /api proxy";
@@ -480,19 +479,6 @@ export default function Dashboard() {
                       ? "Expand your skills with industry-leading cybersecurity courses"
                       : "Monitor your achievements and unlock new learning milestones"}
                 </p>
-              </div>
-              <div
-                className={`hidden lg:flex h-28 w-28 items-center justify-center rounded-2xl border-2 shadow-lg flex-shrink-0 transition-all duration-500 ${
-                  isDarkMode
-                    ? "border-[#FE9A00]/40 bg-gradient-to-br from-[#FE9A00]/10 to-[#FF6B35]/5 shadow-[#FE9A00]/15"
-                    : "border-amber-300/40 bg-gradient-to-br from-amber-100/25 to-orange-50/15 shadow-amber-400/15"
-                }`}
-              >
-                <img
-                  src={logo}
-                  alt="KOMPI-CYBER"
-                  className="h-24 w-24 object-contain"
-                />
               </div>
             </div>
           </div>
