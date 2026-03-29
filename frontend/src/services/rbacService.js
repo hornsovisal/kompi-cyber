@@ -8,8 +8,10 @@ import axios from 'axios';
 
 const BASE = import.meta.env.VITE_API_URL || '';
 
+const getStored = (key) => localStorage.getItem(key) || sessionStorage.getItem(key);
+
 const getHeaders = () => ({
-  Authorization: `Bearer ${localStorage.getItem('token')}`,
+  Authorization: `Bearer ${getStored('token')}`,
   'Content-Type': 'application/json',
 });
 

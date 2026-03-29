@@ -5,6 +5,14 @@ import { fetchMyRbacQuizzes, openQuiz, closeQuiz, deleteRbacQuiz } from "../../s
 
 export default function ManageQuizzes() {
   const navigate = useNavigate();
+  const instructor = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("instructor") || sessionStorage.getItem("instructor") || "null");
+    } catch {
+      return null;
+    }
+  }, []);
+  const isCoordinator = instructor?.role === "coordinator";
   const [quizzes, setQuizzes] = useState([]);
   const [query, setQuery] = useState("");
   const [deletingId, setDeletingId] = useState(null);
@@ -27,7 +35,13 @@ export default function ManageQuizzes() {
     }
   };
 
-  useEffect(() => { loadQuizzes(); }, []);
+  useEffect(() => {
+    if (isCoordinator) {
+      navigate("/coordinator/dashboard", { replace: true });
+      return;
+    }
+    loadQuizzes();
+  }, [isCoordinator, navigate]);
 
   const filteredQuizzes = useMemo(() => {
     const keyword = query.trim().toLowerCase();

@@ -19,6 +19,23 @@ const OTP_EXPIRY_SECONDS = 600;
 export default function InstructorLogin() {
   const navigate = useNavigate();
   const location = useLocation();
+  const isCoordinatorLogin = location.pathname.includes("/coordinator/");
+  const portalLabel = isCoordinatorLogin ? "Coordinator Portal" : "Instructor Portal";
+
+  const getStored = (key) =>
+    localStorage.getItem(key) || sessionStorage.getItem(key);
+
+  const clearStoredAuth = () => {
+    ["token", "instructor", "sessionExpires", "user"].forEach((key) => {
+      sessionStorage.removeItem(key);
+      localStorage.removeItem(key);
+    });
+  };
+
+  const setStoredAuth = (key, value) => {
+    sessionStorage.setItem(key, value);
+    localStorage.setItem(key, value);
+  };
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,25 +51,39 @@ export default function InstructorLogin() {
   const otpRefs = useRef([]);
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
-    const instructor = sessionStorage.getItem("instructor");
-    const sessionExpires = sessionStorage.getItem("sessionExpires");
+    const params = new URLSearchParams(location.search);
+    const isFreshLogin = params.get("fresh") === "1";
+
+    if (isFreshLogin) {
+      clearStoredAuth();
+      return;
+    }
+
+    const token = getStored("token");
+    const instructor = getStored("instructor");
+    const sessionExpires = getStored("sessionExpires");
 
     // Check if session exists and hasn't expired
     if (token && instructor && sessionExpires) {
       const expiryTime = parseInt(sessionExpires, 10);
       if (expiryTime > new Date().getTime()) {
-        navigate("/instructor/dashboard", { replace: true });
+        try {
+          const parsed = JSON.parse(instructor);
+          const rolePath =
+            parsed?.role === "coordinator"
+              ? "/coordinator/dashboard"
+              : "/instructor/dashboard";
+          navigate(rolePath, { replace: true });
+        } catch {
+          navigate("/instructor/dashboard", { replace: true });
+        }
         return;
       } else {
         // Session expired, clear it
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("instructor");
-        sessionStorage.removeItem("sessionExpires");
-        sessionStorage.removeItem("user");
+        clearStoredAuth();
       }
     }
-  }, [navigate]);
+  }, [location.search, navigate]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -214,7 +245,7 @@ export default function InstructorLogin() {
   // ── Success — stores token + instructor (with role), redirects to InstructorDashboard
   const loginSuccess = (inst) => {
     const expiresAt = new Date().getTime() + 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
-    sessionStorage.setItem("token", inst.token);
+    setStoredAuth("token", inst.token);
     const instructorData = {
       id: inst.id,
       name: inst.name,
@@ -225,11 +256,15 @@ export default function InstructorLogin() {
       role: inst.role || 'instructor',   // ← store role for UI gating
       isVerified: inst.isVerified,
     };
-    sessionStorage.setItem("instructor", JSON.stringify(instructorData));
-    sessionStorage.setItem("user", JSON.stringify(instructorData));
-    sessionStorage.setItem("sessionExpires", expiresAt.toString());
+    setStoredAuth("instructor", JSON.stringify(instructorData));
+    setStoredAuth("user", JSON.stringify(instructorData));
+    setStoredAuth("sessionExpires", expiresAt.toString());
     setStep("success");
-    setTimeout(() => navigate("/instructor/dashboard", { replace: true }), 300);
+    const rolePath =
+      instructorData.role === "coordinator"
+        ? "/coordinator/dashboard"
+        : "/instructor/dashboard";
+    setTimeout(() => navigate(rolePath, { replace: true }), 300);
   };
 
   // ── OTP helpers
@@ -296,7 +331,7 @@ export default function InstructorLogin() {
           </div>
           <div>
             <h1 style={S.brandName}>KOMPI-CYBER</h1>
-            <p style={S.brandSub}>Instructor Portal</p>
+            <p style={S.brandSub}>{portalLabel}</p>
           </div>
         </div>
 
@@ -335,7 +370,7 @@ export default function InstructorLogin() {
           <div style={{ animation: "fadeUp .35s ease" }}>
             <div style={{ marginBottom: 28 }}>
               <h2 style={S.title}>Sign in</h2>
-              <p style={S.sub}>Access your instructor dashboard</p>
+              <p style={S.sub}>Access your {isCoordinatorLogin ? "coordinator" : "instructor"} dashboard</p>
             </div>
 
             <form onSubmit={handleLogin}>

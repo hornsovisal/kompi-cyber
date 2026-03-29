@@ -18,11 +18,13 @@ export default function InstructorLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+  const getStored = (key) =>
+    localStorage.getItem(key) || sessionStorage.getItem(key);
 
   // Read instructor and role from sessionStorage
   let instructor = null;
   try {
-    instructor = JSON.parse(sessionStorage.getItem("instructor") || "null");
+    instructor = JSON.parse(getStored("instructor") || "null");
   } catch {
     instructor = null;
   }
@@ -31,43 +33,42 @@ export default function InstructorLayout({ children }) {
   const isCoordinator = role === "coordinator";
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
-    const instructor = sessionStorage.getItem("instructor");
-    const sessionExpires = sessionStorage.getItem("sessionExpires");
+    const token = getStored("token");
+    const instructor = getStored("instructor");
+    const sessionExpires = getStored("sessionExpires");
 
     if (!token || !instructor) {
-      navigate("/instructor/login", { replace: true });
+      navigate("/", { replace: true });
     } else if (
       sessionExpires &&
       parseInt(sessionExpires, 10) <= new Date().getTime()
     ) {
       // Session expired
-      sessionStorage.removeItem("token");
-      sessionStorage.removeItem("user");
-      sessionStorage.removeItem("instructor");
-      sessionStorage.removeItem("sessionExpires");
-      navigate("/instructor/login", { replace: true });
+      ["token", "user", "instructor", "sessionExpires"].forEach((key) => {
+        sessionStorage.removeItem(key);
+        localStorage.removeItem(key);
+      });
+      navigate("/", { replace: true });
     }
   }, [navigate]);
 
   const handleLogout = () => {
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("user");
-    sessionStorage.removeItem("instructor");
-    sessionStorage.removeItem("sessionExpires");
-    navigate("/instructor/login");
+    ["token", "user", "instructor", "sessionExpires"].forEach((key) => {
+      sessionStorage.removeItem(key);
+      localStorage.removeItem(key);
+    });
+    navigate("/");
   };
 
   const isActive = (path) => location.pathname === path;
 
   // ── Coordinator Nav ──────────────────────────────────────────────────────
   const coordinatorNav = [
-    { label: 'Dashboard',       icon: Home,        path: '/instructor/dashboard' },
-    { label: 'Manage Courses',  icon: BookOpen,    path: '/instructor/courses' },
-    { label: 'Assign Instructors', icon: ShieldCheck, path: '/instructor/courses' },
-    { label: 'All Quizzes',     icon: FileQuestion,path: '/instructor/quizzes' },
-    { label: 'Analytics',       icon: BarChart3,   path: '/instructor/analytics' },
-    { label: 'Settings',        icon: Settings,    path: '/instructor/settings' },
+    { label: 'Dashboard',       icon: Home,        path: '/coordinator/dashboard' },
+    { label: 'Manage Courses',  icon: BookOpen,    path: '/coordinator/courses' },
+    { label: 'Assign Instructors', icon: ShieldCheck, path: '/coordinator/courses' },
+    { label: 'Analytics',       icon: BarChart3,   path: '/coordinator/analytics' },
+    { label: 'Settings',        icon: Settings,    path: '/coordinator/settings' },
   ];
 
   // ── Instructor Nav ───────────────────────────────────────────────────────
@@ -135,7 +136,7 @@ export default function InstructorLayout({ children }) {
           {/* Coordinator-only: Create Course shortcut */}
           {isCoordinator && (
             <button
-              onClick={() => { navigate('/instructor/create-course'); if (window.innerWidth < 1024) setSidebarOpen(false); }}
+              onClick={() => { navigate('/coordinator/create-course'); if (window.innerWidth < 1024) setSidebarOpen(false); }}
               className="w-full px-6 py-3 flex items-center gap-3 text-emerald-400 hover:bg-slate-800 transition-colors mt-2 border-t border-slate-700"
             >
               <PlusCircle size={20} />
