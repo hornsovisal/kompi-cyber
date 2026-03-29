@@ -372,7 +372,7 @@ export default function LearnPage() {
   // Calculate progress based on completed quizzes (quiz attempts), not lesson navigation
   const completedLessonIds = useMemo(() => {
     const completedIds = new Set(
-      practiceHistory.map((item) => Number(item.lessonId))
+      practiceHistory.map((item) => Number(item.lessonId)),
     );
     return completedIds;
   }, [practiceHistory]);
@@ -911,9 +911,7 @@ export default function LearnPage() {
           "Request timed out. Please check backend/database and try again.",
         );
       } else if (!err.response) {
-        setProgressError(
-          `Cannot connect to backend API (${API_TARGET_LABEL})`,
-        );
+        setProgressError(`Cannot connect to backend API (${API_TARGET_LABEL})`);
       } else {
         setProgressError(
           err.response?.data?.message || "Failed to load progress",
@@ -996,9 +994,9 @@ export default function LearnPage() {
     <div className="min-h-screen bg-[#171717] p-0">
       <div className="min-h-screen overflow-hidden bg-[#ECEEF2] shadow-2xl ring-1 ring-black/10">
         <header className="flex items-center justify-between bg-[#032A56] px-4 py-3 text-white md:px-6">
-          <div className="flex items-center">
+          <Link to="/dashboard" className="flex items-center hover:opacity-80 transition">
             <img src={logo} alt="Kompi-Cyber" className="h-10" />
-          </div>
+          </Link>
 
           <div className="rounded-full bg-[#012149] p-1">
             {["learn", "practice", "progress"].map((tab) => {
@@ -1031,16 +1029,6 @@ export default function LearnPage() {
             >
               Dashboard
             </Link>
-            <button
-              onClick={() => {
-                localStorage.removeItem("token");
-                localStorage.removeItem("user");
-                navigate("/login");
-              }}
-              className="rounded-md border border-white/30 px-3 py-1 text-xs font-medium hover:bg-white/10"
-            >
-              Logout
-            </button>
           </div>
         </header>
 
