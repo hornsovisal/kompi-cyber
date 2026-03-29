@@ -59,6 +59,46 @@ class AuthMiddleware {
 
     next();
   };
+
+  /**
+   * Allows only Program Coordinators (role = "coordinator").
+   * Must be used AFTER authenticateToken.
+   */
+  requireCoordinator = (req, res, next) => {
+    if (req.user?.role !== 'coordinator') {
+      return res.status(403).json({
+        message: 'Access denied. Program Coordinator role required.',
+      });
+    }
+    next();
+  };
+
+  /**
+   * Allows only Instructors (role = "instructor").
+   * Must be used AFTER authenticateToken.
+   */
+  requireInstructor = (req, res, next) => {
+    if (req.user?.role !== 'instructor') {
+      return res.status(403).json({
+        message: 'Access denied. Instructor role required.',
+      });
+    }
+    next();
+  };
+
+  /**
+   * Allows both Instructors and Coordinators.
+   * Must be used AFTER authenticateToken.
+   */
+  requireInstructorOrCoordinator = (req, res, next) => {
+    const role = req.user?.role;
+    if (role !== 'instructor' && role !== 'coordinator') {
+      return res.status(403).json({
+        message: 'Access denied. Instructor or Coordinator role required.',
+      });
+    }
+    next();
+  };
 }
 
 module.exports = new AuthMiddleware(process.env.JWT_SECRET || "dev_jwt_secret");

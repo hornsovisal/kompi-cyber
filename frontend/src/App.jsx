@@ -25,6 +25,7 @@ import ManageQuizzes from "./pages/instructor/ManageQuizzes";
 import StudentPerformance from "./pages/instructor/StudentPerformance";
 import Analytics from "./pages/instructor/Analytics";
 import InstructorSettings from "./pages/instructor/InstructorSettings";
+import StudentManagement from "./pages/instructor/StudentManagement";
 
 export default function App() {
   return (
@@ -130,6 +131,14 @@ export default function App() {
             </InstructorLayout>
           }
         />
+          <Route
+            path="/instructor/students"
+            element={
+              <InstructorLayout>
+                <StudentManagement />
+              </InstructorLayout>
+            }
+          />
       </Routes>
     </Router>
   );

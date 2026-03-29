@@ -1,33 +1,33 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FileQuestion, Plus, Search, Pencil, Trash2, CalendarClock, BookOpen } from "lucide-react";
+import { FileQuestion, Plus, Search, Pencil, Trash2, CalendarClock, BookOpen, Play, Square } from "lucide-react";
 import { useInstructorAPI } from "../../hooks/useInstructorAPI";
+import { fetchMyRbacQuizzes, openQuiz, closeQuiz } from "../../services/rbacService";
 
 export default function ManageQuizzes() {
   const navigate = useNavigate();
-  const { fetchMyQuizzes, deleteQuiz, loading, error, clearError } = useInstructorAPI();
+  const { deleteQuiz, loading, error, clearError } = useInstructorAPI();
   const [quizzes, setQuizzes] = useState([]);
   const [query, setQuery] = useState("");
   const [deletingId, setDeletingId] = useState(null);
+  const [togglingId, setTogglingId] = useState(null);
 
   const loadQuizzes = async () => {
     try {
-      const data = await fetchMyQuizzes();
+      const data = await fetchMyRbacQuizzes();
       setQuizzes(data);
     } catch (_) {
-      // error handled by hook
+      // fallback silently
     }
   };
 
-  useEffect(() => {
-    loadQuizzes();
-  }, []);
+  useEffect(() => { loadQuizzes(); }, []);
 
   const filteredQuizzes = useMemo(() => {
     const keyword = query.trim().toLowerCase();
     if (!keyword) return quizzes;
     return quizzes.filter((quiz) =>
-      [quiz.title, quiz.description, quiz.course].some((value) =>
+      [quiz.title, quiz.description, quiz.courseId].some((value) =>
         String(value || "").toLowerCase().includes(keyword),
       ),
     );
@@ -43,6 +43,20 @@ export default function ManageQuizzes() {
       // error handled by hook
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleToggleStatus = async (quiz) => {
+    setTogglingId(quiz.id);
+    try {
+      const fn = quiz.status === 'open' ? closeQuiz : openQuiz;
+      const result = await fn(quiz.id);
+      const newStatus = result.data?.status || (quiz.status === 'open' ? 'closed' : 'open');
+      setQuizzes(prev => prev.map(q => q.id === quiz.id ? { ...q, status: newStatus } : q));
+    } catch {
+      // fail silently
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -99,7 +113,8 @@ export default function ManageQuizzes() {
                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Title</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Course</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Due</th>
-                <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-600">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Status</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-600">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 bg-white">
@@ -118,10 +133,32 @@ export default function ManageQuizzes() {
                         <p className="mt-1 text-sm text-slate-500">{quiz.description || "No description"}</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-700">{quiz.course}</td>
+                      <td className="px-6 py-4 text-sm text-slate-700">{quiz.courseId}</td>
                     <td className="px-6 py-4 text-sm text-slate-700">{quiz.dueDate} {quiz.dueTime}</td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
+                          quiz.status === 'open'
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            : 'bg-slate-100 text-slate-600 border border-slate-200'
+                        }`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${quiz.status === 'open' ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                          {quiz.status === 'open' ? 'Open' : 'Closed'}
+                        </span>
+                      </td>
                     <td className="px-6 py-4">
                       <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleToggleStatus(quiz)}
+                            disabled={togglingId === quiz.id}
+                            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors disabled:opacity-60 ${
+                              quiz.status === 'open'
+                                ? 'border border-orange-200 text-orange-600 hover:bg-orange-50'
+                                : 'border border-emerald-200 text-emerald-600 hover:bg-emerald-50'
+                            }`}
+                          >
+                            {quiz.status === 'open' ? <Square size={14} /> : <Play size={14} />}
+                            {togglingId === quiz.id ? '…' : quiz.status === 'open' ? 'Close' : 'Open'}
+                          </button>
                         <button
                           onClick={() => navigate(`/instructor/quizzes/${quiz.id}/edit`)}
                           className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
