@@ -19,7 +19,6 @@ import InstructorLayout from "./components/Layout/InstructorLayout";
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 import InstructorLogin from "./pages/instructor/InstructorLogin";
 import CreateQuiz from "./pages/instructor/CreateQuiz";
-import CreateCourse from "./pages/instructor/CreateCourse";
 import ManageCourses from "./pages/instructor/ManageCourses";
 import ManageQuizzes from "./pages/instructor/ManageQuizzes";
 import StudentPerformance from "./pages/instructor/StudentPerformance";
@@ -124,12 +123,16 @@ export default function App() {
           }
         />
         <Route
-          path="/instructor/create-course"
+          path="/instructor/quizzes/:id/edit"
           element={
             <InstructorLayout>
-              <CreateCourse />
+              <CreateQuiz />
             </InstructorLayout>
           }
+        />
+        <Route
+          path="/instructor/create-course"
+          element={<Navigate to="/instructor/courses" replace />}
         />
           <Route
             path="/instructor/students"
@@ -139,6 +142,7 @@ export default function App() {
               </InstructorLayout>
             }
           />
+          <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

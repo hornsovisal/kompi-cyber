@@ -28,6 +28,24 @@ class StudentModel {
     return students.find(s => s.email.toLowerCase() === email.toLowerCase()) || null;
   }
 
+  createOrGetStudent(email, name = '') {
+    let student = this.findByEmail(email);
+
+    if (!student) {
+      student = {
+        id: `STU${String(students.length + 1).padStart(3, '0')}`,
+        name: name || email.split('@')[0],
+        email: email.toLowerCase(),
+        enrolledCourses: [],
+      };
+      students.push(student);
+    } else if (name && !student.name) {
+      student.name = name;
+    }
+
+    return this._safe(student);
+  }
+
   findByCourse(courseId) {
     return students
       .filter(s => s.enrolledCourses.includes(courseId))
@@ -42,13 +60,8 @@ class StudentModel {
     let student = this.findByEmail(email);
 
     if (!student) {
-      student = {
-        id: `STU${String(students.length + 1).padStart(3, '0')}`,
-        name: name || email.split('@')[0],
-        email: email.toLowerCase(),
-        enrolledCourses: [],
-      };
-      students.push(student);
+      this.createOrGetStudent(email, name);
+      student = this.findByEmail(email);
     }
 
     if (!student.enrolledCourses.includes(courseId)) {

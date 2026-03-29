@@ -35,7 +35,7 @@ async function assertCourseAccess(req, courseId) {
  */
 const createQuiz = async (req, res) => {
   try {
-    const { title, courseId, dueDate, dueTime } = req.body;
+    const { title, description, courseId, dueDate, dueTime } = req.body;
 
     if (!title || !courseId) {
       return res.status(400).json({ success: false, message: 'title and courseId are required.' });
@@ -48,6 +48,7 @@ const createQuiz = async (req, res) => {
 
     const quiz = await RbacQuizModel.createQuiz({
       title: title.trim(),
+      description: description?.trim() || '',
       courseId,
       dueDate: dueDate || null,
       dueTime: dueTime || null,
@@ -58,6 +59,77 @@ const createQuiz = async (req, res) => {
   } catch (err) {
     console.error('[rbacQuizController] createQuiz error:', err);
     return res.status(500).json({ success: false, message: 'Failed to create quiz.' });
+  }
+};
+
+/**
+ * GET /api/rbac/quizzes/:id
+ * Fetch a single quiz if the requester has course access.
+ */
+const getQuizById = async (req, res) => {
+  try {
+    const quiz = await RbacQuizModel.getById(req.params.id);
+    if (!quiz) {
+      return res.status(404).json({ success: false, message: 'Quiz not found.' });
+    }
+
+    const hasAccess = await assertCourseAccess(req, quiz.courseId);
+    if (!hasAccess) {
+      return res.status(403).json({ success: false, message: 'You are not assigned to this course.' });
+    }
+
+    return res.json({ success: true, data: quiz });
+  } catch (err) {
+    console.error('[rbacQuizController] getQuizById error:', err);
+    return res.status(500).json({ success: false, message: 'Failed to fetch quiz.' });
+  }
+};
+
+/**
+ * PUT /api/rbac/quizzes/:id
+ * Update an existing quiz.
+ */
+const updateQuiz = async (req, res) => {
+  try {
+    const quiz = await RbacQuizModel.getById(req.params.id);
+    if (!quiz) return res.status(404).json({ success: false, message: 'Quiz not found.' });
+
+    if (req.user.role === 'instructor' && quiz.createdBy !== req.user.employeeId) {
+      return res.status(403).json({ success: false, message: 'You can only update your own quizzes.' });
+    }
+
+    const targetCourseId = req.body.courseId || quiz.courseId;
+    const hasAccess = await assertCourseAccess(req, targetCourseId);
+    if (!hasAccess) {
+      return res.status(403).json({ success: false, message: 'You are not assigned to this course.' });
+    }
+
+    const updated = await RbacQuizModel.updateQuiz(req.params.id, req.body);
+    return res.json({ success: true, data: updated, message: 'Quiz updated successfully.' });
+  } catch (err) {
+    console.error('[rbacQuizController] updateQuiz error:', err);
+    return res.status(500).json({ success: false, message: 'Failed to update quiz.' });
+  }
+};
+
+/**
+ * DELETE /api/rbac/quizzes/:id
+ * Delete a quiz.
+ */
+const deleteQuiz = async (req, res) => {
+  try {
+    const quiz = await RbacQuizModel.getById(req.params.id);
+    if (!quiz) return res.status(404).json({ success: false, message: 'Quiz not found.' });
+
+    if (req.user.role === 'instructor' && quiz.createdBy !== req.user.employeeId) {
+      return res.status(403).json({ success: false, message: 'You can only delete your own quizzes.' });
+    }
+
+    await RbacQuizModel.deleteQuiz(req.params.id);
+    return res.json({ success: true, message: 'Quiz deleted successfully.' });
+  } catch (err) {
+    console.error('[rbacQuizController] deleteQuiz error:', err);
+    return res.status(500).json({ success: false, message: 'Failed to delete quiz.' });
   }
 };
 
@@ -145,4 +217,4 @@ const closeQuiz = async (req, res) => {
   }
 };
 
-module.exports = { createQuiz, getQuizzesByCourse, getMyQuizzes, openQuiz, closeQuiz };
+module.exports = { createQuiz, getQuizById, updateQuiz, deleteQuiz, getQuizzesByCourse, getMyQuizzes, openQuiz, closeQuiz };

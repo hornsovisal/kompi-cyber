@@ -14,6 +14,7 @@ let quizzes = [
   {
     id: 'quiz-001',
     title: 'CIA Triad Concepts',
+    description: 'Foundational multiple-choice quiz on confidentiality, integrity, and availability.',
     courseId: 'course-001',
     dueDate: '2026-04-10',
     dueTime: '23:59',
@@ -24,6 +25,7 @@ let quizzes = [
   {
     id: 'quiz-002',
     title: 'Network Protocols Quiz',
+    description: 'Covers TCP/IP, ports, and common network defenses.',
     courseId: 'course-002',
     dueDate: '2026-04-15',
     dueTime: '18:00',
@@ -34,6 +36,7 @@ let quizzes = [
   {
     id: 'quiz-003',
     title: 'OWASP Top 10 Assessment',
+    description: 'Security assessment on common web application vulnerabilities.',
     courseId: 'course-003',
     dueDate: '2026-04-20',
     dueTime: '20:00',
@@ -46,13 +49,14 @@ let quizzes = [
 class RbacQuizModel {
   // ── CREATE ──────────────────────────────────────────────────────────────────
 
-  async createQuiz({ title, courseId, dueDate, dueTime, createdBy }) {
+  async createQuiz({ title, description, courseId, dueDate, dueTime, createdBy }) {
     const id = `quiz-${Date.now()}`;
     const now = new Date().toISOString();
 
     const quiz = {
       id,
       title,
+      description: description || '',
       courseId,
       dueDate,
       dueTime,
@@ -67,6 +71,7 @@ class RbacQuizModel {
         .insert([{
           id,
           title,
+          description: description || '',
           course_id: courseId,
           due_date: dueDate,
           due_time: dueTime,
@@ -83,6 +88,66 @@ class RbacQuizModel {
 
     quizzes.push(quiz);
     return quiz;
+  }
+
+  async updateQuiz(id, updates = {}) {
+    const current = await this.getById(id);
+    if (!current) return null;
+
+    const next = {
+      ...current,
+      title: typeof updates.title === 'string' ? updates.title.trim() || current.title : current.title,
+      description: typeof updates.description === 'string' ? updates.description.trim() : current.description,
+      courseId: typeof updates.courseId === 'string' ? updates.courseId : current.courseId,
+      dueDate: updates.dueDate ?? current.dueDate,
+      dueTime: updates.dueTime ?? current.dueTime,
+    };
+
+    if (useSupabase()) {
+      const { data, error } = await supabase
+        .from('rbac_quizzes')
+        .update({
+          title: next.title,
+          description: next.description,
+          course_id: next.courseId,
+          due_date: next.dueDate,
+          due_time: next.dueTime,
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (!error && data) {
+        const normalized = this._normalize(data);
+        const idx = quizzes.findIndex(q => q.id === id);
+        if (idx !== -1) quizzes[idx] = normalized;
+        return normalized;
+      }
+      console.warn('[RbacQuizModel] Supabase update failed, using in-memory:', error?.message);
+    }
+
+    const idx = quizzes.findIndex(q => q.id === id);
+    if (idx !== -1) quizzes[idx] = next;
+    return next;
+  }
+
+  async deleteQuiz(id) {
+    const current = await this.getById(id);
+    if (!current) return false;
+
+    if (useSupabase()) {
+      const { error } = await supabase
+        .from('rbac_quizzes')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.warn('[RbacQuizModel] Supabase delete failed, using in-memory:', error?.message);
+      }
+    }
+
+    quizzes = quizzes.filter(q => q.id !== id);
+    return true;
   }
 
   // ── READ ────────────────────────────────────────────────────────────────────
@@ -172,6 +237,7 @@ class RbacQuizModel {
     return {
       id:        row.id,
       title:     row.title,
+      description: row.description || '',
       courseId:  row.course_id  || row.courseId,
       dueDate:   row.due_date   || row.dueDate,
       dueTime:   row.due_time   || row.dueTime,

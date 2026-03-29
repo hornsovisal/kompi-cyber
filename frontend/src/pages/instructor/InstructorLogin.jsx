@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   Shield, Eye, EyeOff, AlertCircle, CheckCircle2,
@@ -10,6 +10,7 @@ const OTP_EXPIRY_SECONDS = 600;
 
 export default function InstructorLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail]         = useState("");
   const [password, setPassword]   = useState("");
@@ -32,6 +33,42 @@ export default function InstructorLogin() {
       navigate("/instructor/dashboard", { replace: true });
     }
   }, [navigate]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const demo = params.get("demo");
+    if (!demo) return;
+
+    const demoAccounts = {
+      coordinator: {
+        email: "coordinator1@cadt.edu.kh",
+        password: "password123",
+      },
+      instructor: {
+        email: "sarah.johnson@cadt.edu.kh",
+        password: "password123",
+      },
+    };
+
+    const selected = demoAccounts[demo];
+    if (!selected) return;
+
+    const autoLogin = async () => {
+      setError("");
+      setLoading(true);
+      try {
+        const response = await axios.post("/api/instructor/login", selected);
+        const { token, instructor } = response.data;
+        loginSuccess({ ...instructor, token });
+      } catch (err) {
+        setError(err.response?.data?.message || "Demo login failed.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    autoLogin();
+  }, [location.search]);
 
   // ── Countdown
   useEffect(() => {

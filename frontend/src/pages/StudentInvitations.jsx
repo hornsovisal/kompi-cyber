@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Check, X, AlertCircle, Mail, BookOpen, User } from "lucide-react";
+import { fetchMyInvitations, acceptCourseInvitation, rejectCourseInvitation } from "../services/rbacService";
 
 const StudentInvitations = () => {
   const [invitations, setInvitations] = useState([]);
@@ -16,17 +17,8 @@ const StudentInvitations = () => {
     try {
       setLoading(true);
       setError("");
-      const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/api/invitations", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setInvitations(data.data || []);
-      } else {
-        setError(data.message || "Failed to load invitations");
-      }
+      const data = await fetchMyInvitations();
+      setInvitations(data);
     } catch (err) {
       setError("Error loading invitations");
       console.error(err);
@@ -39,26 +31,12 @@ const StudentInvitations = () => {
     try {
       setRespondingId(invitationId);
       setError("");
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        `http://localhost:5000/api/invitations/${invitationId}/accept`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-
-      const data = await response.json();
-      if (data.success) {
-        setSuccess("Course invitation accepted! You are now enrolled.");
-        await fetchInvitations();
-        setTimeout(() => setSuccess(""), 3000);
-      } else {
-        setError(data.message || "Failed to accept invitation");
-      }
+      await acceptCourseInvitation(invitationId);
+      setSuccess("Course invitation accepted! You are now enrolled.");
+      await fetchInvitations();
+      setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      setError("Error accepting invitation");
+      setError(err.response?.data?.message || "Error accepting invitation");
       console.error(err);
     } finally {
       setRespondingId(null);
@@ -72,26 +50,12 @@ const StudentInvitations = () => {
     try {
       setRespondingId(invitationId);
       setError("");
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        `http://localhost:5000/api/invitations/${invitationId}/reject`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-
-      const data = await response.json();
-      if (data.success) {
-        setSuccess("Invitation rejected");
-        await fetchInvitations();
-        setTimeout(() => setSuccess(""), 3000);
-      } else {
-        setError(data.message || "Failed to reject invitation");
-      }
+      await rejectCourseInvitation(invitationId);
+      setSuccess("Invitation rejected");
+      await fetchInvitations();
+      setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      setError("Error rejecting invitation");
+      setError(err.response?.data?.message || "Error rejecting invitation");
       console.error(err);
     } finally {
       setRespondingId(null);
@@ -174,17 +138,17 @@ const StudentInvitations = () => {
                             </div>
                             <div className="flex-1">
                               <h3 className="text-xl font-bold text-white mb-1">
-                                {invitation.course_title}
+                                {invitation.courseTitle}
                               </h3>
                               <p className="text-slate-300 text-sm mb-3">
-                                {invitation.course_description}
+                                {invitation.courseDescription}
                               </p>
                               <div className="flex items-center gap-2 text-sm text-slate-400">
                                 <User className="w-4 h-4" />
                                 <span>
                                   From:{" "}
                                   <span className="text-slate-200 font-medium">
-                                    {invitation.teacher_name}
+                                    {invitation.invitedByName}
                                   </span>
                                 </span>
                               </div>
@@ -221,9 +185,9 @@ const StudentInvitations = () => {
                       <div className="mt-4 pt-4 border-t border-slate-600">
                         <p className="text-xs text-slate-400">
                           Invited on{" "}
-                          {new Date(invitation.invited_at).toLocaleDateString()}{" "}
+                          {new Date(invitation.createdAt).toLocaleDateString()} {" "}
                           at{" "}
-                          {new Date(invitation.invited_at).toLocaleTimeString()}
+                          {new Date(invitation.createdAt).toLocaleTimeString()}
                         </p>
                       </div>
                     </div>
@@ -252,23 +216,21 @@ const StudentInvitations = () => {
                         </div>
                         <div className="flex-1">
                           <h3 className="text-xl font-bold text-white mb-1">
-                            {invitation.course_title}
+                            {invitation.courseTitle}
                           </h3>
                           <p className="text-slate-300 text-sm mb-2">
-                            {invitation.course_description}
+                            {invitation.courseDescription}
                           </p>
                           <div className="flex items-center gap-4 text-sm text-slate-400">
                             <span>
                               From:{" "}
                               <span className="text-slate-200">
-                                {invitation.teacher_name}
+                                {invitation.invitedByName}
                               </span>
                             </span>
                             <span>
                               Accepted on{" "}
-                              {new Date(
-                                invitation.responded_at,
-                              ).toLocaleDateString()}
+                              {new Date(invitation.respondedAt).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
@@ -302,13 +264,11 @@ const StudentInvitations = () => {
                         </div>
                         <div className="flex-1">
                           <h3 className="text-xl font-bold text-slate-300 mb-1">
-                            {invitation.course_title}
+                            {invitation.courseTitle}
                           </h3>
                           <p className="text-slate-400 text-sm">
                             Rejected on{" "}
-                            {new Date(
-                              invitation.responded_at,
-                            ).toLocaleDateString()}
+                            {new Date(invitation.respondedAt).toLocaleDateString()}
                           </p>
                         </div>
                       </div>

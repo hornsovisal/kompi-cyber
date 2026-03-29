@@ -1,23 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FileQuestion, Plus, Search, Pencil, Trash2, CalendarClock, BookOpen, Play, Square } from "lucide-react";
-import { useInstructorAPI } from "../../hooks/useInstructorAPI";
-import { fetchMyRbacQuizzes, openQuiz, closeQuiz } from "../../services/rbacService";
+import { fetchMyRbacQuizzes, openQuiz, closeQuiz, deleteRbacQuiz } from "../../services/rbacService";
 
 export default function ManageQuizzes() {
   const navigate = useNavigate();
-  const { deleteQuiz, loading, error, clearError } = useInstructorAPI();
   const [quizzes, setQuizzes] = useState([]);
   const [query, setQuery] = useState("");
   const [deletingId, setDeletingId] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const clearError = () => setError("");
 
   const loadQuizzes = async () => {
     try {
+      setLoading(true);
+      setError("");
       const data = await fetchMyRbacQuizzes();
       setQuizzes(data);
-    } catch (_) {
-      // fallback silently
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to load quizzes.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -37,10 +43,11 @@ export default function ManageQuizzes() {
     if (!window.confirm("Delete this quiz?")) return;
     try {
       setDeletingId(quizId);
-      await deleteQuiz(quizId);
+      setError("");
+      await deleteRbacQuiz(quizId);
       setQuizzes((prev) => prev.filter((quiz) => quiz.id !== quizId));
-    } catch (_) {
-      // error handled by hook
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to delete quiz.");
     } finally {
       setDeletingId(null);
     }
@@ -53,8 +60,8 @@ export default function ManageQuizzes() {
       const result = await fn(quiz.id);
       const newStatus = result.data?.status || (quiz.status === 'open' ? 'closed' : 'open');
       setQuizzes(prev => prev.map(q => q.id === quiz.id ? { ...q, status: newStatus } : q));
-    } catch {
-      // fail silently
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to update quiz status.");
     } finally {
       setTogglingId(null);
     }
@@ -81,8 +88,9 @@ export default function ManageQuizzes() {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
           <StatCard title="Total Quizzes" value={quizzes.length} icon={FileQuestion} />
-          <StatCard title="Upcoming" value={quizzes.filter((quiz) => new Date(`${quiz.dueDate}T${quiz.dueTime}`) > new Date()).length} icon={CalendarClock} />
-          <StatCard title="Courses Used" value={new Set(quizzes.map((quiz) => quiz.course)).size} icon={BookOpen} />
+          <StatCard title="Open Quizzes" value={quizzes.filter((quiz) => quiz.status === 'open').length} icon={Play} />
+          <StatCard title="Courses Used" value={new Set(quizzes.map((quiz) => quiz.courseId)).size} icon={BookOpen} />
+          <StatCard title="Upcoming" value={quizzes.filter((quiz) => quiz.dueDate && quiz.dueTime && new Date(`${quiz.dueDate}T${quiz.dueTime}`) > new Date()).length} icon={CalendarClock} />
         </div>
 
         <div className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -120,7 +128,7 @@ export default function ManageQuizzes() {
             <tbody className="divide-y divide-slate-200 bg-white">
               {filteredQuizzes.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-sm text-slate-500">
+                  <td colSpan={5} className="px-6 py-12 text-center text-sm text-slate-500">
                     {loading ? "Loading quizzes..." : "No quizzes found."}
                   </td>
                 </tr>
