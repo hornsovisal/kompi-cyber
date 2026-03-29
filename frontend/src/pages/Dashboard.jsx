@@ -270,11 +270,7 @@ export default function Dashboard() {
             className="group flex items-center gap-3 transition-transform hover:scale-105"
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-xl border-2 border-[#FE9A00]/60 bg-gradient-to-br from-[#FE9A00]/15 to-[#FF6B35]/10 shadow-lg shadow-[#FE9A00]/20 group-hover:shadow-[#FE9A00]/40 group-hover:border-[#FE9A00] transition-all">
-              <img
-                src={logo}
-                alt="KOMPI-CYBER"
-                className="h-10 w-10 object-contain"
-              />
+              <span className="text-xl font-bold text-[#FE9A00]">⚡</span>
             </div>
             <div className="hidden sm:flex flex-col">
               <p
@@ -892,11 +888,7 @@ export default function Dashboard() {
                           : "border-amber-300/40 bg-gradient-to-br from-amber-100/30 to-orange-100/20 shadow-amber-300/20"
                       }`}
                     >
-                      <img
-                        src={logo}
-                        alt="KOMPI-CYBER"
-                        className="h-28 w-28 object-contain"
-                      />
+                      <span className="text-6xl">⚡</span>
                     </div>
                   </div>
                   <h3
@@ -957,11 +949,7 @@ export default function Dashboard() {
                   : "border-amber-300/60 bg-gradient-to-br from-amber-100/30 to-orange-100/20 shadow-amber-300/20"
               }`}
             >
-              <img
-                src={logo}
-                alt="KOMPI-CYBER"
-                className="h-8 w-8 object-contain"
-              />
+              <span className="text-lg font-bold text-[#FE9A00]">⚡</span>
             </div>
             <div className="hidden sm:flex flex-col">
               <span
