@@ -20,6 +20,11 @@ import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 import InstructorLogin from "./pages/instructor/InstructorLogin";
 import CreateQuiz from "./pages/instructor/CreateQuiz";
 import CreateCourse from "./pages/instructor/CreateCourse";
+import ManageCourses from "./pages/instructor/ManageCourses";
+import ManageQuizzes from "./pages/instructor/ManageQuizzes";
+import StudentPerformance from "./pages/instructor/StudentPerformance";
+import Analytics from "./pages/instructor/Analytics";
+import InstructorSettings from "./pages/instructor/InstructorSettings";
 
 export default function App() {
   return (
@@ -43,16 +48,69 @@ export default function App() {
         <Route path="/invitations" element={<StudentInvitations />} />
 
         {/* Instructor Routes */}
+        <Route path="/instructor" element={<Navigate to="/instructor/login" replace />} />
+        <Route path="/teacher" element={<Navigate to="/teacher/login" replace />} />
+        <Route path="/instructor-login" element={<Navigate to="/instructor/login" replace />} />
+        <Route path="/teacher-login" element={<Navigate to="/teacher/login" replace />} />
         <Route
           path="/instructor"
           element={<Navigate to="/instructor/login" replace />}
         />
         <Route path="/instructor/login" element={<InstructorLogin />} />
+        <Route path="/teacher/login" element={<InstructorLogin />} />
         <Route
           path="/instructor/dashboard"
           element={
             <InstructorLayout>
               <InstructorDashboard />
+            </InstructorLayout>
+          }
+        />
+        <Route
+          path="/teacher/dashboard"
+          element={
+            <InstructorLayout>
+              <InstructorDashboard />
+            </InstructorLayout>
+          }
+        />
+        <Route
+          path="/instructor/courses"
+          element={
+            <InstructorLayout>
+              <ManageCourses />
+            </InstructorLayout>
+          }
+        />
+        <Route
+          path="/instructor/quizzes"
+          element={
+            <InstructorLayout>
+              <ManageQuizzes />
+            </InstructorLayout>
+          }
+        />
+        <Route
+          path="/instructor/performance"
+          element={
+            <InstructorLayout>
+              <StudentPerformance />
+            </InstructorLayout>
+          }
+        />
+        <Route
+          path="/instructor/analytics"
+          element={
+            <InstructorLayout>
+              <Analytics />
+            </InstructorLayout>
+          }
+        />
+        <Route
+          path="/instructor/settings"
+          element={
+            <InstructorLayout>
+              <InstructorSettings />
             </InstructorLayout>
           }
         />
