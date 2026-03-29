@@ -3,12 +3,14 @@ import axios from 'axios';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
+const getStored = (key) => localStorage.getItem(key) || sessionStorage.getItem(key);
+
 export const useInstructorAPI = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
+    const token = getStored('token');
     return {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',

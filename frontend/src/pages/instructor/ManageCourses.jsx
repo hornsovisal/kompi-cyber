@@ -16,7 +16,7 @@ import {
 
 export default function ManageCourses() {
   const instructor = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem("instructor") || "null"); } catch { return null; }
+    try { return JSON.parse(localStorage.getItem("instructor") || sessionStorage.getItem("instructor") || "null"); } catch { return null; }
   }, []);
   const isCoordinator = instructor?.role === "coordinator";
 

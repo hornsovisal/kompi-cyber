@@ -2,15 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, CalendarClock, FileQuestion, GraduationCap, LayoutDashboard, PlusCircle, TrendingUp, UserCheck, Users } from "lucide-react";
 import { useInstructorAPI } from "../../hooks/useInstructorAPI";
-import { fetchAllCourses, fetchInstructors, fetchMyRbacQuizzes } from "../../services/rbacService";
+import { fetchAllCourses, fetchInstructors } from "../../services/rbacService";
 
 export default function InstructorDashboard() {
   const navigate = useNavigate();
   const { fetchInstructorCourses, fetchMyQuizzes, fetchStudentPerformance, loading, error, clearError } = useInstructorAPI();
+  const getStored = (key) => localStorage.getItem(key) || sessionStorage.getItem(key);
 
   const instructor = useMemo(() => {
     try {
-      return JSON.parse(localStorage.getItem("instructor") || "null");
+      return JSON.parse(getStored("instructor") || "null");
     } catch {
       return null;
     }
@@ -21,25 +22,28 @@ export default function InstructorDashboard() {
   // Coordinator state
   const [allCourses, setAllCourses] = useState([]);
   const [allInstructors, setAllInstructors] = useState([]);
-  const [allQuizzes, setAllQuizzes] = useState([]);
-
   // Instructor state
   const [courses, setCourses] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
   const [performance, setPerformance] = useState({ students: [] });
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) { navigate("/instructor/login"); return; }
+    const token = getStored("token");
+    if (!token) {
+      navigate("/", { replace: true });
+      return;
+    }
 
     if (isCoordinator) {
-      Promise.all([fetchAllCourses(), fetchInstructors(), fetchMyRbacQuizzes()])
-        .then(([coursesData, instructorsData, quizzesData]) => {
+      Promise.all([fetchAllCourses(), fetchInstructors()])
+        .then(([coursesData, instructorsData]) => {
           setAllCourses(coursesData || []);
           setAllInstructors(instructorsData || []);
-          setAllQuizzes(quizzesData || []);
         })
-        .catch(() => navigate("/instructor/login"));
+        .catch(() => {
+          setAllCourses([]);
+          setAllInstructors([]);
+        });
     } else {
       Promise.all([fetchInstructorCourses(), fetchMyQuizzes(), fetchStudentPerformance()])
         .then(([courseData, quizData, performanceData]) => {
@@ -47,7 +51,11 @@ export default function InstructorDashboard() {
           setQuizzes(quizData || []);
           setPerformance(performanceData || { students: [] });
         })
-        .catch(() => navigate("/instructor/login"));
+        .catch(() => {
+          setCourses([]);
+          setQuizzes([]);
+          setPerformance({ students: [] });
+        });
     }
   }, [navigate, isCoordinator]);
 
@@ -89,7 +97,7 @@ export default function InstructorDashboard() {
           </div>
           {isCoordinator ? (
             <button
-              onClick={() => navigate("/instructor/courses")}
+              onClick={() => navigate("/coordinator/courses")}
               className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-700"
             >
               <PlusCircle size={16} /> New Course
@@ -132,11 +140,10 @@ export default function InstructorDashboard() {
         </div>
 
         {isCoordinator ? (
-          <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             <StatCard title="Total Courses" value={allCourses.length} icon={BookOpen} color="text-purple-600 bg-purple-50" />
             <StatCard title="Instructors" value={allInstructors.length} icon={UserCheck} color="text-blue-600 bg-blue-50" />
             <StatCard title="Total Students" value={totalStudents} icon={GraduationCap} color="text-green-600 bg-green-50" />
-            <StatCard title="Total Quizzes" value={allQuizzes.length} icon={FileQuestion} color="text-amber-600 bg-amber-50" />
           </div>
         ) : (
           <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4">
@@ -155,7 +162,7 @@ export default function InstructorDashboard() {
                   <h3 className="text-lg font-semibold text-slate-900">All Courses</h3>
                   <p className="text-sm text-slate-500">Courses across all instructors.</p>
                 </div>
-                <button onClick={() => navigate("/instructor/courses")} className="text-sm font-semibold text-purple-600 hover:text-purple-700">Manage</button>
+                <button onClick={() => navigate("/coordinator/courses")} className="text-sm font-semibold text-purple-600 hover:text-purple-700">Manage</button>
               </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200">
@@ -196,10 +203,10 @@ export default function InstructorDashboard() {
                 </div>
               </div>
               <div className="mt-6 space-y-3">
-                <QuickAction label="Create new course" onClick={() => navigate("/instructor/courses")} />
-                <QuickAction label="Assign instructor to course" onClick={() => navigate("/instructor/courses")} />
-                <QuickAction label="View all quizzes" onClick={() => navigate("/instructor/quizzes")} />
-                <QuickAction label="Manage students" onClick={() => navigate("/instructor/students")} />
+                <QuickAction label="Create new course" onClick={() => navigate("/coordinator/courses")} />
+                <QuickAction label="Assign instructor to course" onClick={() => navigate("/coordinator/courses")} />
+                <QuickAction label="Open analytics" onClick={() => navigate("/coordinator/analytics")} />
+                <QuickAction label="Open settings" onClick={() => navigate("/coordinator/settings")} />
               </div>
             </div>
           </div>

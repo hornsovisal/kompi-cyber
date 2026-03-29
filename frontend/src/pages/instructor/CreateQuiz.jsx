@@ -7,6 +7,14 @@ export default function CreateQuiz() {
   const navigate = useNavigate();
   const { id, lessonId } = useParams();
   const quizId = id || lessonId;
+  const instructor = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("instructor") || sessionStorage.getItem("instructor") || "null");
+    } catch {
+      return null;
+    }
+  }, []);
+  const isCoordinator = instructor?.role === "coordinator";
 
   const [courses, setCourses] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -23,6 +31,11 @@ export default function CreateQuiz() {
   const isEditMode = useMemo(() => Boolean(quizId), [quizId]);
 
   useEffect(() => {
+    if (isCoordinator) {
+      navigate("/coordinator/dashboard", { replace: true });
+      return;
+    }
+
     const loadData = async () => {
       try {
         setLoading(true);
@@ -54,7 +67,7 @@ export default function CreateQuiz() {
     };
 
     loadData();
-  }, [quizId]);
+  }, [isCoordinator, navigate, quizId]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;

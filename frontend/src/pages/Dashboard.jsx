@@ -306,19 +306,28 @@ export default function Dashboard() {
             <NavLink
               to="/dashboard/my-courses"
               className={({ isActive }) => {
-                const accentColor = isDarkMode ? "#FE9A00" : "#D97706";
-                const textColor = isDarkMode ? "#0F172A" : "#FFFFFF";
-                const hoverBg = isDarkMode ? "#FE9A00/15" : "#FCD34D/25";
-                const shadowColor = isDarkMode ? "#FE9A00/50" : "#D97706/50";
                 const inactiveText = isDarkMode
                   ? "text-slate-300"
                   : "text-gray-600";
                 return `px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 ease-out ${
                   isActive
-                    ? `bg-[${accentColor}] text-[${textColor}] shadow-lg shadow-[${shadowColor}] scale-105`
-                    : `${inactiveText} hover:text-[${accentColor}] hover:bg-[${hoverBg}] hover:scale-102`
+                    ? "shadow-lg scale-105"
+                    : `${inactiveText} hover:scale-102`
                 }`;
               }}
+              style={({ isActive }) =>
+                isActive
+                  ? {
+                      backgroundColor: isDarkMode ? "#FE9A00" : "#D97706",
+                      color: isDarkMode ? "#0F172A" : "#FFFFFF",
+                      boxShadow: isDarkMode
+                        ? "0 10px 30px rgba(254, 154, 0, 0.35)"
+                        : "0 10px 30px rgba(217, 119, 6, 0.25)",
+                    }
+                  : {
+                      color: undefined,
+                    }
+              }
             >
               My Courses
             </NavLink>
