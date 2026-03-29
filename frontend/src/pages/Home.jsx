@@ -45,6 +45,10 @@ export default function Home() {
     }
   };
 
+  const handleTeacherLogin = () => {
+    navigate("/instructor/login");
+  };
+
   const handleCourseClick = (courseId) => {
     navigate(`/learn/${courseId}`);
   };
@@ -160,6 +164,14 @@ export default function Home() {
             KOMPI-CYBER
           </motion.button>
 
+          <button
+            type="button"
+            onClick={handleTeacherLogin}
+            className="rounded-lg border border-[#FFA500]/40 bg-[#FFA500]/10 px-3 py-2 text-sm font-semibold text-[#FFA500] transition hover:bg-[#FFA500]/20 md:hidden"
+          >
+            Teacher Login
+          </button>
+
           <div className="hidden gap-8 font-medium md:flex">
             <button
               type="button"
@@ -188,6 +200,13 @@ export default function Home() {
               className="transition duration-300 hover:text-[#FFA500]"
             >
               My Learning
+            </button>
+            <button
+              type="button"
+              onClick={handleTeacherLogin}
+              className="transition duration-300 hover:text-[#FFA500]"
+            >
+              Teacher Login
             </button>
             <button
               type="button"

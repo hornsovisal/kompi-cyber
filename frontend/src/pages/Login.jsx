@@ -239,6 +239,16 @@ export default function Login() {
               Create one
             </Link>
           </p>
+
+          <p className="mt-3 text-center text-sm text-slate-400">
+            Are you a teacher?{" "}
+            <Link
+              to="/teacher/login"
+              className="font-semibold text-cyan-300 transition hover:text-cyan-200"
+            >
+              Teacher Login
+            </Link>
+          </p>
         </div>
       </main>
     </div>
