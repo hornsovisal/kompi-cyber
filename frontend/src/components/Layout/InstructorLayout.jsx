@@ -1,33 +1,61 @@
-import { useEffect, useState, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, LogOut, Home, BookOpen, BarChart3, Settings, FileQuestion, Users, ShieldCheck, PlusCircle } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  Menu,
+  X,
+  LogOut,
+  Home,
+  BookOpen,
+  BarChart3,
+  Settings,
+  FileQuestion,
+  Users,
+  ShieldCheck,
+  PlusCircle,
+} from "lucide-react";
 
 export default function InstructorLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Read instructor and role from localStorage
-  const instructor = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem('instructor') || 'null'); } catch { return null; }
-  }, []);
+  // Read instructor and role from sessionStorage
+  let instructor = null;
+  try {
+    instructor = JSON.parse(sessionStorage.getItem("instructor") || "null");
+  } catch {
+    instructor = null;
+  }
 
-  const role = instructor?.role || 'instructor'; // 'instructor' | 'coordinator'
-  const isCoordinator = role === 'coordinator';
+  const role = instructor?.role || "instructor"; // 'instructor' | 'coordinator'
+  const isCoordinator = role === "coordinator";
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const inst = localStorage.getItem('instructor');
-    if (!token || !inst) {
-      navigate('/instructor/login', { replace: true });
+    const token = sessionStorage.getItem("token");
+    const instructor = sessionStorage.getItem("instructor");
+    const sessionExpires = sessionStorage.getItem("sessionExpires");
+
+    if (!token || !instructor) {
+      navigate("/instructor/login", { replace: true });
+    } else if (
+      sessionExpires &&
+      parseInt(sessionExpires, 10) <= new Date().getTime()
+    ) {
+      // Session expired
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
+      sessionStorage.removeItem("instructor");
+      sessionStorage.removeItem("sessionExpires");
+      navigate("/instructor/login", { replace: true });
     }
   }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('instructor');
-    navigate('/instructor/login');
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("instructor");
+    sessionStorage.removeItem("sessionExpires");
+    navigate("/instructor/login");
   };
 
   const isActive = (path) => location.pathname === path;
@@ -59,7 +87,7 @@ export default function InstructorLayout({ children }) {
       {/* Sidebar */}
       <div
         className={`${
-          sidebarOpen ? 'w-64' : 'w-0'
+          sidebarOpen ? "w-64" : "w-0"
         } bg-slate-900 text-white transition-all duration-300 fixed h-screen overflow-y-auto z-40 lg:relative lg:w-64`}
       >
         <div className="p-6">
@@ -94,8 +122,8 @@ export default function InstructorLayout({ children }) {
                 }}
                 className={`w-full px-6 py-3 flex items-center gap-3 transition-colors ${
                   active
-                    ? 'bg-blue-600 text-white border-l-4 border-blue-400'
-                    : 'text-slate-300 hover:bg-slate-800'
+                    ? "bg-blue-600 text-white border-l-4 border-blue-400"
+                    : "text-slate-300 hover:bg-slate-800"
                 }`}
               >
                 <Icon size={20} />
