@@ -1,8 +1,14 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import ExploreCourses from "./pages/ExploreCourses";
 import LearnPage from "./pages/LearnPage";
 import ForgetPassword from "./pages/ForgetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
@@ -32,6 +38,7 @@ export default function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/:tab" element={<Dashboard />} />
+        <Route path="/explore" element={<ExploreCourses />} />
         <Route path="/learn/:courseId" element={<LearnPage />} />
         <Route path="/learn/:courseId/:lessonId" element={<LearnPage />} />
         <Route
@@ -45,6 +52,10 @@ export default function App() {
         <Route path="/teacher" element={<Navigate to="/teacher/login" replace />} />
         <Route path="/instructor-login" element={<Navigate to="/instructor/login" replace />} />
         <Route path="/teacher-login" element={<Navigate to="/teacher/login" replace />} />
+        <Route
+          path="/instructor"
+          element={<Navigate to="/instructor/login" replace />}
+        />
         <Route path="/instructor/login" element={<InstructorLogin />} />
         <Route path="/teacher/login" element={<InstructorLogin />} />
         <Route
