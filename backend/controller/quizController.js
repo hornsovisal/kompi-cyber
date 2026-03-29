@@ -19,7 +19,7 @@ exports.createQuiz = async (req, res) => {
       // Insert question
       const [questionResult] = await connection.query(
         "INSERT INTO quiz_questions (lesson_id, question_text, question_order) VALUES (?, ?, ?)",
-        [lessonId, question.question_text, index + 1]
+        [lessonId, question.question_text, index + 1],
       );
 
       const questionId = questionResult.insertId;
@@ -28,7 +28,7 @@ exports.createQuiz = async (req, res) => {
       for (const option of question.options) {
         await connection.query(
           "INSERT INTO quiz_options (question_id, option_text, is_correct) VALUES (?, ?, ?)",
-          [questionId, option.option_text, option.is_correct ? 1 : 0]
+          [questionId, option.option_text, option.is_correct ? 1 : 0],
         );
       }
     }
@@ -37,7 +37,7 @@ exports.createQuiz = async (req, res) => {
     res.json({ success: true, message: "Quiz created successfully" });
   } catch (err) {
     // Store in memory if database is not available
-    console.log('Database not available, storing quiz in memory');
+    console.log("Database not available, storing quiz in memory");
     quizzes.set(lessonId, questions);
     res.json({ success: true, message: "Quiz created successfully" });
   }
@@ -56,14 +56,19 @@ exports.updateQuiz = async (req, res) => {
 
   try {
     // Delete existing questions and options
-    await connection.query("DELETE FROM quiz_options WHERE question_id IN (SELECT id FROM quiz_questions WHERE lesson_id = ?)", [lessonId]);
-    await connection.query("DELETE FROM quiz_questions WHERE lesson_id = ?", [lessonId]);
+    await connection.query(
+      "DELETE FROM quiz_options WHERE question_id IN (SELECT id FROM quiz_questions WHERE lesson_id = ?)",
+      [lessonId],
+    );
+    await connection.query("DELETE FROM quiz_questions WHERE lesson_id = ?", [
+      lessonId,
+    ]);
 
     // Insert new questions and options
     for (const [index, question] of questions.entries()) {
       const [questionResult] = await connection.query(
         "INSERT INTO quiz_questions (lesson_id, question_text, question_order) VALUES (?, ?, ?)",
-        [lessonId, question.question_text, index + 1]
+        [lessonId, question.question_text, index + 1],
       );
 
       const questionId = questionResult.insertId;
@@ -71,7 +76,7 @@ exports.updateQuiz = async (req, res) => {
       for (const option of question.options) {
         await connection.query(
           "INSERT INTO quiz_options (question_id, option_text, is_correct) VALUES (?, ?, ?)",
-          [questionId, option.option_text, option.is_correct ? 1 : 0]
+          [questionId, option.option_text, option.is_correct ? 1 : 0],
         );
       }
     }
@@ -98,8 +103,13 @@ exports.deleteQuiz = async (req, res) => {
   await connection.beginTransaction();
 
   try {
-    await connection.query("DELETE FROM quiz_options WHERE question_id IN (SELECT id FROM quiz_questions WHERE lesson_id = ?)", [lessonId]);
-    await connection.query("DELETE FROM quiz_questions WHERE lesson_id = ?", [lessonId]);
+    await connection.query(
+      "DELETE FROM quiz_options WHERE question_id IN (SELECT id FROM quiz_questions WHERE lesson_id = ?)",
+      [lessonId],
+    );
+    await connection.query("DELETE FROM quiz_questions WHERE lesson_id = ?", [
+      lessonId,
+    ]);
 
     await connection.commit();
     res.json({ success: true, message: "Quiz deleted successfully" });
@@ -112,56 +122,6 @@ exports.deleteQuiz = async (req, res) => {
 };
 
 // Fetch quiz questions and options for a lesson (without revealing correct options)
-exports.getQuizByLesson = async (req, res) => {
-  const lessonId = Number(req.params.lessonId);
-  if (!Number.isInteger(lessonId) || lessonId <= 0) {
-    return res.status(400).json({ message: "Invalid lessonId" });
-  }
-
-  const sql = `
-    SELECT q.id AS question_id,
-           q.question_text,
-           o.id AS option_id,
-           o.option_text
-    FROM quiz_questions q
-    LEFT JOIN quiz_options o ON o.question_id = q.id
-    WHERE q.lesson_id = ?
-    ORDER BY q.id, o.id
-  `;
-
-  try {
-    const [results] = await db.query(sql, [lessonId]);
-
-    if (!results.length) {
-      return res.status(404).json({ message: "No quiz found for this lesson" });
-    }
-
-    const questionsMap = new Map();
-    results.forEach((row) => {
-      const question = questionsMap.get(row.question_id) || {
-        id: row.question_id,
-        question_text: row.question_text,
-        options: [],
-      };
-
-      if (row.option_id) {
-        question.options.push({
-          id: row.option_id,
-          option_text: row.option_text,
-        });
-      }
-
-      questionsMap.set(row.question_id, question);
-    });
-
-    return res.json({ success: true, data: Array.from(questionsMap.values()) });
-  } catch (err) {
-    return res
-      .status(500)
-      .json({ message: "Database error", error: err.message || err });
-  }
-};
-
 // Fetch quiz questions and options for a lesson (without revealing correct options)
 exports.getQuizByLesson = async (req, res) => {
   const lessonId = Number(req.params.lessonId);
@@ -208,22 +168,22 @@ exports.getQuizByLesson = async (req, res) => {
     return res.json({ success: true, data: Array.from(questionsMap.values()) });
   } catch (err) {
     // Return data from in-memory storage
-    console.log('Database not available, returning in-memory quiz data');
+    console.log("Database not available, returning in-memory quiz data");
     const questions = quizzes.get(lessonId) || [];
     if (questions.length === 0) {
       return res.status(404).json({ message: "No quiz found for this lesson" });
     }
-    
+
     // Return questions without correct answers for students
-    const studentQuestions = questions.map(q => ({
+    const studentQuestions = questions.map((q) => ({
       id: q.id || Math.random(),
       question_text: q.question_text,
-      options: q.options.map(opt => ({
+      options: q.options.map((opt) => ({
         id: opt.id || Math.random(),
-        option_text: opt.option_text
-      }))
+        option_text: opt.option_text,
+      })),
     }));
-    
+
     return res.json({ success: true, data: studentQuestions });
   }
 };
