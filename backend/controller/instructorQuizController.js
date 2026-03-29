@@ -5,10 +5,10 @@
  *
  * Routes expected:
  *   POST   /api/instructor/quizzes        -> createQuiz
- *   GET    /api/instructor/quizzes        -> getMyQuizzes
  *   GET    /api/instructor/quizzes/:id    -> getQuizById
  *   PUT    /api/instructor/quizzes/:id    -> updateQuiz
- *   DELETE /api/instructor/quizzes/:id    -> deleteQuiz
+ *   DELETE /a *   GET    /api/instructor/quizzes        -> getMyQuizzes
+pi/instructor/quizzes/:id    -> deleteQuiz
  */
 
 const QuizModel = require('../models/InstructorQuizModel');
