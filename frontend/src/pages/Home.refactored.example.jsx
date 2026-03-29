@@ -1,13 +1,13 @@
 /**
  * Refactored Home Page - Example of Responsive & Modular Architecture
  * Shows how to use the new component system
- * 
+ *
  * This is an example refactor. To apply: replace existing Home.jsx with this
  */
 
-import { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
-import { motion } from 'framer-motion';
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { motion } from "framer-motion";
 import {
   Search,
   Bell,
@@ -20,11 +20,11 @@ import {
   Shield,
   ChevronRight,
   Star,
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // Import responsive hooks
-import { useResponsive } from '../hooks/useResponsive';
+import { useResponsive } from "../hooks/useResponsive";
 
 // Import base components
 import {
@@ -35,31 +35,28 @@ import {
   Section,
   Grid,
   Flex,
-} from '../components/base';
+} from "../components/base";
 
 // Import layout components
 import {
   ResponsiveNav,
   HeroSection,
   ResponsiveFooter,
-} from '../components/layouts/ResponsiveLayout';
+} from "../components/layouts/ResponsiveLayout";
 
 // Import utilities
-import {
-  ThemeManager,
-  useTheme,
-} from '../utils/themeManager';
+import { ThemeManager, useTheme } from "../utils/themeManager";
 import {
   ResponsiveUtils,
   responsivePadding,
   responsiveText,
   responsiveGap,
   MobileFirst,
-} from '../utils/responsiveUtils';
+} from "../utils/responsiveUtils";
 
-import { isAuthenticated } from '../utils/auth';
+import { isAuthenticated } from "../utils/auth";
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const API_BASE = import.meta.env.VITE_API_URL || "";
 
 /**
  * Example Refactored Home Page Component
@@ -74,8 +71,8 @@ export default function Home() {
   // State
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [hoveredCard, setHoveredCard] = useState(null);
 
   // Handlers
@@ -84,7 +81,7 @@ export default function Home() {
   };
 
   const handleStart = () => {
-    handleNavigate(isAuthenticated() ? '/dashboard' : '/login');
+    handleNavigate(isAuthenticated() ? "/dashboard" : "/login");
   };
 
   const handleCourseClick = (courseId) => {
@@ -93,14 +90,14 @@ export default function Home() {
 
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
-    element?.scrollIntoView({ behavior: 'smooth' });
+    element?.scrollIntoView({ behavior: "smooth" });
   };
 
   // Fetch courses
   useEffect(() => {
     setLoading(true);
     axios
-      .get('/api/courses', { baseURL: API_BASE })
+      .get("/api/courses", { baseURL: API_BASE })
       .then((res) => {
         const courseData = Array.isArray(res.data)
           ? res.data
@@ -109,7 +106,7 @@ export default function Home() {
       })
       .catch((err) => {
         console.error(err);
-        setError(err.response?.data?.message || 'Failed to load courses');
+        setError(err.response?.data?.message || "Failed to load courses");
       })
       .finally(() => setLoading(false));
   }, []);
@@ -119,8 +116,8 @@ export default function Home() {
     const query = searchTerm.trim().toLowerCase();
     if (!query) return courses;
     return courses.filter((course) => {
-      const title = String(course.title || '').toLowerCase();
-      const description = String(course.description || '').toLowerCase();
+      const title = String(course.title || "").toLowerCase();
+      const description = String(course.description || "").toLowerCase();
       return title.includes(query) || description.includes(query);
     });
   }, [courses, searchTerm]);
@@ -129,10 +126,10 @@ export default function Home() {
 
   // Navigation items
   const navItems = [
-    { id: 'hero', label: 'Home' },
-    { id: 'courses', label: 'Courses' },
-    { id: 'features', label: 'Programs' },
-    { id: 'about', label: 'About Us' },
+    { id: "hero", label: "Home" },
+    { id: "courses", label: "Courses" },
+    { id: "features", label: "Programs" },
+    { id: "about", label: "About Us" },
   ];
 
   const navButtons = (
@@ -140,22 +137,20 @@ export default function Home() {
       <Button
         variant="secondary"
         size="sm"
-        onClick={() => handleNavigate('/instructor/login')}
+        onClick={() => handleNavigate("/instructor/login")}
       >
         Teacher Login
       </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setDark(!dark)}
-      >
+      <Button variant="ghost" size="sm" onClick={() => setDark(!dark)}>
         {dark ? <Sun size={18} /> : <Moon size={18} />}
       </Button>
     </Flex>
   );
 
   return (
-    <div className={`${theme.getColor('shell')} min-h-screen overflow-hidden transition-colors duration-300`}>
+    <div
+      className={`${theme.getColor("shell")} min-h-screen overflow-hidden transition-colors duration-300`}
+    >
       {/* Background gradient */}
       {!isMobile && (
         <div className="fixed inset-0 -z-10">
@@ -186,20 +181,21 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="flex flex-col justify-center space-y-6"
           >
-            <h1 className={responsiveText['4xl']}>
+            <h1 className={responsiveText["4xl"]}>
               Learn Cybersecurity the Right Way
             </h1>
 
             <p className={`${responsiveText.lg} text-gray-300`}>
-              Master defensive security, ethical hacking, and network protection from industry
-              experts. Join thousands of cybersecurity professionals.
+              Master defensive security, ethical hacking, and network protection
+              from industry experts. Join thousands of cybersecurity
+              professionals.
             </p>
 
             {/* CTA Buttons */}
-            <Flex direction={isMobile ? 'col' : 'row'} gap={3}>
+            <Flex direction={isMobile ? "col" : "row"} gap={3}>
               <Button
                 variant="primary"
-                size={isMobile ? 'md' : 'lg'}
+                size={isMobile ? "md" : "lg"}
                 fullWidth={isMobile}
                 onClick={handleStart}
               >
@@ -207,9 +203,9 @@ export default function Home() {
               </Button>
               <Button
                 variant="secondary"
-                size={isMobile ? 'md' : 'lg'}
+                size={isMobile ? "md" : "lg"}
                 fullWidth={isMobile}
-                onClick={() => scrollToSection('courses')}
+                onClick={() => scrollToSection("courses")}
               >
                 Explore Courses
               </Button>
@@ -235,7 +231,7 @@ export default function Home() {
 
       {/* Courses Section */}
       <Section id="courses">
-        <h2 className={responsiveText['3xl']}>Available Courses</h2>
+        <h2 className={responsiveText["3xl"]}>Available Courses</h2>
         <p className={`${responsiveText.lg} text-gray-300 mt-2 mb-8`}>
           Choose from our comprehensive cybersecurity courses
         </p>
@@ -244,7 +240,10 @@ export default function Home() {
         {!isMobile && (
           <div className="mb-8 flex gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-3 text-[#FFA500]" size={18} />
+              <Search
+                className="absolute left-4 top-3 text-[#FFA500]"
+                size={18}
+              />
               <Input
                 type="text"
                 placeholder="Search courses..."
@@ -279,7 +278,7 @@ export default function Home() {
                 <Card
                   hoverable
                   className={`cursor-pointer h-full flex flex-col justify-between ${
-                    hoveredCard === course.id ? 'ring-2 ring-[#FFA500]' : ''
+                    hoveredCard === course.id ? "ring-2 ring-[#FFA500]" : ""
                   }`}
                   onClick={() => handleCourseClick(course.id)}
                 >
@@ -290,17 +289,19 @@ export default function Home() {
                       <Star className="text-[#FFA500]" size={20} />
                     </Flex>
 
-                    <p className="text-gray-300 text-sm mb-4">{course.description}</p>
+                    <p className="text-gray-300 text-sm mb-4">
+                      {course.description}
+                    </p>
 
                     {/* Course Info */}
                     <Flex
-                      direction={isMobile ? 'col' : 'row'}
+                      direction={isMobile ? "col" : "row"}
                       gap={2}
                       className={`${responsiveText.xs} text-gray-400 mb-6`}
                     >
                       <span>📚 {course.module_count || 0} Modules</span>
                       <span>⏱️ {course.duration_hrs || 0}h</span>
-                      <span>📊 {course.level || 'Beginner'}</span>
+                      <span>📊 {course.level || "Beginner"}</span>
                     </Flex>
                   </div>
 
@@ -322,24 +323,27 @@ export default function Home() {
 
       {/* Features Section */}
       <Section id="features">
-        <h2 className={responsiveText['3xl']}>Why Choose Us</h2>
+        <h2 className={responsiveText["3xl"]}>Why Choose Us</h2>
 
         <Grid cols={1} md={2} lg={3} gap={8} className="mt-12">
           {[
             {
               icon: Shield,
-              title: 'Industry Expert Instruction',
-              description: 'Learn from cybersecurity professionals with years of real-world experience.',
+              title: "Industry Expert Instruction",
+              description:
+                "Learn from cybersecurity professionals with years of real-world experience.",
             },
             {
               icon: Lock,
-              title: 'Hands-On Labs',
-              description: 'Practice with real-world scenarios in secure lab environments.',
+              title: "Hands-On Labs",
+              description:
+                "Practice with real-world scenarios in secure lab environments.",
             },
             {
               icon: Zap,
-              title: 'Career Ready',
-              description: 'Get certified and boost your cybersecurity career prospects.',
+              title: "Career Ready",
+              description:
+                "Get certified and boost your cybersecurity career prospects.",
             },
           ].map((feature) => (
             <Card key={feature.title} className="text-center">
@@ -357,24 +361,24 @@ export default function Home() {
       <ResponsiveFooter
         sections={[
           {
-            title: 'Product',
+            title: "Product",
             links: [
-              { label: 'Courses', href: '#courses' },
-              { label: 'Certifications', href: '#' },
+              { label: "Courses", href: "#courses" },
+              { label: "Certifications", href: "#" },
             ],
           },
           {
-            title: 'Company',
+            title: "Company",
             links: [
-              { label: 'About', href: '#about' },
-              { label: 'Contact', href: '#' },
+              { label: "About", href: "#about" },
+              { label: "Contact", href: "#" },
             ],
           },
           {
-            title: 'Legal',
+            title: "Legal",
             links: [
-              { label: 'Privacy', href: '#' },
-              { label: 'Terms', href: '#' },
+              { label: "Privacy", href: "#" },
+              { label: "Terms", href: "#" },
             ],
           },
         ]}

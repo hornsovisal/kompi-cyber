@@ -35,14 +35,15 @@ src/
 ## 📱 Responsive Hooks
 
 ### `useResponsive()`
+
 Returns breakpoint information and device type.
 
 ```jsx
-import { useResponsive } from '@/hooks/useResponsive';
+import { useResponsive } from "@/hooks/useResponsive";
 
 function MyComponent() {
   const { isMobile, isTablet, isDesktop, width } = useResponsive();
-  
+
   return (
     <div>
       {isMobile && <MobileView />}
@@ -53,13 +54,15 @@ function MyComponent() {
 ```
 
 ### `useBreakpoint(size)`
+
 Check if screen matches/exceeds breakpoint.
 
 ```jsx
-const isDesktop = useBreakpoint('lg'); // true if screen >= 1024px
+const isDesktop = useBreakpoint("lg"); // true if screen >= 1024px
 ```
 
 ### `useScreenWidth()`
+
 Get current screen width.
 
 ```jsx
@@ -69,18 +72,19 @@ const width = useScreenWidth();
 ## 🎨 Theme System
 
 ### ThemeManager Class (OOP-based)
+
 Centralized theme management with dark/light modes.
 
 ```jsx
-import { ThemeManager, useTheme } from '@/utils/themeManager';
+import { ThemeManager, useTheme } from "@/utils/themeManager";
 
 // Usage in component
 function MyComponent({ isDarkMode }) {
   const theme = useTheme(isDarkMode);
-  
+
   return (
-    <div className={theme.getColor('shell')}>
-      <button className={theme.getComponentClasses('button')}>Click me</button>
+    <div className={theme.getColor("shell")}>
+      <button className={theme.getComponentClasses("button")}>Click me</button>
     </div>
   );
 }
@@ -96,57 +100,61 @@ function MyComponent({ isDarkMode }) {
 ## 🧩 Base Components (Modular & Reusable)
 
 ### Button
+
 ```jsx
-import { Button } from '@/components/base';
+import { Button } from "@/components/base";
 
 // Variants: primary, secondary, danger, ghost
 // Sizes: sm, md, lg
 <Button variant="primary" size="md" fullWidth>
   Click me
-</Button>
+</Button>;
 ```
 
 ### Card
+
 ```jsx
-import { Card } from '@/components/base';
+import { Card } from "@/components/base";
 
 <Card hoverable className="space-y-4">
   <h3>Card Title</h3>
   <p>Card content</p>
-</Card>
+</Card>;
 ```
 
 ### Input
-```jsx
-import { Input } from '@/components/base';
 
-<Input 
-  type="email" 
+```jsx
+import { Input } from "@/components/base";
+
+<Input
+  type="email"
   placeholder="Enter email"
   error={hasError}
   helperText="Error message"
-/>
+/>;
 ```
 
 ### Container
+
 ```jsx
-import { Container } from '@/components/base';
+import { Container } from "@/components/base";
 
 <Container>
   {/* Content automatically centered with responsive padding */}
-</Container>
+</Container>;
 ```
 
 ### Section
-```jsx
-import { Section } from '@/components/base';
 
-<Section id="hero">
-  {/* Content with responsive spacing */}
-</Section>
+```jsx
+import { Section } from "@/components/base";
+
+<Section id="hero">{/* Content with responsive spacing */}</Section>;
 ```
 
 ### Grid & Flex
+
 ```jsx
 import { Grid, Flex } from '@/components/base';
 
@@ -163,47 +171,51 @@ import { Grid, Flex } from '@/components/base';
 ## 📐 Responsive Layout Components
 
 ### ResponsiveNav
+
 ```jsx
-import { ResponsiveNav } from '@/components/layouts/ResponsiveLayout';
+import { ResponsiveNav } from "@/components/layouts/ResponsiveLayout";
 
 <ResponsiveNav
   brand="KOMPI-CYBER"
   navItems={[
-    { id: 'home', label: 'Home', onClick: () => {} },
-    { id: 'about', label: 'About', onClick: () => {} },
+    { id: "home", label: "Home", onClick: () => {} },
+    { id: "about", label: "About", onClick: () => {} },
   ]}
   rightActions={<LoginButton />}
   sticky={true}
-/>
+/>;
 ```
 
 ### HeroSection
+
 ```jsx
-import { HeroSection } from '@/components/layouts/ResponsiveLayout';
+import { HeroSection } from "@/components/layouts/ResponsiveLayout";
 
 <HeroSection
   title="Welcome to KOMPI-CYBER"
   subtitle="Learn cybersecurity from experts"
-  primaryAction={{ label: 'Get Started' }}
-  secondaryAction={{ label: 'Learn More' }}
-/>
+  primaryAction={{ label: "Get Started" }}
+  secondaryAction={{ label: "Learn More" }}
+/>;
 ```
 
 ### ResponsiveFooter
+
 ```jsx
-import { ResponsiveFooter } from '@/components/layouts/ResponsiveLayout';
+import { ResponsiveFooter } from "@/components/layouts/ResponsiveLayout";
 
 <ResponsiveFooter
   sections={[
-    { title: 'Product', links: [{ label: 'Features', href: '#' }] },
-    { title: 'Company', links: [{ label: 'About', href: '#' }] },
+    { title: "Product", links: [{ label: "Features", href: "#" }] },
+    { title: "Company", links: [{ label: "About", href: "#" }] },
   ]}
-/>
+/>;
 ```
 
 ## 🛠️ Responsive Utilities
 
 ### ResponsiveUtils Class
+
 ```jsx
 import { ResponsiveUtils, MobileFirst, responsivePadding } from '@/utils/responsiveUtils';
 
@@ -245,6 +257,7 @@ xl: 1280px  (large desktops)
 ## ✨ Best Practices
 
 ### 1. Use Responsive Hooks
+
 ```jsx
 // ❌ Don't use window.innerWidth directly
 const width = window.innerWidth;
@@ -254,6 +267,7 @@ const { width } = useResponsive();
 ```
 
 ### 2. Use Base Components
+
 ```jsx
 // ❌ Don't recreate buttons
 <button className="px-4 py-2 bg-blue-500">Click</button>
@@ -263,16 +277,18 @@ const { width } = useResponsive();
 ```
 
 ### 3. Use Theme Manager
+
 ```jsx
 // ❌ Don't hardcode colors
-<div className="bg-blue-500">Text</div>
+<div className="bg-blue-500">Text</div>;
 
 // ✅ Use theme system
 const theme = useTheme(isDark);
-<div className={theme.getColor('shell')}>Text</div>
+<div className={theme.getColor("shell")}>Text</div>;
 ```
 
 ### 4. Mobile-First Design
+
 ```jsx
 // ✅ Write mobile classes first, then add responsive classes
 <div className="text-sm sm:text-base md:text-lg">
@@ -286,6 +302,7 @@ const theme = useTheme(isDark);
 ```
 
 ### 5. Use Responsive Utils
+
 ```jsx
 // ✅ Use utility classes for consistent spacing
 <div className={responsivePadding.md}>
@@ -303,37 +320,41 @@ const theme = useTheme(isDark);
 ### Converting Existing Components to Responsive
 
 1. **Replace hardcoded classes with hooks:**
+
    ```jsx
    // Before
    const isMobile = window.innerWidth < 768;
-   
+
    // After
    const { isMobile } = useResponsive();
    ```
 
 2. **Use base components:**
+
    ```jsx
    // Before
    <button className="px-4 py-2 bg-blue-500 rounded">Click</button>
-   
+
    // After
    <Button variant="primary">Click</Button>
    ```
 
 3. **Use theme manager:**
+
    ```jsx
    // Before
    className={`${dark ? 'bg-slate-900' : 'bg-white'}`}
-   
+
    // After
    className={theme.getColor('shell')}
    ```
 
 4. **Apply responsive spacing:**
+
    ```jsx
    // Before
    className="px-4 py-4"
-   
+
    // After
    className={responsivePadding.md}
    ```
@@ -341,12 +362,14 @@ const theme = useTheme(isDark);
 ## 📦 Component Variants
 
 ### Button Variants
+
 - **primary** - Main action button
 - **secondary** - Secondary action button
 - **danger** - Destructive action button
 - **ghost** - Subtle button
 
 ### Button Sizes
+
 - **sm** - Small button
 - **md** - Medium button (default)
 - **lg** - Large button
@@ -361,6 +384,7 @@ const theme = useTheme(isDark);
 ## 📚 Files Created/Modified
 
 ### New Files:
+
 - `src/hooks/useResponsive.js` - Responsive hooks
 - `src/utils/themeManager.js` - Theme management
 - `src/utils/responsiveUtils.js` - Responsive utilities
@@ -368,6 +392,7 @@ const theme = useTheme(isDark);
 - `src/components/layouts/ResponsiveLayout.jsx` - Layout components
 
 ### Next Steps:
+
 1. Update existing pages to use new components
 2. Convert all components to use responsive utilities
 3. Implement theme context provider for app-wide theme

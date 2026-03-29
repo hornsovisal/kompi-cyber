@@ -7,14 +7,16 @@ You now have a complete **responsive + modular** frontend system ready to use. H
 ## 📦 What's New
 
 ### 1. **Responsive Hooks** (auto-detect screen size)
+
 ```jsx
-import { useResponsive } from '@/hooks/useResponsive';
+import { useResponsive } from "@/hooks/useResponsive";
 
 const { isMobile, isTablet, isDesktop, width } = useResponsive();
 // Shows/hides components based on screen size automatically
 ```
 
 ### 2. **Base Components** (reusable UI elements)
+
 ```jsx
 import { Button, Card, Input, Grid, Container } from '@/components/base';
 
@@ -24,6 +26,7 @@ import { Button, Card, Input, Grid, Container } from '@/components/base';
 ```
 
 ### 3. **Theme System** (dark/light modes)
+
 ```jsx
 import { useTheme } from '@/utils/themeManager';
 
@@ -32,6 +35,7 @@ const theme = useTheme(isDark);
 ```
 
 ### 4. **Responsive Utils** (spacing, text, layouts)
+
 ```jsx
 import { responsiveText, responsivePadding } from '@/utils/responsiveUtils';
 
@@ -42,6 +46,7 @@ import { responsiveText, responsivePadding } from '@/utils/responsiveUtils';
 ## 🚀 3 Simple Steps to Use
 
 ### Step 1: Import Hooks
+
 ```jsx
 import { useResponsive } from '@/hooks/useResponsive';
 
@@ -50,6 +55,7 @@ function MyPage() {
 ```
 
 ### Step 2: Replace Components
+
 ```jsx
 // ❌ Old
 <button className="px-4 py-2 bg-blue">Click</button>
@@ -59,6 +65,7 @@ function MyPage() {
 ```
 
 ### Step 3: Apply Responsive Styles
+
 ```jsx
 // ❌ Old
 <h1 className="text-4xl md:text-5xl">Title</h1>
@@ -70,66 +77,72 @@ function MyPage() {
 ## 📋 Complete Component Reference
 
 ### Base Components
+
 ```jsx
-import { 
-  Button,      // <Button variant="primary" size="md">
-  Card,        // <Card hoverable>
-  Input,       // <Input type="email" error={false} />
-  Container,   // <Container> max-width wrapper
-  Section,     // <Section> full-width section
-  Grid,        // <Grid cols={1} md={2} lg={3}>
-  Flex         // <Flex direction="row" justify="between">
-} from '@/components/base';
+import {
+  Button, // <Button variant="primary" size="md">
+  Card, // <Card hoverable>
+  Input, // <Input type="email" error={false} />
+  Container, // <Container> max-width wrapper
+  Section, // <Section> full-width section
+  Grid, // <Grid cols={1} md={2} lg={3}>
+  Flex, // <Flex direction="row" justify="between">
+} from "@/components/base";
 ```
 
 ### Layout Components
+
 ```jsx
 import {
-  ResponsiveNav,    // Navigation with mobile menu
-  HeroSection,      // Hero with image + text
-  ResponsiveGrid,   // Auto-responsive grid
-  ResponsiveFooter  // Footer with columns
-} from '@/components/layouts/ResponsiveLayout';
+  ResponsiveNav, // Navigation with mobile menu
+  HeroSection, // Hero with image + text
+  ResponsiveGrid, // Auto-responsive grid
+  ResponsiveFooter, // Footer with columns
+} from "@/components/layouts/ResponsiveLayout";
 ```
 
 ### Hooks
+
 ```jsx
 import {
-  useResponsive,    // Get breakpoint info
-  useBreakpoint,    // Check specific breakpoint
-  useScreenWidth    // Get width value
-} from '@/hooks/useResponsive';
+  useResponsive, // Get breakpoint info
+  useBreakpoint, // Check specific breakpoint
+  useScreenWidth, // Get width value
+} from "@/hooks/useResponsive";
 ```
 
 ### Utilities
+
 ```jsx
 import {
-  ResponsiveUtils,   // Static helper class
-  MobileFirst,       // Mobile-first patterns
-  responsiveText,    // Text size presets
+  ResponsiveUtils, // Static helper class
+  MobileFirst, // Mobile-first patterns
+  responsiveText, // Text size presets
   responsivePadding, // Padding presets
-  responsiveGap      // Gap presets
-} from '@/utils/responsiveUtils';
+  responsiveGap, // Gap presets
+} from "@/utils/responsiveUtils";
 ```
 
 ## 💡 Common Use Cases
 
 ### Responsive Navigation
+
 ```jsx
 <ResponsiveNav
   brand="KOMPI-CYBER"
   navItems={[
-    { id: 'home', label: 'Home' },
-    { id: 'courses', label: 'Courses' }
+    { id: "home", label: "Home" },
+    { id: "courses", label: "Courses" },
   ]}
   rightActions={<Button>Login</Button>}
 />
 ```
 
 ### Course Grid (Auto-responsive)
+
 ```jsx
 <Grid cols={1} md={2} lg={3} gap={6}>
-  {courses.map(course => (
+  {courses.map((course) => (
     <Card key={course.id} hoverable>
       <h3>{course.title}</h3>
       <p>{course.description}</p>
@@ -140,22 +153,26 @@ import {
 ```
 
 ### Responsive Form
+
 ```jsx
 <Container>
   <Card className="w-full max-w-md">
     <h2 className={responsiveText.lg}>Login</h2>
     <Input placeholder="Email" type="email" />
     <Input placeholder="Password" type="password" />
-    <Button fullWidth variant="primary">Sign In</Button>
+    <Button fullWidth variant="primary">
+      Sign In
+    </Button>
   </Card>
 </Container>
 ```
 
 ### Conditional Rendering
+
 ```jsx
 function MyPage() {
   const { isMobile, isDesktop } = useResponsive();
-  
+
   return (
     <>
       {isMobile && <MobileLayout />}
@@ -168,6 +185,7 @@ function MyPage() {
 ## 🎨 Button Variants & Sizes
 
 ### Variants
+
 ```jsx
 <Button variant="primary">   {/* Main action - orange */}
 <Button variant="secondary"> {/* Secondary - white/10 */}
@@ -176,6 +194,7 @@ function MyPage() {
 ```
 
 ### Sizes
+
 ```jsx
 <Button size="sm">   {/* Small button */}
 <Button size="md">   {/* Medium button (default) */}
@@ -183,6 +202,7 @@ function MyPage() {
 ```
 
 ### States
+
 ```jsx
 <Button fullWidth>         {/* 100% width */}
 <Button disabled>          {/* Disabled state */}
@@ -274,6 +294,7 @@ import { responsivePadding, responsiveGap } from '@/utils/responsiveUtils';
 ## 🧪 Testing Responsive Design
 
 **In Browser:**
+
 1. Press `F12` to open DevTools
 2. Press `Ctrl+Shift+M` to toggle device mode
 3. Test these widths:
@@ -283,6 +304,7 @@ import { responsivePadding, responsiveGap } from '@/utils/responsiveUtils';
    - 1536px (Large screen)
 
 **Key Things to Check:**
+
 - ✅ No horizontal scrolling on mobile
 - ✅ Text sizes are readable
 - ✅ Buttons are tapable (44px+)
@@ -293,6 +315,7 @@ import { responsivePadding, responsiveGap } from '@/utils/responsiveUtils';
 ## 🚨 Common Mistakes
 
 ❌ **Using `window.innerWidth` directly**
+
 ```jsx
 // Don't do this
 const width = window.innerWidth;
@@ -302,6 +325,7 @@ const { width } = useResponsive();
 ```
 
 ❌ **Hardcoding responsive classes**
+
 ```jsx
 // Don't do this
 <h1 className="text-2xl sm:text-3xl md:text-4xl">
@@ -311,6 +335,7 @@ const { width } = useResponsive();
 ```
 
 ❌ **Using fixed width values**
+
 ```jsx
 // Don't do this
 <div style={{ width: '1200px' }}>
@@ -320,6 +345,7 @@ const { width } = useResponsive();
 ```
 
 ❌ **Forgetting mobile-first**
+
 ```jsx
 // Wrong order
 <div className="md:grid-cols-2 grid-cols-3">
@@ -338,31 +364,40 @@ const { width } = useResponsive();
 ## 🆘 Quick Help
 
 **Q: How do I make a button?**
+
 ```jsx
-import { Button } from '@/components/base';
-<Button variant="primary">Click</Button>
+import { Button } from "@/components/base";
+<Button variant="primary">Click</Button>;
 ```
 
 **Q: How do I create a responsive grid?**
+
 ```jsx
-import { Grid } from '@/components/base';
-<Grid cols={1} md={2} lg={3} gap={6}>{items}</Grid>
+import { Grid } from "@/components/base";
+<Grid cols={1} md={2} lg={3} gap={6}>
+  {items}
+</Grid>;
 ```
 
 **Q: How do I make responsive text?**
+
 ```jsx
-import { responsiveText } from '@/utils/responsiveUtils';
-<h1 className={responsiveText['3xl']}>Title</h1>
+import { responsiveText } from "@/utils/responsiveUtils";
+<h1 className={responsiveText["3xl"]}>Title</h1>;
 ```
 
 **Q: How do I check screen size?**
+
 ```jsx
-import { useResponsive } from '@/hooks/useResponsive';
+import { useResponsive } from "@/hooks/useResponsive";
 const { isMobile, isDesktop } = useResponsive();
-if (isMobile) { /* mobile layout */ }
+if (isMobile) {
+  /* mobile layout */
+}
 ```
 
 **Q: How do I apply theme?**
+
 ```jsx
 import { useTheme } from '@/utils/themeManager';
 const theme = useTheme(isDark);
