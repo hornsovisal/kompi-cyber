@@ -42,11 +42,17 @@ export default function Login() {
     setResendMessage("");
 
     try {
-      const response = await axios.post("/api/auth/resend-verification", { email });
-      setResendMessage(response.data?.message || "Verification email sent. Please check your inbox.");
+      const response = await axios.post("/api/auth/resend-verification", {
+        email,
+      });
+      setResendMessage(
+        response.data?.message ||
+          "Verification email sent. Please check your inbox.",
+      );
     } catch (error) {
       setResendMessage(
-        error.response?.data?.message || "Could not resend verification email. Please try again.",
+        error.response?.data?.message ||
+          "Could not resend verification email. Please try again.",
       );
     } finally {
       setResendLoading(false);
@@ -73,9 +79,11 @@ export default function Login() {
 
       setAlert({ type: "success", message: "Login successful!" });
 
-      // Store token in localStorage
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      // Store token in sessionStorage with 3-day expiration
+      const expiresAt = new Date().getTime() + 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
+      sessionStorage.setItem("token", response.data.token);
+      sessionStorage.setItem("user", JSON.stringify(response.data.user));
+      sessionStorage.setItem("sessionExpires", expiresAt.toString());
 
       setTimeout(() => {
         navigate("/dashboard");
@@ -85,7 +93,10 @@ export default function Login() {
         error.response?.data?.message ||
         error.message ||
         "Login failed. Please try again.";
-      if (error.response?.status === 403 && message.toLowerCase().includes("verify")) {
+      if (
+        error.response?.status === 403 &&
+        message.toLowerCase().includes("verify")
+      ) {
         setNeedsVerification(true);
       }
       setAlert({ type: "error", message });
@@ -133,7 +144,9 @@ export default function Login() {
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-300">
               KOMPI-CYBER
             </p>
-            <h1 className="mt-3 text-3xl font-bold text-slate-100">Welcome back</h1>
+            <h1 className="mt-3 text-3xl font-bold text-slate-100">
+              Welcome back
+            </h1>
             <p className="mt-2 text-sm text-slate-400">
               Sign in to continue your cybersecurity journey
             </p>

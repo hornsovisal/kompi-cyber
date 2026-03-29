@@ -1,0 +1,26 @@
+<svg width="500" height="180" viewBox="0 0 500 180" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Shield outer -->
+  <path d="M60 10 L110 32 L110 90 Q110 135 60 158 Q10 135 10 90 L10 32 Z" fill="#FFFFFF" stroke="#378ADD" stroke-width="2"/>
+  <!-- Shield inner -->
+  <path d="M60 26 L96 42 L96 88 Q96 122 60 140 Q24 122 24 88 L24 42 Z" fill="#F5F5F5" stroke="#378ADD" stroke-width="1.2"/>
+
+  <!-- Lock shackle -->
+  <path d="M48 88 L48 74 Q48 56 60 56 Q72 56 72 74 L72 88" stroke="#378ADD" fill="none" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Lock body -->
+  <rect x="40" y="88" width="40" height="32" rx="5" fill="#E8F0F8" stroke="#378ADD" stroke-width="1.5"/>
+  <!-- Keyhole -->
+  <circle cx="60" cy="101" r="5" fill="#0C447C"/>
+  <rect x="57.5" y="101" width="5" height="9" rx="2" fill="#0C447C"/>
+
+  <!-- KOMPI -->
+  <text x="132" y="82" font-family="Georgia, serif" font-size="58" font-weight="700" letter-spacing="-1" fill="#0C447C">KOMPI</text>
+  <!-- Amber underline -->
+  <rect x="132" y="90" width="178" height="3.5" rx="1.5" fill="#EF9F27"/>
+  <!-- CYBER -->
+  <text x="134" y="138" font-family="Georgia, serif" font-size="38" font-weight="400" letter-spacing="10" fill="#378ADD">CYBER</text>
+
+  <!-- Dot + tagline -->
+  <circle cx="134" cy="158" r="3" fill="#EF9F27"/>
+  <text x="144" y="162" font-family="'Courier New', Courier, monospace" font-size="10" letter-spacing="1.5" fill="#0C447C">CYBERSECURITY EDUCATION PLATFORM</text>
+</svg>

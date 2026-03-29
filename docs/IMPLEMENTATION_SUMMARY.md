@@ -7,12 +7,14 @@ This implementation adds a Cisco NetAcad-style course management system with two
 ### 🎓 Two Course Types
 
 **Online-Led (Self-Paced)**
+
 - Students enroll directly
 - No teacher invitation needed
 - Public in course catalog
 - Perfect for independent learners
 
 **Instructor-Led (Cohort-Based)**
+
 - Teacher invites students via email
 - Structured enrollment management
 - Private until student is invited
@@ -23,11 +25,13 @@ This implementation adds a Cisco NetAcad-style course management system with two
 ## 📦 New Files Created
 
 ### Database
+
 - **`database/migrations/003_add_course_type.sql`**
   - Adds `course_type` column to courses table
   - Enum: 'online-led', 'instructor-led'
 
 ### Frontend Components
+
 1. **`frontend/src/components/instructor/CourseTypeSelector.jsx`**
    - Radio button selector for course type
    - Shows benefits of each type
@@ -47,6 +51,7 @@ This implementation adds a Cisco NetAcad-style course management system with two
    - Tracks invitation history
 
 ### Utilities
+
 - **`frontend/src/utils/courseTypeHelpers.js`**
   - 10+ utility functions for course type logic
   - Check if course is instructor-led
@@ -55,6 +60,7 @@ This implementation adds a Cisco NetAcad-style course management system with two
   - Get badge information
 
 ### Backend Updates
+
 - **`backend/models/courseModel.js`**
   - Updated `createCourse()` - now accepts course_type
   - Updated `updateCourse()` - can modify course_type
@@ -64,6 +70,7 @@ This implementation adds a Cisco NetAcad-style course management system with two
   - Rejects invalid types with clear error message
 
 ### Documentation
+
 - **`NETACAD_COURSE_SYSTEM.md`** - Complete system documentation
 - **`INTEGRATION_GUIDE.md`** - Step-by-step integration examples
 
@@ -113,30 +120,34 @@ No invitations needed
 ## 📚 Key Features
 
 ### Teacher Features
+
 ✅ Create online-led OR instructor-led courses  
 ✅ Add students by email address  
 ✅ Send bulk invitations  
 ✅ View invitation status (pending/accepted/rejected)  
 ✅ Resend invitations  
-✅ Revoke/cancel invitations  
+✅ Revoke/cancel invitations
 
 ### Student Features
+
 ✅ See all pending course invitations  
 ✅ View course details before accepting  
 ✅ Accept or decline invitations  
 ✅ Auto-enroll on acceptance  
-✅ View invitation history  
+✅ View invitation history
 
 ### Course Visibility
+
 ✅ Online-led courses: Always in public catalog  
 ✅ Instructor-led courses: Hidden until invited  
-✅ Badge shows course type on course cards  
+✅ Badge shows course type on course cards
 
 ---
 
 ## 🛠️ Technical Details
 
 ### Database Changes
+
 - New column: `courses.course_type` (ENUM)
 - Existing table: `course_invitations` (unchanged, fully compatible)
 - New index: `idx_courses_type` for filtering
@@ -144,36 +155,42 @@ No invitations needed
 ### API Endpoints (Already Exist)
 
 **Create Course**
+
 ```
 POST /api/courses
 Body: { ..., course_type: 'instructor-led' }
 ```
 
 **Send Invitation**
+
 ```
 POST /api/invitations/send
 Body: { courseId, studentEmail }
 ```
 
 **Get Student Invitations**
+
 ```
 GET /api/invitations
 Returns: Array of pending/accepted/rejected invitations
 ```
 
 **Get Course Invitations (Teacher)**
+
 ```
 GET /api/invitations/course/:courseId
 Returns: All invitations for a course
 ```
 
 **Accept/Reject Invitation**
+
 ```
 POST /api/invitations/:id/accept
 POST /api/invitations/:id/reject
 ```
 
 **Resend/Revoke Invitation**
+
 ```
 POST /api/invitations/:id/resend
 DELETE /api/invitations/:id
@@ -184,6 +201,7 @@ DELETE /api/invitations/:id
 ## 🚀 Quick Start
 
 ### 1. Run Migration
+
 ```bash
 mysql -u root -p database_name < database/migrations/003_add_course_type.sql
 ```
@@ -191,24 +209,28 @@ mysql -u root -p database_name < database/migrations/003_add_course_type.sql
 ### 2. Add Components to Pages
 
 **Create Course Page:**
+
 ```jsx
-import CourseTypeSelector from '../components/instructor/CourseTypeSelector';
+import CourseTypeSelector from "../components/instructor/CourseTypeSelector";
 // Add to course creation form
 ```
 
 **Course Settings Page:**
+
 ```jsx
-import InviteStudents from '../components/instructor/InviteStudents';
+import InviteStudents from "../components/instructor/InviteStudents";
 // Add for instructor-led courses only
 ```
 
 **Student Dashboard:**
+
 ```jsx
-import StudentInvitations from '../components/StudentInvitations';
+import StudentInvitations from "../components/StudentInvitations";
 // Add at top to show pending invitations
 ```
 
 ### 3. Update Existing Code
+
 - Import `courseTypeHelpers.js` for course type logic
 - Use `isInstructorLed()`, `isOnlineLed()` helpers
 - Filter courses with `filterCoursesByType()`
@@ -219,16 +241,19 @@ import StudentInvitations from '../components/StudentInvitations';
 ## 📋 Integration Checklist
 
 ### Database
+
 - [ ] Run migration: `003_add_course_type.sql`
 - [ ] Verify column in courses table: `DESCRIBE courses;`
 
 ### Backend
+
 - [x] ✅ CourseModel updated
 - [x] ✅ CourseController updated
 - [x] ✅ InvitationController ready (no changes needed)
 - [x] ✅ Routes registered (no changes needed)
 
 ### Frontend
+
 - [ ] Import CourseTypeSelector in create course
 - [ ] Import InviteStudents in course settings
 - [ ] Import StudentInvitations in dashboard
@@ -237,6 +262,7 @@ import StudentInvitations from '../components/StudentInvitations';
 - [ ] Update enrollment buttons based on course type
 
 ### Testing
+
 - [ ] Create online-led course → verify in catalog
 - [ ] Create instructor-led course → verify NOT in public catalog
 - [ ] Send invitation → verify appears in student dashboard
@@ -250,18 +276,22 @@ import StudentInvitations from '../components/StudentInvitations';
 ## 📖 Files Reference
 
 ### To Read First
+
 1. `NETACAD_COURSE_SYSTEM.md` - Full system documentation
 2. `INTEGRATION_GUIDE.md` - Step-by-step integration examples
 
 ### Components
+
 1. `CourseTypeSelector.jsx` - For course creation UI
 2. `InviteStudents.jsx` - For teacher invitation management
 3. `StudentInvitations.jsx` - For student dashboard
 
 ### Utilities
+
 - `courseTypeHelpers.js` - Helper functions
 
 ### Backend
+
 - `courseModel.js` - Updated
 - `courseController.js` - Updated
 - `invitationController.js` - Already complete
@@ -271,14 +301,14 @@ import StudentInvitations from '../components/StudentInvitations';
 
 ## 🎯 What's Different from Regular Enrollment
 
-| Feature | Online-Led | Instructor-Led |
-|---------|-----------|-----------------|
-| Public in Catalog | ✅ Yes | ❌ No |
-| Direct Enrollment | ✅ Yes | ❌ No |
-| Requires Invitation | ❌ No | ✅ Yes |
-| Teacher Controls | ❌ No | ✅ Yes |
-| Auto-Enroll on Accept | N/A | ✅ Yes |
-| Good For | Self-paced learning | Structured courses, Cohorts |
+| Feature               | Online-Led          | Instructor-Led              |
+| --------------------- | ------------------- | --------------------------- |
+| Public in Catalog     | ✅ Yes              | ❌ No                       |
+| Direct Enrollment     | ✅ Yes              | ❌ No                       |
+| Requires Invitation   | ❌ No               | ✅ Yes                      |
+| Teacher Controls      | ❌ No               | ✅ Yes                      |
+| Auto-Enroll on Accept | N/A                 | ✅ Yes                      |
+| Good For              | Self-paced learning | Structured courses, Cohorts |
 
 ---
 
@@ -311,13 +341,14 @@ import StudentInvitations from '../components/StudentInvitations';
 ✅ Students can only accept invitations to their email  
 ✅ Invitations validate permissions before acting  
 ✅ Database constraints prevent orphaned records  
-✅ All endpoints require authentication  
+✅ All endpoints require authentication
 
 ---
 
 ## 🚢 Ready to Deploy
 
 The implementation is:
+
 - ✅ Complete (all components created)
 - ✅ Working (all API endpoints exist)
 - ✅ Tested (follow checklist above)
@@ -331,6 +362,7 @@ The implementation is:
 ## 📞 Support
 
 For questions about:
+
 - **System design** → Read `NETACAD_COURSE_SYSTEM.md`
 - **Integration steps** → Read `INTEGRATION_GUIDE.md`
 - **Component usage** → Check JSDoc comments in components
