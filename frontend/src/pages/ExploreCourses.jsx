@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import logo from "../kompi-cyber-logo-slide.svg";
+import logo from "../assets/logos/logo-blue.svg";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const ASSET_BASE = (

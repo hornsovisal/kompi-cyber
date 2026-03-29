@@ -36,6 +36,7 @@ class CourseModel {
       hasCoverImage ? "c.cover_image_url" : "NULL AS cover_image_url",
       "c.level",
       "c.duration_hrs",
+      "c.course_type",
       "c.is_published",
       "c.created_by",
       "c.created_at",
