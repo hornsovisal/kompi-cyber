@@ -3,42 +3,50 @@ const router = express.Router();
 const submissionController = require("../controller/submissionController");
 const authMiddleware = require("../middleware/authMiddleware");
 
-// Numeric ID routes (legacy support)
+// Submission routes with dynamic identifiers (numeric ID or slug)
 router.post(
-  "/lesson/:lessonId(\\d+)",
+  "/lesson/:identifier/reset",
   authMiddleware.authenticateToken,
-  submissionController.submitQuiz,
+  (req, res, next) => {
+    const identifier = req.params.identifier;
+    if (/^\d+$/.test(identifier)) {
+      req.params.lessonId = identifier;
+      return submissionController.resetQuiz(req, res, next);
+    } else {
+      req.params.lessonSlug = identifier;
+      return submissionController.resetQuizBySlug(req, res, next);
+    }
+  },
 );
 
 router.get(
-  "/lesson/:lessonId(\\d+)/review",
+  "/lesson/:identifier/review",
   authMiddleware.authenticateToken,
-  submissionController.getQuizReview,
+  (req, res, next) => {
+    const identifier = req.params.identifier;
+    if (/^\d+$/.test(identifier)) {
+      req.params.lessonId = identifier;
+      return submissionController.getQuizReview(req, res, next);
+    } else {
+      req.params.lessonSlug = identifier;
+      return submissionController.getQuizReviewBySlug(req, res, next);
+    }
+  },
 );
 
 router.post(
-  "/lesson/:lessonId(\\d+)/reset",
+  "/lesson/:identifier",
   authMiddleware.authenticateToken,
-  submissionController.resetQuiz,
-);
-
-// Slug-based routes (NEW - security through obscured IDs)
-router.post(
-  "/lesson/:lessonSlug",
-  authMiddleware.authenticateToken,
-  submissionController.submitQuizBySlug,
-);
-
-router.get(
-  "/lesson/:lessonSlug/review",
-  authMiddleware.authenticateToken,
-  submissionController.getQuizReviewBySlug,
-);
-
-router.post(
-  "/lesson/:lessonSlug/reset",
-  authMiddleware.authenticateToken,
-  submissionController.resetQuizBySlug,
+  (req, res, next) => {
+    const identifier = req.params.identifier;
+    if (/^\d+$/.test(identifier)) {
+      req.params.lessonId = identifier;
+      return submissionController.submitQuiz(req, res, next);
+    } else {
+      req.params.lessonSlug = identifier;
+      return submissionController.submitQuizBySlug(req, res, next);
+    }
+  },
 );
 
 module.exports = router;

@@ -4,6 +4,7 @@ const quizController = require("../controller/quizController");
 const instructorQuizController = require("../controller/instructorQuizController");
 const authMiddleware = require("../middleware/authMiddleware");
 
+// Keyword routes (must come first)
 router.post(
   "/create",
   authMiddleware.authenticateToken,
@@ -15,45 +16,77 @@ router.get(
   instructorQuizController.getMyQuizzes,
 );
 
-// Numeric ID routes (legacy support)
+// Lesson-based routes with dynamic identifiers (numeric ID or slug)
 router.get(
-  "/lesson/:lessonId(\\d+)",
+  "/lesson/:identifier/attempt",
   authMiddleware.authenticateToken,
-  quizController.getQuizByLesson,
+  (req, res, next) => {
+    const identifier = req.params.identifier;
+    if (/^\d+$/.test(identifier)) {
+      req.params.lessonId = identifier;
+      return quizController.getMyAttempt(req, res, next);
+    } else {
+      req.params.lessonSlug = identifier;
+      return quizController.getMyAttemptBySlug(req, res, next);
+    }
+  },
 );
+
 router.get(
-  "/lesson/:lessonId(\\d+)/attempt",
+  "/lesson/:identifier",
   authMiddleware.authenticateToken,
-  quizController.getMyAttempt,
+  (req, res, next) => {
+    const identifier = req.params.identifier;
+    if (/^\d+$/.test(identifier)) {
+      req.params.lessonId = identifier;
+      return quizController.getQuizByLesson(req, res, next);
+    } else {
+      req.params.lessonSlug = identifier;
+      return quizController.getQuizBySlug(req, res, next);
+    }
+  },
 );
+
 router.post(
-  "/lesson/:lessonId(\\d+)",
+  "/lesson/:identifier",
   authMiddleware.authenticateToken,
-  quizController.createQuiz,
+  (req, res, next) => {
+    const identifier = req.params.identifier;
+    if (/^\d+$/.test(identifier)) {
+      req.params.lessonId = identifier;
+      return quizController.createQuiz(req, res, next);
+    }
+    return res.status(400).json({ message: "Invalid lesson identifier" });
+  },
 );
+
 router.put(
-  "/lesson/:lessonId(\\d+)",
+  "/lesson/:identifier",
   authMiddleware.authenticateToken,
-  quizController.updateQuiz,
+  (req, res, next) => {
+    const identifier = req.params.identifier;
+    if (/^\d+$/.test(identifier)) {
+      req.params.lessonId = identifier;
+      return quizController.updateQuiz(req, res, next);
+    }
+    return res.status(400).json({ message: "Invalid lesson identifier" });
+  },
 );
+
 router.delete(
-  "/lesson/:lessonId(\\d+)",
+  "/lesson/:identifier",
   authMiddleware.authenticateToken,
-  quizController.deleteQuiz,
+  (req, res, next) => {
+    const identifier = req.params.identifier;
+    if (/^\d+$/.test(identifier)) {
+      req.params.lessonId = identifier;
+      return quizController.deleteQuiz(req, res, next);
+    }
+    return res.status(400).json({ message: "Invalid lesson identifier" });
+  },
 );
 
-// Slug-based routes (NEW - security)
-router.get(
-  "/lesson/:lessonSlug",
-  authMiddleware.authenticateToken,
-  quizController.getQuizBySlug,
-);
-router.get(
-  "/lesson/:lessonSlug/attempt",
-  authMiddleware.authenticateToken,
-  quizController.getMyAttemptBySlug,
-);
-
+// Quiz ID routes
 router.get(
   "/:id",
   authMiddleware.authenticateToken,
