@@ -41,6 +41,7 @@ class CourseModel {
       "c.created_by",
       "c.created_at",
       "c.updated_at",
+      "c.slug",
     ].join(",\n         ");
   }
 

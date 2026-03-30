@@ -576,11 +576,25 @@ export default function LearnPage() {
       setError("");
       setNotEnrolled(false);
       try {
+        // Load course and check if courseId is numeric (old format) and needs redirect to slug
         const courseRes = await axios.get(`/api/courses/${courseId}`, {
           baseURL: API_BASE,
           headers,
         });
-        setCourse(courseRes.data.course);
+        const loadedCourse = courseRes.data.course;
+        setCourse(loadedCourse);
+
+        // If courseId is numeric and we have a slug, redirect to slug-based URL
+        if (/^\d+$/.test(courseId) && loadedCourse.slug) {
+          if (lessonId) {
+            navigate(`/learn/${loadedCourse.slug}/${lessonId}`, {
+              replace: true,
+            });
+          } else {
+            navigate(`/learn/${loadedCourse.slug}`, { replace: true });
+          }
+          return;
+        }
 
         let lessonsRes;
         try {
@@ -605,29 +619,52 @@ export default function LearnPage() {
           return;
         }
 
-        const parsedLessonId = Number(lessonId);
-        const hasRouteLessonInCourse = fetchedLessons.some(
-          (lesson) => Number(lesson.id) === parsedLessonId,
-        );
-        const targetLessonId = hasRouteLessonInCourse
-          ? parsedLessonId
-          : Number(fetchedLessons[0].id);
+        // Try to match lessonId against both numeric ID and slug
+        let targetLesson = fetchedLessons[0];
+        if (lessonId) {
+          const isNumericId = /^\d+$/.test(lessonId);
+          targetLesson =
+            fetchedLessons.find((lesson) =>
+              isNumericId
+                ? Number(lesson.id) === Number(lessonId)
+                : lesson.slug === lessonId,
+            ) || fetchedLessons[0];
+        }
 
         try {
-          const lessonRes = await axios.get(`/api/lessons/${targetLessonId}`, {
-            baseURL: API_BASE,
-            headers,
-          });
-          setActiveLesson(lessonRes.data.lesson);
+          const lessonRes = await axios.get(
+            `/api/lessons/${targetLesson.slug || targetLesson.id}`,
+            {
+              baseURL: API_BASE,
+              headers,
+            },
+          );
+          const loadedLesson = lessonRes.data.lesson;
+          setActiveLesson(loadedLesson);
+
+          // Redirect to slug-based URL if using numeric ID
+          if (lessonId && /^\d+$/.test(lessonId) && loadedLesson.slug) {
+            navigate(
+              `/learn/${loadedCourse.slug || courseId}/${loadedLesson.slug}`,
+              { replace: true },
+            );
+          }
         } catch (lessonErr) {
           // If route lesson is stale or not accessible, load first lesson for this course.
-          const fallbackId = Number(fetchedLessons[0].id);
-          const fallbackRes = await axios.get(`/api/lessons/${fallbackId}`, {
-            baseURL: API_BASE,
-            headers,
-          });
-          setActiveLesson(fallbackRes.data.lesson);
-          navigate(`/learn/${courseId}/${fallbackId}`, { replace: true });
+          const fallbackLesson = fetchedLessons[0];
+          const fallbackRes = await axios.get(
+            `/api/lessons/${fallbackLesson.slug || fallbackLesson.id}`,
+            {
+              baseURL: API_BASE,
+              headers,
+            },
+          );
+          const fallback = fallbackRes.data.lesson;
+          setActiveLesson(fallback);
+          navigate(
+            `/learn/${loadedCourse.slug || courseId}/${fallback.slug || fallback.id}`,
+            { replace: true },
+          );
         }
       } catch (err) {
         if (err.response?.status === 401) {
@@ -658,8 +695,12 @@ export default function LearnPage() {
         baseURL: API_BASE,
         headers,
       });
-      setActiveLesson(lessonRes.data.lesson);
-      navigate(`/learn/${courseId}/${id}`);
+      const lesson = lessonRes.data.lesson;
+      setActiveLesson(lesson);
+      // Use slug-based URL for navigation
+      const courseSlug = course?.slug || courseId;
+      const lessonSlug = lesson?.slug || lesson?.id;
+      navigate(`/learn/${courseSlug}/${lessonSlug}`);
     } catch (err) {
       if (!err.response) {
         setError(`Cannot connect to backend API (${API_TARGET_LABEL})`);
@@ -703,13 +744,19 @@ export default function LearnPage() {
             setLessons(fetchedLessons);
 
             // Load the first lesson
-            const firstLessonId = Number(fetchedLessons[0].id);
-            const lessonRes = await axios.get(`/api/lessons/${firstLessonId}`, {
-              baseURL: API_BASE,
-              headers,
-            });
-            setActiveLesson(lessonRes.data.lesson);
-            navigate(`/learn/${courseId}/${firstLessonId}`, { replace: true });
+            const firstLesson = fetchedLessons[0];
+            const lessonRes = await axios.get(
+              `/api/lessons/${firstLesson.slug || firstLesson.id}`,
+              {
+                baseURL: API_BASE,
+                headers,
+              },
+            );
+            const loadedLesson = lessonRes.data.lesson;
+            setActiveLesson(loadedLesson);
+            const courseSlug = course?.slug || courseId;
+            const lessonSlug = loadedLesson?.slug || loadedLesson?.id;
+            navigate(`/learn/${courseSlug}/${lessonSlug}`, { replace: true });
           }
         } catch (lessonErr) {
           console.error("Failed to load lessons after enrollment:", lessonErr);
@@ -879,6 +926,7 @@ export default function LearnPage() {
 
               return {
                 lessonId: Number(lesson.id),
+                lessonSlug: lesson.slug,
                 lessonTitle: lesson.title,
                 moduleOrder: Number(lesson.module_order || 0),
                 moduleTitle: lesson.module_title,
@@ -2020,7 +2068,19 @@ export default function LearnPage() {
 
                                     <button
                                       onClick={async () => {
-                                        await openLesson(item.lessonId);
+                                        setActiveLesson(
+                                          lessons.find(
+                                            (l) =>
+                                              Number(l.id) === item.lessonId,
+                                          ) || null,
+                                        );
+                                        const courseSlug =
+                                          course?.slug || courseId;
+                                        const lessonSlug =
+                                          item.lessonSlug || item.lessonId;
+                                        navigate(
+                                          `/learn/${courseSlug}/${lessonSlug}`,
+                                        );
                                         setPracticeView("quiz");
                                       }}
                                       className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 ${
@@ -2123,7 +2183,8 @@ export default function LearnPage() {
                                   <span
                                     className={`text-sm font-semibold ${isDarkMode ? "text-blue-300" : "text-blue-700"}`}
                                   >
-                                    Question {currentQuestionIndex + 1} of {quizQuestions.length}
+                                    Question {currentQuestionIndex + 1} of{" "}
+                                    {quizQuestions.length}
                                   </span>
                                   <div className="w-48 rounded-full bg-gray-300 h-2">
                                     <div
@@ -2143,15 +2204,26 @@ export default function LearnPage() {
                                 <h2
                                   className={`text-lg font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}
                                 >
-                                  Q{currentQuestionIndex + 1}. {quizQuestions[currentQuestionIndex]?.question_text}
+                                  Q{currentQuestionIndex + 1}.{" "}
+                                  {
+                                    quizQuestions[currentQuestionIndex]
+                                      ?.question_text
+                                  }
                                 </h2>
                                 <div className="mt-4 space-y-3">
-                                  {(quizQuestions[currentQuestionIndex]?.options || []).map((option) => (
+                                  {(
+                                    quizQuestions[currentQuestionIndex]
+                                      ?.options || []
+                                  ).map((option) => (
                                     <label
                                       key={option.id}
                                       className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm transition ${
-                                        Number(selectedAnswers[quizQuestions[currentQuestionIndex]?.id]) ===
-                                        Number(option.id)
+                                        Number(
+                                          selectedAnswers[
+                                            quizQuestions[currentQuestionIndex]
+                                              ?.id
+                                          ],
+                                        ) === Number(option.id)
                                           ? isDarkMode
                                             ? "border-cyan-500/50 bg-blue-900/40 text-cyan-300"
                                             : "border-blue-400 bg-blue-100 text-blue-900"
@@ -2164,12 +2236,18 @@ export default function LearnPage() {
                                         type="radio"
                                         name={`question-${quizQuestions[currentQuestionIndex]?.id}`}
                                         checked={
-                                          Number(selectedAnswers[quizQuestions[currentQuestionIndex]?.id]) ===
-                                          Number(option.id)
+                                          Number(
+                                            selectedAnswers[
+                                              quizQuestions[
+                                                currentQuestionIndex
+                                              ]?.id
+                                            ],
+                                          ) === Number(option.id)
                                         }
                                         onChange={() =>
                                           handleAnswerChange(
-                                            quizQuestions[currentQuestionIndex]?.id,
+                                            quizQuestions[currentQuestionIndex]
+                                              ?.id,
                                             option.id,
                                           )
                                         }
@@ -2184,24 +2262,38 @@ export default function LearnPage() {
                               {/* Navigation Buttons */}
                               <div className="flex items-center justify-between gap-3 pt-4">
                                 <button
-                                  onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
+                                  onClick={() =>
+                                    setCurrentQuestionIndex(
+                                      Math.max(0, currentQuestionIndex - 1),
+                                    )
+                                  }
                                   disabled={currentQuestionIndex === 0}
                                   className={`rounded-lg px-6 py-2.5 text-sm font-semibold transition disabled:opacity-40 ${isDarkMode ? "bg-gray-700 text-gray-200 hover:bg-gray-600 disabled:hover:bg-gray-700" : "bg-gray-400 text-white hover:bg-gray-500 disabled:hover:bg-gray-400"}`}
                                 >
                                   ← Previous
                                 </button>
 
-                                {currentQuestionIndex === quizQuestions.length - 1 ? (
+                                {currentQuestionIndex ===
+                                quizQuestions.length - 1 ? (
                                   <button
                                     onClick={handleSubmitPractice}
                                     disabled={submittingQuiz}
                                     className={`rounded-lg px-8 py-2.5 text-sm font-semibold transition disabled:opacity-60 ${isDarkMode ? "bg-cyan-600 text-slate-900 hover:bg-cyan-500 shadow-lg shadow-cyan-600/30" : "bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-600/30"}`}
                                   >
-                                    {submittingQuiz ? "Submitting..." : "Submit Quiz"}
+                                    {submittingQuiz
+                                      ? "Submitting..."
+                                      : "Submit Quiz"}
                                   </button>
                                 ) : (
                                   <button
-                                    onClick={() => setCurrentQuestionIndex(Math.min(quizQuestions.length - 1, currentQuestionIndex + 1))}
+                                    onClick={() =>
+                                      setCurrentQuestionIndex(
+                                        Math.min(
+                                          quizQuestions.length - 1,
+                                          currentQuestionIndex + 1,
+                                        ),
+                                      )
+                                    }
                                     className={`rounded-lg px-6 py-2.5 text-sm font-semibold transition ${isDarkMode ? "bg-cyan-600 text-slate-900 hover:bg-cyan-500 shadow-lg shadow-cyan-600/30" : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/30"}`}
                                   >
                                     Next →

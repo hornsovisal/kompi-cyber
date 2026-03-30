@@ -124,6 +124,7 @@ class LessonModel {
 				 l.title,
 				 l.content_md,
 				 l.lesson_order,
+				 l.slug,
 				 l.created_at,
 				 l.updated_at
 			 FROM lessons l
@@ -148,6 +149,7 @@ class LessonModel {
 				 l.title,
 				 l.content_md,
 				 l.lesson_order,
+				 l.slug,
 				 l.created_at,
 				 l.updated_at
 			 FROM lessons l
@@ -211,6 +213,7 @@ class LessonModel {
 				 l.title,
 				 l.content_md,
 				 l.lesson_order,
+				 l.slug,
 				 l.created_at,
 				 l.updated_at
 			 FROM lessons l
