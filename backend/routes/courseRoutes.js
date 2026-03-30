@@ -11,11 +11,32 @@ router.use(authMiddleware.authenticateToken);
 // GET /api/courses
 router.get("/", courseController.getCourses);
 
-// GET /api/courses/:id (numeric ID - legacy support)
-router.get("/:id(\\d+)", courseController.getCourseById);
+// GET /api/courses/:identifier/lessons
+router.get("/:identifier/lessons", (req, res, next) => {
+  const identifier = req.params.identifier;
+  if (/^\d+$/.test(identifier)) {
+    req.params.courseId = identifier;
+    return courseController.getCourseLessons(req, res, next);
+  }
+  // No slug support for lessons yet - just numeric
+  return res.status(400).json({ message: "Invalid course identifier" });
+});
 
-// GET /api/courses/:slug (slug-based - NEW secure routing)
-router.get("/:slug", courseController.getCourseBySlug);
+// GET /api/courses/:identifier - handles both numeric IDs and slugs
+router.get("/:identifier", (req, res, next) => {
+  const identifier = req.params.identifier;
+  // Exclude route keywords
+  if (identifier === "") {
+    return next();
+  }
+  if (/^\d+$/.test(identifier)) {
+    req.params.id = identifier;
+    return courseController.getCourseById(req, res, next);
+  } else {
+    req.params.slug = identifier;
+    return courseController.getCourseBySlug(req, res, next);
+  }
+});
 
 // POST /api/courses (admin only)
 router.post("/", authMiddleware.requireAdmin, courseController.createCourse);
@@ -29,8 +50,5 @@ router.delete(
   authMiddleware.requireAdmin,
   courseController.deleteCourse,
 );
-
-// GET /api/courses/:courseId/lessons
-router.get("/:courseId/lessons", courseController.getCourseLessons);
 
 module.exports = router;
