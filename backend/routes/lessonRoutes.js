@@ -12,11 +12,20 @@ router.use(authMiddleware.authenticateToken);
 // GET /api/lessons/course/:courseId
 router.get("/course/:courseId", lessonController.getLessonsByCourse);
 
-// GET /api/lessons/:lessonId/exercises
-router.get("/:lessonId/exercises", exerciseController.getExercisesByLesson);
+// GET /api/lessons/:lessonId/exercises (numeric ID)
+router.get(
+  "/:lessonId(\\d+)/exercises",
+  exerciseController.getExercisesByLesson,
+);
 
-// GET /api/lessons/:id
-router.get("/:id", lessonController.getLessonById);
+// GET /api/lessons/:slug/exercises (slug-based)
+router.get("/:slug/exercises", exerciseController.getExercisesBySlug);
+
+// GET /api/lessons/:id (numeric ID - legacy)
+router.get("/:id(\\d+)", lessonController.getLessonById);
+
+// GET /api/lessons/:slug (slug-based - NEW)
+router.get("/:slug", lessonController.getLessonBySlug);
 
 // POST /api/lessons
 router.post("/", lessonController.createLesson);

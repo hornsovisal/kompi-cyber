@@ -11,8 +11,11 @@ router.use(authMiddleware.authenticateToken);
 // GET /api/courses
 router.get("/", courseController.getCourses);
 
-// GET /api/courses/:id
-router.get("/:id", courseController.getCourseById);
+// GET /api/courses/:id (numeric ID - legacy support)
+router.get("/:id(\\d+)", courseController.getCourseById);
+
+// GET /api/courses/:slug (slug-based - NEW secure routing)
+router.get("/:slug", courseController.getCourseBySlug);
 
 // POST /api/courses (admin only)
 router.post("/", authMiddleware.requireAdmin, courseController.createCourse);
