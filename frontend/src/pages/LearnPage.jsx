@@ -438,6 +438,7 @@ export default function LearnPage() {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submittingQuiz, setSubmittingQuiz] = useState(false);
   const [quizResult, setQuizResult] = useState(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [progressLoading, setProgressLoading] = useState(false);
   const [progressError, setProgressError] = useState("");
   const [practiceHistory, setPracticeHistory] = useState([]);
@@ -951,6 +952,7 @@ export default function LearnPage() {
       setQuizLoading(true);
       setQuizError("");
       setQuizQuestions([]);
+      setCurrentQuestionIndex(0);
       setSelectedAnswers({});
       setQuizResult(null);
       try {
@@ -2111,63 +2113,102 @@ export default function LearnPage() {
 
                       {!quizLoading && !quizError && (
                         <div className="mt-8 space-y-5">
-                          {quizQuestions.map((question, index) => (
-                            <div
-                              key={question.id}
-                              className={`rounded-2xl border p-6 shadow-lg transition-colors duration-300 ${isDarkMode ? "bg-[#0D3A6B]/20 border-blue-900/50" : "bg-gray-100 border-gray-300"}`}
-                            >
-                              <h2
-                                className={`text-lg font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}
-                              >
-                                Q{index + 1}. {question.question_text}
-                              </h2>
-                              <div className="mt-4 space-y-3">
-                                {(question.options || []).map((option) => (
-                                  <label
-                                    key={option.id}
-                                    className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm transition ${
-                                      Number(selectedAnswers[question.id]) ===
-                                      Number(option.id)
-                                        ? isDarkMode
-                                          ? "border-cyan-500/50 bg-blue-900/40 text-cyan-300"
-                                          : "border-blue-400 bg-blue-100 text-blue-900"
-                                        : isDarkMode
-                                          ? "border-blue-900/50 bg-blue-900/10 text-blue-100 hover:border-cyan-500/30"
-                                          : "border-gray-300 bg-white text-gray-700 hover:border-blue-400"
-                                    }`}
-                                  >
-                                    <input
-                                      type="radio"
-                                      name={`question-${question.id}`}
-                                      checked={
-                                        Number(selectedAnswers[question.id]) ===
-                                        Number(option.id)
-                                      }
-                                      onChange={() =>
-                                        handleAnswerChange(
-                                          question.id,
-                                          option.id,
-                                        )
-                                      }
-                                      className="h-4 w-4"
-                                    />
-                                    <span>{option.option_text}</span>
-                                  </label>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-
                           {quizQuestions.length > 0 && (
-                            <button
-                              onClick={handleSubmitPractice}
-                              disabled={submittingQuiz}
-                              className={`rounded-lg px-6 py-2.5 text-sm font-semibold transition disabled:opacity-60 ${isDarkMode ? "bg-cyan-600 text-slate-900 hover:bg-cyan-500 shadow-lg shadow-cyan-600/30" : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/30"}`}
-                            >
-                              {submittingQuiz
-                                ? "Submitting..."
-                                : "Submit Practice"}
-                            </button>
+                            <>
+                              {/* Question Progress */}
+                              <div
+                                className={`rounded-lg border p-4 ${isDarkMode ? "border-blue-700/50 bg-blue-900/20" : "border-blue-300 bg-blue-50"}`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span
+                                    className={`text-sm font-semibold ${isDarkMode ? "text-blue-300" : "text-blue-700"}`}
+                                  >
+                                    Question {currentQuestionIndex + 1} of {quizQuestions.length}
+                                  </span>
+                                  <div className="w-48 rounded-full bg-gray-300 h-2">
+                                    <div
+                                      className="bg-cyan-500 h-2 rounded-full transition-all duration-300"
+                                      style={{
+                                        width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%`,
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Current Question */}
+                              <div
+                                className={`rounded-2xl border p-6 shadow-lg transition-colors duration-300 ${isDarkMode ? "bg-[#0D3A6B]/20 border-blue-900/50" : "bg-gray-100 border-gray-300"}`}
+                              >
+                                <h2
+                                  className={`text-lg font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}
+                                >
+                                  Q{currentQuestionIndex + 1}. {quizQuestions[currentQuestionIndex]?.question_text}
+                                </h2>
+                                <div className="mt-4 space-y-3">
+                                  {(quizQuestions[currentQuestionIndex]?.options || []).map((option) => (
+                                    <label
+                                      key={option.id}
+                                      className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm transition ${
+                                        Number(selectedAnswers[quizQuestions[currentQuestionIndex]?.id]) ===
+                                        Number(option.id)
+                                          ? isDarkMode
+                                            ? "border-cyan-500/50 bg-blue-900/40 text-cyan-300"
+                                            : "border-blue-400 bg-blue-100 text-blue-900"
+                                          : isDarkMode
+                                            ? "border-blue-900/50 bg-blue-900/10 text-blue-100 hover:border-cyan-500/30"
+                                            : "border-gray-300 bg-white text-gray-700 hover:border-blue-400"
+                                      }`}
+                                    >
+                                      <input
+                                        type="radio"
+                                        name={`question-${quizQuestions[currentQuestionIndex]?.id}`}
+                                        checked={
+                                          Number(selectedAnswers[quizQuestions[currentQuestionIndex]?.id]) ===
+                                          Number(option.id)
+                                        }
+                                        onChange={() =>
+                                          handleAnswerChange(
+                                            quizQuestions[currentQuestionIndex]?.id,
+                                            option.id,
+                                          )
+                                        }
+                                        className="h-4 w-4"
+                                      />
+                                      <span>{option.option_text}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Navigation Buttons */}
+                              <div className="flex items-center justify-between gap-3 pt-4">
+                                <button
+                                  onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
+                                  disabled={currentQuestionIndex === 0}
+                                  className={`rounded-lg px-6 py-2.5 text-sm font-semibold transition disabled:opacity-40 ${isDarkMode ? "bg-gray-700 text-gray-200 hover:bg-gray-600 disabled:hover:bg-gray-700" : "bg-gray-400 text-white hover:bg-gray-500 disabled:hover:bg-gray-400"}`}
+                                >
+                                  ← Previous
+                                </button>
+
+                                {currentQuestionIndex === quizQuestions.length - 1 ? (
+                                  <button
+                                    onClick={handleSubmitPractice}
+                                    disabled={submittingQuiz}
+                                    className={`rounded-lg px-8 py-2.5 text-sm font-semibold transition disabled:opacity-60 ${isDarkMode ? "bg-cyan-600 text-slate-900 hover:bg-cyan-500 shadow-lg shadow-cyan-600/30" : "bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-600/30"}`}
+                                  >
+                                    {submittingQuiz ? "Submitting..." : "Submit Quiz"}
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => setCurrentQuestionIndex(Math.min(quizQuestions.length - 1, currentQuestionIndex + 1))}
+                                    className={`rounded-lg px-6 py-2.5 text-sm font-semibold transition ${isDarkMode ? "bg-cyan-600 text-slate-900 hover:bg-cyan-500 shadow-lg shadow-cyan-600/30" : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/30"}`}
+                                  >
+                                    Next →
+                                  </button>
+                                )}
+                              </div>
+                            </>
                           )}
                         </div>
                       )}
