@@ -162,6 +162,40 @@ class ExerciseController {
       return res.status(500).json({ message: "Server error" });
     }
   };
+
+  // Get exercises by lesson slug (NEW - security through obscured IDs)
+  getExercisesBySlug = async (req, res) => {
+    try {
+      const slug = String(req.params.slug).trim();
+      if (!slug || slug.length === 0) {
+        return res.status(400).json({ message: "Invalid lesson slug" });
+      }
+
+      const lesson = await lessonModel.findBySlug(slug);
+      if (!lesson) {
+        return res.status(404).json({ message: "Lesson not found" });
+      }
+
+      // Exercise content is learn-only: require enrollment in parent course.
+      const userId = req.user?.sub;
+      const enrolled = await enrollmentModel.isEnrolled(
+        userId,
+        lesson.course_id,
+      );
+      if (!enrolled) {
+        return res.status(403).json({
+          message: "You must enroll in this course to access its exercises",
+          enrolled: false,
+        });
+      }
+
+      const exercises = await this.exerciseModel.getByLessonId(lesson.id);
+      return res.status(200).json({ lessonSlug: slug, exercises });
+    } catch (error) {
+      console.error("getExercisesBySlug error:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  };
 }
 
 module.exports = new ExerciseController(exerciseModel);

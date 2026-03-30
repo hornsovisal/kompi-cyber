@@ -257,3 +257,147 @@ exports.getMyAttempt = async (req, res) => {
       .json({ message: "Database error", error: err.message || err });
   }
 };
+
+// Get quiz by lesson slug (NEW - security through obscured IDs)
+exports.getQuizBySlug = async (req, res) => {
+  const lessonSlug = String(req.params.lessonSlug).trim();
+  if (!lessonSlug || lessonSlug.length === 0) {
+    return res.status(400).json({ message: "Invalid lesson slug" });
+  }
+
+  try {
+    // Get lesson ID from slug
+    const [lessonData] = await db.query(
+      `SELECT id FROM lessons WHERE slug = ? LIMIT 1`,
+      [lessonSlug],
+    );
+
+    if (!lessonData.length) {
+      return res.status(404).json({ message: "Lesson not found" });
+    }
+
+    const lessonId = lessonData[0].id;
+
+    const sql = `
+      SELECT q.id AS question_id,
+             q.question_text,
+             o.id AS option_id,
+             o.option_text
+      FROM quiz_questions q
+      LEFT JOIN quiz_options o ON o.question_id = q.id
+      WHERE q.lesson_id = ?
+      ORDER BY q.id, o.id
+    `;
+
+    const [results] = await db.query(sql, [lessonId]);
+
+    if (!results.length) {
+      return res.status(404).json({ message: "No quiz found for this lesson" });
+    }
+
+    const questionsMap = new Map();
+    results.forEach((row) => {
+      const question = questionsMap.get(row.question_id) || {
+        id: row.question_id,
+        question_text: row.question_text,
+        options: [],
+      };
+
+      if (row.option_id) {
+        question.options.push({
+          id: row.option_id,
+          option_text: row.option_text,
+        });
+      }
+
+      questionsMap.set(row.question_id, question);
+    });
+
+    return res.json({ success: true, data: Array.from(questionsMap.values()) });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: "Database error", error: err.message || err });
+  }
+};
+
+// Get user's latest attempt by lesson slug (NEW)
+exports.getMyAttemptBySlug = async (req, res) => {
+  const lessonSlug = String(req.params.lessonSlug).trim();
+  if (!lessonSlug || lessonSlug.length === 0) {
+    return res.status(400).json({ message: "Invalid lesson slug" });
+  }
+
+  const userId = req.user?.sub || req.user?.id;
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    // Get lesson ID from slug
+    const [lessonData] = await db.query(
+      `SELECT id FROM lessons WHERE slug = ? LIMIT 1`,
+      [lessonSlug],
+    );
+
+    if (!lessonData.length) {
+      return res.status(404).json({ message: "Lesson not found" });
+    }
+
+    const lessonId = lessonData[0].id;
+
+    const [attemptRows] = await db.query(
+      `SELECT id AS attempt_id,
+              score,
+              attempt_no,
+              submitted_at,
+              passed
+       FROM quiz_attempts
+       WHERE lesson_id = ?
+         AND user_id = ?
+       ORDER BY attempt_no DESC, submitted_at DESC, id DESC
+       LIMIT 1`,
+      [lessonId, userId],
+    );
+
+    if (!attemptRows.length) {
+      return res
+        .status(404)
+        .json({ message: "No attempt found for this lesson" });
+    }
+
+    const latestAttempt = attemptRows[0];
+    const [answerRows] = await db.query(
+      `SELECT qa.question_id,
+              qa.selected_option_id,
+              qa.is_correct
+       FROM quiz_answers qa
+       INNER JOIN quiz_questions qq ON qq.id = qa.question_id
+       WHERE qa.attempt_id = ?
+       ORDER BY qq.question_order ASC, qa.id ASC`,
+      [latestAttempt.attempt_id],
+    );
+
+    const answers = answerRows.map((row) => ({
+      question_id: row.question_id,
+      selected_option_id: row.selected_option_id,
+      is_correct: Boolean(row.is_correct),
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        attemptId: latestAttempt.attempt_id,
+        score: latestAttempt.score,
+        attemptNo: latestAttempt.attempt_no,
+        submittedAt: latestAttempt.submitted_at,
+        passed: Boolean(latestAttempt.passed),
+        answers,
+      },
+    });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: "Database error", error: err.message || err });
+  }
+};

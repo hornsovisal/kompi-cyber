@@ -164,6 +164,27 @@ class CourseController {
       return res.status(500).json({ message: "Server error" });
     }
   };
+
+  // Get course by slug (NEW - security through obscured IDs)
+  getCourseBySlug = async (req, res) => {
+    try {
+      await this.courseModel.ensureSeedFromUploadIfEmpty();
+      const slug = String(req.params.slug).trim();
+      if (!slug || slug.length === 0) {
+        return res.status(400).json({ message: "Invalid course slug" });
+      }
+
+      const course = await this.courseModel.findBySlug(slug);
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+
+      return res.status(200).json({ course });
+    } catch (error) {
+      console.error("getCourseBySlug error:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  };
 }
 
 module.exports = new CourseController(courseModel);

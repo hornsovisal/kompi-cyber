@@ -72,6 +72,21 @@ class CourseModel {
     return rows[0] || null;
   }
 
+  async findBySlug(slug) {
+    const selectFields = await this.getCourseSelectFields();
+    const [rows] = await this.db.execute(
+      `SELECT
+         ${selectFields},
+         (SELECT COUNT(*) FROM modules m WHERE m.course_id = c.id) AS module_count
+       FROM courses c
+       WHERE c.slug = ?
+       LIMIT 1`,
+      [slug],
+    );
+
+    return rows[0] || null;
+  }
+
   async createCourse(payload) {
     const {
       domain_id,

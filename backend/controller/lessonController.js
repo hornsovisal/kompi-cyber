@@ -136,6 +136,39 @@ class LessonController {
       return res.status(500).json({ message: "Server error" });
     }
   };
+
+  // Get lesson by slug (NEW - security through obscured IDs)
+  getLessonBySlug = async (req, res) => {
+    try {
+      const slug = String(req.params.slug).trim();
+      if (!slug || slug.length === 0) {
+        return res.status(400).json({ message: "Invalid lesson slug" });
+      }
+
+      const lesson = await this.lessonModel.findBySlug(slug);
+      if (!lesson) {
+        return res.status(404).json({ message: "Lesson not found" });
+      }
+
+      // Lesson content is only available to users enrolled in the lesson course.
+      const userId = req.user?.sub;
+      const enrolled = await enrollmentModel.isEnrolled(
+        userId,
+        lesson.course_id,
+      );
+      if (!enrolled) {
+        return res.status(403).json({
+          message: "You must enroll in this course to access its lessons",
+          enrolled: false,
+        });
+      }
+
+      return res.status(200).json({ lesson });
+    } catch (error) {
+      console.error("getLessonBySlug error:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  };
 }
 
 module.exports = new LessonController(lessonModel);
