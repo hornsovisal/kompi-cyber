@@ -114,6 +114,14 @@ export default function App() {
             }
           />
           <Route
+            path="/coordinator/courses/new"
+            element={
+              <InstructorLayout>
+                <ManageCourses />
+              </InstructorLayout>
+            }
+          />
+          <Route
             path="/instructor/quizzes"
             element={
               <InstructorLayout>
@@ -195,7 +203,7 @@ export default function App() {
           />
           <Route
             path="/coordinator/create-course"
-            element={<Navigate to="/coordinator/courses" replace />}
+            element={<Navigate to="/coordinator/courses/new" replace />}
           />
           <Route
             path="/instructor/students"

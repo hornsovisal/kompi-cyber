@@ -420,6 +420,7 @@ export default function LearnPage() {
   // Save theme preference to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", isDarkMode);
   }, [isDarkMode]);
 
   const [activeTab, setActiveTab] = useState("learn");
