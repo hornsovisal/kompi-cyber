@@ -9,10 +9,6 @@ import { Users, Mail, Plus, Search, CheckCircle2, AlertCircle, X, BookOpen, Send
 import { fetchAllCourses, fetchCourseStudents, inviteStudent, fetchCourseInvitations, resendInvitation, cancelInvitation } from "../../services/rbacService";
 
 export default function StudentManagement() {
-  const instructor = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem("instructor") || "null"); } catch { return null; }
-  }, []);
-
   const [courses, setCourses]       = useState([]);
   const [selectedCourse, setSel]    = useState(null);
   const [students, setStudents]     = useState([]);

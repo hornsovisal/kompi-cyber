@@ -18,8 +18,7 @@ export default function InstructorLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
-  const getStored = (key) =>
-    localStorage.getItem(key) || sessionStorage.getItem(key);
+  const getStored = (key) => sessionStorage.getItem(key);
 
   // Read instructor and role from sessionStorage
   let instructor = null;
@@ -29,7 +28,7 @@ export default function InstructorLayout({ children }) {
     instructor = null;
   }
 
-  const role = instructor?.role || "instructor"; // 'instructor' | 'coordinator'
+  const role = instructor?.role || (location.pathname.startsWith('/coordinator') ? 'coordinator' : 'instructor'); // 'instructor' | 'coordinator'
   const isCoordinator = role === "coordinator";
 
   useEffect(() => {
@@ -60,13 +59,13 @@ export default function InstructorLayout({ children }) {
     navigate("/");
   };
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) =>
+    location.pathname === path || location.pathname.startsWith(`${path}/`);
 
   // ── Coordinator Nav ──────────────────────────────────────────────────────
   const coordinatorNav = [
     { label: 'Dashboard',       icon: Home,        path: '/coordinator/dashboard' },
     { label: 'Manage Courses',  icon: BookOpen,    path: '/coordinator/courses' },
-    { label: 'Assign Instructors', icon: ShieldCheck, path: '/coordinator/courses' },
     { label: 'Analytics',       icon: BarChart3,   path: '/coordinator/analytics' },
     { label: 'Settings',        icon: Settings,    path: '/coordinator/settings' },
   ];
@@ -136,7 +135,7 @@ export default function InstructorLayout({ children }) {
           {/* Coordinator-only: Create Course shortcut */}
           {isCoordinator && (
             <button
-              onClick={() => { navigate('/coordinator/create-course'); if (window.innerWidth < 1024) setSidebarOpen(false); }}
+              onClick={() => { navigate('/coordinator/courses/new'); if (window.innerWidth < 1024) setSidebarOpen(false); }}
               className="w-full px-6 py-3 flex items-center gap-3 text-emerald-400 hover:bg-slate-800 transition-colors mt-2 border-t border-slate-700"
             >
               <PlusCircle size={20} />

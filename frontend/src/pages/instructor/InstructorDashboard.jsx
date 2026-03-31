@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { BookOpen, CalendarClock, FileQuestion, GraduationCap, LayoutDashboard, PlusCircle, TrendingUp, UserCheck, Users } from "lucide-react";
 import { useInstructorAPI } from "../../hooks/useInstructorAPI";
 import { fetchAllCourses, fetchInstructors } from "../../services/rbacService";
 
 export default function InstructorDashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { fetchInstructorCourses, fetchMyQuizzes, fetchStudentPerformance, loading, error, clearError } = useInstructorAPI();
-  const getStored = (key) => localStorage.getItem(key) || sessionStorage.getItem(key);
+  const getStored = (key) => sessionStorage.getItem(key);
 
   const instructor = useMemo(() => {
     try {
@@ -17,7 +18,9 @@ export default function InstructorDashboard() {
     }
   }, []);
 
-  const isCoordinator = instructor?.role === "coordinator";
+  const isCoordinator = instructor?.role
+    ? instructor.role === "coordinator"
+    : location.pathname.startsWith("/coordinator");
 
   // Coordinator state
   const [allCourses, setAllCourses] = useState([]);
@@ -97,7 +100,7 @@ export default function InstructorDashboard() {
           </div>
           {isCoordinator ? (
             <button
-              onClick={() => navigate("/coordinator/courses")}
+              onClick={() => navigate("/coordinator/courses/new")}
               className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-700"
             >
               <PlusCircle size={16} /> New Course
@@ -126,7 +129,7 @@ export default function InstructorDashboard() {
         <div className="mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900">
-              {isCoordinator ? "Coordinator Information" : "Lecturer Information"}
+              {isCoordinator ? "Coordinator Information" : "Instructor Information"}
             </h2>
             <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${isCoordinator ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>
               {isCoordinator ? "Program Coordinator" : "Instructor"}
@@ -203,7 +206,7 @@ export default function InstructorDashboard() {
                 </div>
               </div>
               <div className="mt-6 space-y-3">
-                <QuickAction label="Create new course" onClick={() => navigate("/coordinator/courses")} />
+                <QuickAction label="Create new course" onClick={() => navigate("/coordinator/courses/new")} />
                 <QuickAction label="Assign instructor to course" onClick={() => navigate("/coordinator/courses")} />
                 <QuickAction label="Open analytics" onClick={() => navigate("/coordinator/analytics")} />
                 <QuickAction label="Open settings" onClick={() => navigate("/coordinator/settings")} />

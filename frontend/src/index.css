@@ -11,19 +11,33 @@
 
   html {
     font-family: "Poppins", sans-serif;
-    background: #020617;
-    color-scheme: dark;
+    background: #f8fafc;
+    color-scheme: light;
   }
 
   body {
     margin: 0;
     min-height: 100vh;
-    background: #020617;
-    color: #ffffff;
+    background: #f8fafc;
+    color: #0f172a;
   }
 
   #root {
     min-height: 100vh;
+    background: #f8fafc;
+  }
+
+  html.dark {
+    background: #020617;
+    color-scheme: dark;
+  }
+
+  html.dark body {
+    background: #020617;
+    color: #ffffff;
+  }
+
+  html.dark #root {
     background: #020617;
   }
 }

@@ -81,6 +81,7 @@ export default function ExploreCourses() {
   // Save theme preference to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", isDarkMode);
   }, [isDarkMode]);
 
   useEffect(() => {

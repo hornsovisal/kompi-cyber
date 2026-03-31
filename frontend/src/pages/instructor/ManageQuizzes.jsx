@@ -71,8 +71,8 @@ export default function ManageQuizzes() {
     setTogglingId(quiz.id);
     try {
       const fn = quiz.status === 'open' ? closeQuiz : openQuiz;
-      const result = await fn(quiz.id);
-      const newStatus = result.data?.status || (quiz.status === 'open' ? 'closed' : 'open');
+      const updatedQuiz = await fn(quiz.id);
+      const newStatus = updatedQuiz?.status || (quiz.status === 'open' ? 'closed' : 'open');
       setQuizzes(prev => prev.map(q => q.id === quiz.id ? { ...q, status: newStatus } : q));
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update quiz status.");

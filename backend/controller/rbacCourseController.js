@@ -20,13 +20,13 @@ const createCourse = async (req, res) => {
   try {
     const { title, description } = req.body;
 
-    if (!title || !description) {
-      return res.status(400).json({ success: false, message: 'Title and description are required.' });
+    if (!title || !title.trim()) {
+      return res.status(400).json({ success: false, message: 'Title is required.' });
     }
 
     const course = await RbacCourseModel.createCourse({
       title: title.trim(),
-      description: description.trim(),
+      description: (description ?? '').trim(),
       createdBy: req.user.employeeId,
     });
 
@@ -52,7 +52,7 @@ const updateCourse = async (req, res) => {
 
     const updated = await RbacCourseModel.updateCourse(id, {
       title,
-      description: description || '',
+      description: (description ?? '').trim(),
     });
 
     if (!updated) {
@@ -213,7 +213,7 @@ const getCourseStudents = async (req, res) => {
       return res.status(403).json({ success: false, message: 'You are not assigned to this course.' });
     }
 
-    const students = StudentModel.findByCourse(courseId);
+    const students = await RbacCourseModel.getCourseStudents(courseId);
     return res.json({ success: true, data: students });
   } catch (err) {
     console.error('[rbacCourseController] getCourseStudents error:', err);

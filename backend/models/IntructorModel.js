@@ -5,7 +5,7 @@ let lecturers = [
     id: 1,
     name: "Dr. Sarah Johnson",
     email: "sarah.johnson@cadt.edu.kh",
-    password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
+    password: "$2b$10$sOzLQL8UKFbirS3CQfS1UuAC8vmu2UMvwDF1hBHCKJ/UQG7vo5dF2", // password123
     department: "Network Security",
     courses: ["network-security"],
     employeeId: "LEC001",
@@ -20,7 +20,7 @@ let lecturers = [
     id: 2,
     name: "Prof. Michael Chen",
     email: "michael.chen@cadt.edu.kh",
-    password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
+    password: "$2b$10$sOzLQL8UKFbirS3CQfS1UuAC8vmu2UMvwDF1hBHCKJ/UQG7vo5dF2", // password123
     department: "Web Security",
     courses: ["web-security"],
     employeeId: "LEC002",
@@ -35,7 +35,7 @@ let lecturers = [
     id: 3,
     name: "Dr. Lisa Rodriguez",
     email: "lisa.rodriguez@cadt.edu.kh",
-    password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
+    password: "$2b$10$sOzLQL8UKFbirS3CQfS1UuAC8vmu2UMvwDF1hBHCKJ/UQG7vo5dF2", // password123
     department: "Incident Response",
     courses: ["incident-response"],
     employeeId: "LEC003",
@@ -50,7 +50,7 @@ let lecturers = [
     id: 4,
     name: "Mr. David Kim",
     email: "david.kim@cadt.edu.kh",
-    password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
+    password: "$2b$10$sOzLQL8UKFbirS3CQfS1UuAC8vmu2UMvwDF1hBHCKJ/UQG7vo5dF2", // password123
     department: "Introduction to Linux",
     courses: ["intro-to-linux-course"],
     employeeId: "LEC004",
@@ -65,7 +65,7 @@ let lecturers = [
     id: 5,
     name: "Dr. Emma Wilson",
     email: "emma.wilson@cadt.edu.kh",
-    password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
+    password: "$2b$10$sOzLQL8UKFbirS3CQfS1UuAC8vmu2UMvwDF1hBHCKJ/UQG7vo5dF2", // password123
     department: "Introduction to Cybersecurity",
     courses: ["intro-to-cyber-course"],
     employeeId: "LEC005",
@@ -82,7 +82,7 @@ let lecturers = [
     id: 6,
     name: "Dr. Phirum Meas",
     email: "coordinator1@cadt.edu.kh",
-    password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
+    password: "$2b$10$sOzLQL8UKFbirS3CQfS1UuAC8vmu2UMvwDF1hBHCKJ/UQG7vo5dF2", // password123
     department: "Program Coordination",
     courses: [],
     employeeId: "COORD001",
@@ -97,7 +97,7 @@ let lecturers = [
     id: 7,
     name: "Ms. Sokha Lim",
     email: "coordinator2@cadt.edu.kh",
-    password: "$2b$10$5dsBBzGK8Z.6LMkXntRbtu6kYbEQCI.OGXNiOho..A4HmQ3CMmtsu", // password123
+    password: "$2b$10$sOzLQL8UKFbirS3CQfS1UuAC8vmu2UMvwDF1hBHCKJ/UQG7vo5dF2", // password123
     department: "Program Coordination",
     courses: [],
     employeeId: "COORD002",

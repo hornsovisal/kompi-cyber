@@ -4,6 +4,7 @@
  * INSTRUCTOR:  View only their assigned courses.
  */
 import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { BookOpen, Plus, Search, Users, ShieldCheck, X, CheckCircle2, AlertCircle, Pencil, Trash2 } from "lucide-react";
 import {
   fetchAllCourses,
@@ -15,6 +16,8 @@ import {
 } from "../../services/rbacService";
 
 export default function ManageCourses() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const instructor = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("instructor") || sessionStorage.getItem("instructor") || "null"); } catch { return null; }
   }, []);
@@ -75,6 +78,19 @@ export default function ManageCourses() {
     setTimeout(() => setToast(null), 4000);
   };
 
+  const closeCreateModal = () => {
+    setShowCreate(false);
+    if (location.pathname === "/coordinator/courses/new") {
+      navigate("/coordinator/courses", { replace: true });
+    }
+  };
+
+  useEffect(() => {
+    if (isCoordinator && location.pathname === "/coordinator/courses/new") {
+      setShowCreate(true);
+    }
+  }, [isCoordinator, location.pathname]);
+
   const handleCreateCourse = async (e) => {
     e.preventDefault();
     if (!isCoordinator) {
@@ -86,7 +102,7 @@ export default function ManageCourses() {
     try {
       const course = await createCourse({ title: newTitle.trim(), description: newDesc.trim() });
       setCourses(prev => [course, ...prev]);
-      setShowCreate(false);
+      closeCreateModal();
       setNewTitle(""); setNewDesc("");
       showToast("success", `Course "${course.title}" created!`);
     } catch (err) {
@@ -277,7 +293,7 @@ export default function ManageCourses() {
       </div>
 
       {showCreate && (
-        <Modal title="Create New Course" onClose={() => setShowCreate(false)}>
+        <Modal title="Create New Course" onClose={closeCreateModal}>
           <form onSubmit={handleCreateCourse} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Course Title *</label>
@@ -292,7 +308,7 @@ export default function ManageCourses() {
                 className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" />
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setShowCreate(false)} className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900">Cancel</button>
+              <button type="button" onClick={closeCreateModal} className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900">Cancel</button>
               <button type="submit" disabled={creating}
                 className="px-5 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60">
                 {creating ? "Creating…" : "Create Course"}

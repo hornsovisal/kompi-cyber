@@ -22,8 +22,7 @@ export default function InstructorLogin() {
   const isCoordinatorLogin = location.pathname.includes("/coordinator/");
   const portalLabel = isCoordinatorLogin ? "Coordinator Portal" : "Instructor Portal";
 
-  const getStored = (key) =>
-    localStorage.getItem(key) || sessionStorage.getItem(key);
+  const getStored = (key) => sessionStorage.getItem(key);
 
   const clearStoredAuth = () => {
     ["token", "instructor", "sessionExpires", "user"].forEach((key) => {
@@ -34,7 +33,7 @@ export default function InstructorLogin() {
 
   const setStoredAuth = (key, value) => {
     sessionStorage.setItem(key, value);
-    localStorage.setItem(key, value);
+    localStorage.removeItem(key);
   };
 
   const [email, setEmail] = useState("");
