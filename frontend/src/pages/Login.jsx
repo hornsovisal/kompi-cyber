@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
+const API_BASE = import.meta.env.VITE_API_URL || "";
+
 export default function Login() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -46,6 +48,8 @@ export default function Login() {
     try {
       const response = await axios.post("/api/auth/resend-verification", {
         email,
+      }, {
+        baseURL: API_BASE,
       });
       setResendMessage(
         response.data?.message ||
@@ -78,6 +82,8 @@ export default function Login() {
       const response = await axios.post("/api/auth/login", {
         email: formData.email.trim(),
         password: formData.password,
+      }, {
+        baseURL: API_BASE,
       });
 
       setAlert({ type: "success", message: "Login successful!" });
