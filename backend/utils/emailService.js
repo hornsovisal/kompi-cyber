@@ -1,9 +1,22 @@
-const { Resend } = require("resend");
+const nodemailer = require("nodemailer");
 
-const resendApiKey = process.env.RESEND_API_KEY;
-const resendConfigured = Boolean(resendApiKey);
+const smtpConfigured = Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
 
-const resend = resendConfigured ? new Resend(resendApiKey) : null;
+const transporter = smtpConfigured
+  ? nodemailer.createTransport({
+      host: process.env.SMTP_HOST || "smtp.mailtrap.io",
+      port: Number(process.env.SMTP_PORT) || 2525,
+      secure: process.env.SMTP_PORT == 465,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+      connectionTimeout: 5000,
+      sendingTimeout: 10000,
+      logger: process.env.NODE_ENV === "development",
+      debug: process.env.NODE_ENV === "development",
+    })
+  : null;
 
 const sendVerificationEmail = async (email, token) => {
   const verificationUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/verify-email?token=${token}`;
@@ -136,7 +149,7 @@ const sendPasswordResetEmail = async (email, token) => {
 };
 
 module.exports = {
-  smtpConfigured: resendConfigured, // Export as smtpConfigured for backward compatibility
+  smtpConfigured,
   sendVerificationEmail,
   sendPasswordResetEmail,
 };
