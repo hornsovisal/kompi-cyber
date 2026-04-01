@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../../config/api";
 import {
   Shield,
   Eye,
@@ -14,7 +15,6 @@ import {
   RotateCcw,
 } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_URL || "";
 const OTP_EXPIRY_SECONDS = 600;
 
 export default function InstructorLogin() {
@@ -72,16 +72,10 @@ export default function InstructorLogin() {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        "/api/instructor/login",
-        {
-          email: email.trim().toLowerCase(),
-          password,
-        },
-        {
-          baseURL: API_BASE,
-        },
-      );
+      const response = await axios.post(`${API_BASE_URL}/api/instructor/login`, {
+        email: email.trim().toLowerCase(),
+        password,
+      });
 
       const { token, instructor } = response.data;
       // instructor = { id, name, email, department, employeeId } from LecturerModel
@@ -96,15 +90,9 @@ export default function InstructorLogin() {
 
       // If somehow isVerified is false — send OTP via backend
       try {
-        const otpResponse = await axios.post(
-          "/api/instructor/send-otp",
-          {
-            email: instructor.email,
-          },
-          {
-            baseURL: API_BASE,
-          },
-        );
+        const otpResponse = await axios.post(`${API_BASE_URL}/api/instructor/send-otp`, {
+          email: instructor.email,
+        });
         // For demo purposes, if in development, show the OTP
         if (otpResponse.data.otp) {
           setGen(otpResponse.data.otp);
@@ -144,16 +132,10 @@ export default function InstructorLogin() {
 
     setLoading(true);
     try {
-      const response = await axios.post(
-        "/api/instructor/verify-otp",
-        {
-          email: pending.email,
-          otp: entered,
-        },
-        {
-          baseURL: API_BASE,
-        },
-      );
+      const response = await axios.post(`${API_BASE_URL}/api/instructor/verify-otp`, {
+        email: pending.email,
+        otp: entered,
+      });
 
       const { token, instructor } = response.data;
       loginSuccess({ ...instructor, token });
@@ -173,15 +155,9 @@ export default function InstructorLogin() {
     setError("");
     setLoading(true);
     try {
-      const otpResponse = await axios.post(
-        "/api/instructor/send-otp",
-        {
-          email: pending.email,
-        },
-        {
-          baseURL: API_BASE,
-        },
-      );
+      const otpResponse = await axios.post(`${API_BASE_URL}/api/instructor/send-otp`, {
+        email: pending.email,
+      });
       setCd(OTP_EXPIRY_SECONDS);
       setExpiry(Date.now() + OTP_EXPIRY_SECONDS * 1000);
       setOtpDigits(["", "", "", "", "", ""]);
