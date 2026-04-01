@@ -3,7 +3,6 @@
   "installCommand": "npm install",
   "outputDirectory": "frontend/dist",
   "framework": "react",
-  "nodeVersion": "18.x",
   "env": {
     "VITE_API_BASE": "@vite_api_base"
   },
