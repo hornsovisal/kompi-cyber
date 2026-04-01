@@ -31,27 +31,25 @@ app.use(compression());
 
 // CORS configuration
 const corsOptions = {
-  origin: true, // Allow all origins for now (will be restricted in production)
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
-
-// In production, restrict CORS to specific origins
-if (process.env.NODE_ENV === "production" && process.env.FRONTEND_URL) {
-  corsOptions.origin = (origin, callback) => {
+  origin: (origin, callback) => {
     const allowedOrigins = [
+      "http://localhost:3000",
+      "http://localhost:5173",
       process.env.FRONTEND_URL,
     ].filter(Boolean);
 
+    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       console.warn(`CORS rejected origin: ${origin}`);
       callback(new Error("Not allowed by CORS"));
     }
-  };
-}
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
 
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
