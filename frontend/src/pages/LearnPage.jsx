@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import logo from "../assets/logos/logo-blue.svg";
 import CertificateSection from "../components/CertificateSection";
+import { safeGetLocalStorage, safeSetLocalStorage } from "../utils/safeStorage";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const API_TARGET_LABEL = import.meta.env.VITE_API_URL || "Vite /api proxy";
@@ -413,13 +414,13 @@ export default function LearnPage() {
   const navigate = useNavigate();
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem("theme");
+    const saved = safeGetLocalStorage("theme");
     return saved ? saved === "dark" : true;
   });
 
   // Save theme preference to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    safeSetLocalStorage("theme", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 
   const [activeTab, setActiveTab] = useState("learn");
@@ -445,8 +446,9 @@ export default function LearnPage() {
   const [progressLoading, setProgressLoading] = useState(false);
   const [progressError, setProgressError] = useState("");
   const [practiceHistory, setPracticeHistory] = useState([]);
-  const [progressCompletedLessonIds, setProgressCompletedLessonIds] =
-    useState([]);
+  const [progressCompletedLessonIds, setProgressCompletedLessonIds] = useState(
+    [],
+  );
   const [practiceView, setPracticeView] = useState("list");
   const [practiceItems, setPracticeItems] = useState([]);
   const [practiceListLoading, setPracticeListLoading] = useState(false);
@@ -454,7 +456,7 @@ export default function LearnPage() {
   const [checklistState, setChecklistState] = useState(() => {
     // Initialize from localStorage if available
     if (activeLesson?.id) {
-      const saved = localStorage.getItem(`checklist-${activeLesson.id}`);
+      const saved = safeGetLocalStorage(`checklist-${activeLesson.id}`);
       return saved ? JSON.parse(saved) : {};
     }
     return {};
@@ -468,7 +470,7 @@ export default function LearnPage() {
       };
       // Save to localStorage
       if (activeLesson?.id) {
-        localStorage.setItem(
+        safeSetLocalStorage(
           `checklist-${activeLesson.id}`,
           JSON.stringify(updated),
         );
@@ -482,7 +484,7 @@ export default function LearnPage() {
   // Load checklist state from localStorage when lesson changes
   useEffect(() => {
     if (activeLesson?.id) {
-      const saved = localStorage.getItem(`checklist-${activeLesson.id}`);
+      const saved = safeGetLocalStorage(`checklist-${activeLesson.id}`);
       setChecklistState(saved ? JSON.parse(saved) : {});
     } else {
       setChecklistState({});
@@ -1150,7 +1152,9 @@ export default function LearnPage() {
           timeout: REQUEST_TIMEOUT_MS,
         });
 
-        const courseLessonIds = new Set(allLessons.map((lesson) => Number(lesson.id)));
+        const courseLessonIds = new Set(
+          allLessons.map((lesson) => Number(lesson.id)),
+        );
         persistedCompletedIds = (progressRes.data?.progress || [])
           .filter(
             (row) =>
@@ -1251,7 +1255,9 @@ export default function LearnPage() {
           "Request timed out. Please check backend/database and try again.",
         );
       } else if (!err.response) {
-        setCompletionError(`Cannot connect to backend API (${API_TARGET_LABEL})`);
+        setCompletionError(
+          `Cannot connect to backend API (${API_TARGET_LABEL})`,
+        );
       } else {
         const backendMessage = err.response?.data?.message;
         const backendDetail = err.response?.data?.detail;
@@ -2599,7 +2605,7 @@ export default function LearnPage() {
 
                   <div className="mt-8">
                     <CertificateSection
-                      courseId={courseId}
+                      courseId={course?.id}
                       courseName={course?.title}
                       token={token}
                     />

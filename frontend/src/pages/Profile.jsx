@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link, NavLink } from "react-router-dom";
 import axios from "axios";
 import logo from "../kompi-cyber-logo-slide.svg";
+import { safeGetLocalStorage, safeSetLocalStorage } from "../utils/safeStorage";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co";
+const SUPABASE_URL =
+  import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co";
 const SUPABASE_BUCKET = "upload-lesson";
 
 export default function Profile() {
@@ -35,12 +37,12 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("overview");
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem("theme");
+    const saved = safeGetLocalStorage("theme");
     return saved ? saved === "dark" : true;
   });
 
   useEffect(() => {
-    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    safeSetLocalStorage("theme", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 
   useEffect(() => {
