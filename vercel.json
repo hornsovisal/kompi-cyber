@@ -1,6 +1,6 @@
 {
   "buildCommand": "cd frontend && npm run build",
-  "installCommand": "npm install --workspaces",
+  "installCommand": "cd frontend && npm install",
   "outputDirectory": "frontend/dist",
   "framework": "vite",
   "redirects": [],
