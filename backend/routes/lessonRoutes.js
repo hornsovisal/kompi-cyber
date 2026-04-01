@@ -18,6 +18,9 @@ router.get("/:lessonId/exercises", exerciseController.getExercisesByLesson);
 // GET /api/lessons/:id
 router.get("/:id", lessonController.getLessonById);
 
+// POST /api/lessons/:id/complete
+router.post("/:id/complete", lessonController.markLessonCompleted);
+
 // POST /api/lessons
 router.post("/", lessonController.createLesson);
 

@@ -136,6 +136,47 @@ class LessonController {
       return res.status(500).json({ message: "Server error" });
     }
   };
+
+  markLessonCompleted = async (req, res) => {
+    try {
+      const lessonId = Number(req.params.id);
+      if (!Number.isInteger(lessonId) || lessonId <= 0) {
+        return res.status(400).json({ message: "Invalid lesson id" });
+      }
+
+      const userId = req.user?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const lesson = await this.lessonModel.findById(lessonId);
+      if (!lesson) {
+        return res.status(404).json({ message: "Lesson not found" });
+      }
+
+      const enrolled = await enrollmentModel.isEnrolled(userId, lesson.course_id);
+      if (!enrolled) {
+        console.warn(
+          `markLessonCompleted: user ${userId} is not enrolled in course ${lesson.course_id}; continuing progress save`,
+        );
+      }
+
+      await this.lessonModel.upsertLessonProgress(userId, lessonId, "completed");
+
+      return res.status(200).json({
+        message: "Lesson marked as completed",
+        lessonId,
+        status: "completed",
+      });
+    } catch (error) {
+      console.error("markLessonCompleted error:", error);
+      return res.status(500).json({
+        message: "Failed to save lesson completion",
+        code: error?.code || null,
+        detail: error?.sqlMessage || error?.message || null,
+      });
+    }
+  };
 }
 
 module.exports = new LessonController(lessonModel);

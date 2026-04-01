@@ -45,14 +45,42 @@ export default function CertificateSection({ courseId, courseName, token }) {
             );
             setCertificate(certRes.data.certificate);
           } catch (certErr) {
-            if (certErr.response?.status !== 404) {
+            if (certErr.response?.status === 404) {
+              try {
+                const generateRes = await axios.post(
+                  `/api/certificates/generate/${courseId}`,
+                  {},
+                  {
+                    baseURL: API_BASE,
+                    headers,
+                  },
+                );
+                setCertificate(generateRes.data?.certificate || null);
+              } catch (generateErr) {
+                console.error(
+                  "Error auto-generating certificate:",
+                  generateErr,
+                );
+                setError(
+                  generateErr.response?.data?.message ||
+                    "Failed to generate certificate",
+                );
+              }
+            } else {
               console.error("Error fetching certificate:", certErr);
             }
           }
         }
       } catch (err) {
         console.error("Error loading completion status:", err);
-        setError("Failed to load completion status");
+        const backendMessage = err.response?.data?.message;
+        const backendDetail = err.response?.data?.detail;
+        const status = err.response?.status;
+        const statusText = err.response?.statusText;
+        const fallback = status
+          ? `Failed to load completion status (${status}${statusText ? ` ${statusText}` : ""})`
+          : "Failed to load completion status";
+        setError([backendMessage || fallback, backendDetail].filter(Boolean).join(" - "));
       } finally {
         setLoading(false);
       }

@@ -9,6 +9,7 @@ export default function Login() {
   const [alert, setAlert] = useState(null);
   const [needsVerification, setNeedsVerification] = useState(false);
   const [resendMessage, setResendMessage] = useState("");
+  const [verificationLink, setVerificationLink] = useState("");
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     email: "",
@@ -40,9 +41,11 @@ export default function Login() {
 
     setResendLoading(true);
     setResendMessage("");
+    setVerificationLink("");
 
     try {
       const response = await axios.post("/api/auth/resend-verification", { email });
+      setVerificationLink(response.data?.verificationLink || "");
       setResendMessage(response.data?.message || "Verification email sent. Please check your inbox.");
     } catch (error) {
       setResendMessage(
@@ -58,6 +61,7 @@ export default function Login() {
     setAlert(null);
     setNeedsVerification(false);
     setResendMessage("");
+    setVerificationLink("");
 
     if (!validateForm()) {
       return;
@@ -166,6 +170,14 @@ export default function Login() {
               </button>
               {resendMessage && (
                 <p className="mt-3 text-xs text-slate-300">{resendMessage}</p>
+              )}
+              {verificationLink && (
+                <a
+                  href={verificationLink}
+                  className="mt-3 block rounded-xl bg-cyan-500/15 px-4 py-2 text-center text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/25"
+                >
+                  Verify now (dev link)
+                </a>
               )}
             </div>
           )}

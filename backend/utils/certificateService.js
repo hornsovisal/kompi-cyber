@@ -1,7 +1,28 @@
-const supabase = require("../config/superbase");
+const { client: supabase, bucket: SUPABASE_BUCKET } = require("../config/supabase");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
+
+function toSafePathPart(value) {
+  return String(value || "unknown").replace(/[^a-zA-Z0-9_-]/g, "_");
+}
+
+function saveCertificateLocally(userId, file, fileName) {
+  const safeUserId = toSafePathPart(userId);
+  const relativeDir = path.join("upload", "certificates", safeUserId);
+  const absoluteDir = path.resolve(__dirname, "../../", relativeDir);
+  fs.mkdirSync(absoluteDir, { recursive: true });
+
+  const absoluteFilePath = path.join(absoluteDir, fileName);
+  fs.writeFileSync(absoluteFilePath, file);
+
+  return `/${path.posix.join(
+    "upload",
+    "certificates",
+    safeUserId,
+    fileName,
+  )}`;
+}
 
 /**
  * Upload certificate file to Supabase Storage
@@ -13,21 +34,34 @@ const path = require("path");
 async function uploadCertificate(userId, file, fileName) {
   const filePath = `${userId}/${fileName}`; // e.g. "user_123/cert_abc.pdf"
 
-  const { data, error } = await supabase.storage
-    .from("certificates")
-    .upload(filePath, file, {
-      contentType: "application/pdf",
-      upsert: true, // overwrite if exists
-    });
+  try {
+    const { error } = await supabase.storage
+      .from(SUPABASE_BUCKET)
+      .upload(filePath, file, {
+        contentType: "application/pdf",
+        upsert: true, // overwrite if exists
+      });
 
-  if (error) throw error;
+    if (error) {
+      throw error;
+    }
 
-  // Get the public URL after upload
-  const { data: publicUrlData } = supabase.storage
-    .from("certificates")
-    .getPublicUrl(filePath);
+    // Get the public URL after upload
+    const { data: publicUrlData } = supabase.storage
+      .from(SUPABASE_BUCKET)
+      .getPublicUrl(filePath);
 
-  return publicUrlData.publicUrl;
+    if (publicUrlData?.publicUrl) {
+      return publicUrlData.publicUrl;
+    }
+
+    throw new Error("Supabase did not return a public URL.");
+  } catch (error) {
+    console.warn(
+      `Supabase upload failed, falling back to local storage: ${error.message}`,
+    );
+    return saveCertificateLocally(userId, file, fileName);
+  }
 }
 
 /**

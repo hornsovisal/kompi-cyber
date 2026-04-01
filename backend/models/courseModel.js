@@ -176,6 +176,22 @@ class CourseModel {
     return rows;
   }
 
+  async getModulesByCourse(courseId) {
+    const [rows] = await this.db.execute(
+      `SELECT
+         id AS module_id,
+         course_id,
+         title AS module_title,
+         module_order
+       FROM modules
+       WHERE course_id = ?
+       ORDER BY module_order ASC, id ASC`,
+      [courseId],
+    );
+
+    return rows;
+  }
+
   async ensureSeedFromUploadIfEmpty() {
     const [courseCountRows] = await this.db.execute(
       "SELECT COUNT(*) AS total FROM courses",
