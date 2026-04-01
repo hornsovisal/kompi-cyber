@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, NavLink, useParams } from "react-router-dom";
 import axios from "axios";
+import { safeGetLocalStorage, safeSetLocalStorage } from "../utils/safeStorage";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const API_TARGET_LABEL = import.meta.env.VITE_API_URL || "Vite /api proxy";
@@ -74,13 +75,13 @@ export default function Dashboard() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem("theme");
+    const saved = safeGetLocalStorage("theme");
     return saved ? saved === "dark" : true;
   });
 
   // Save theme preference to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    safeSetLocalStorage("theme", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 
   const currentTab =

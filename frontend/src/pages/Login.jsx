@@ -53,17 +53,20 @@ export default function Login() {
         },
         {
           baseURL: API_BASE,
+          timeout: 10000, // 10 second timeout
         },
       );
       setResendMessage(
         response.data?.message ||
           "Verification email sent. Please check your inbox.",
       );
+      setVerificationLink(response.data?.verificationLink || "");
     } catch (error) {
       setResendMessage(
         error.response?.data?.message ||
           "Could not resend verification email. Please try again.",
       );
+      setVerificationLink("");
     } finally {
       setResendLoading(false);
     }

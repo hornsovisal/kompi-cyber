@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import logo from "../assets/logos/logo-blue.svg";
+import { safeGetLocalStorage, safeSetLocalStorage } from "../utils/safeStorage";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const SUPABASE_URL =
@@ -50,7 +51,7 @@ const COURSE_COVER_FALLBACKS = [
 export default function ExploreCourses() {
   const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem("theme");
+    const saved = safeGetLocalStorage("theme");
     return saved ? saved === "dark" : true;
   });
   const [user, setUser] = useState(null);
@@ -89,7 +90,7 @@ export default function ExploreCourses() {
 
   // Save theme preference to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    safeSetLocalStorage("theme", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 
   useEffect(() => {
