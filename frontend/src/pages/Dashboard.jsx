@@ -4,45 +4,55 @@ import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const API_TARGET_LABEL = import.meta.env.VITE_API_URL || "Vite /api proxy";
+const SUPABASE_URL =
+  import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co";
+const SUPABASE_BUCKET = "upload-lesson";
 const ASSET_BASE = (
   import.meta.env.VITE_API_URL || "http://localhost:3000"
 ).replace(/\/$/, "");
 
+// Legacy fallback map for courses without slug
 const COURSE_COVER_MAP = {
-  1: "/upload/lesson/intro-to-cyber-course/cover.svg",
-  2: "/upload/lesson/intro-to-linux-course/cover.svg",
-  3: "/upload/lesson/network-security/cover.svg",
-  4: "/upload/lesson/web-security/cover.svg",
-  5: "/upload/lesson/incident-response/cover.svg",
+  1: "intro-to-cyber-course",
+  2: "intro-to-linux-course",
+  3: "network-security",
+  4: "web-security",
+  5: "incident-response",
 };
 
+/**
+ * Build Supabase public URL for course cover image
+ * Follows pattern: https://{SUPABASE_URL}/storage/v1/object/public/{bucket}/lesson/{slug|courseId}/cover.svg
+ */
 function getCourseCoverUrl(course) {
-  const raw = COURSE_COVER_MAP[Number(course.id)] || "";
-  if (!raw) return "";
-  if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
-  return `${ASSET_BASE}${raw}`;
+  // Use course slug if available, otherwise fallback to legacy ID-based mapping
+  const courseSlug = course.slug || COURSE_COVER_MAP[Number(course.id)];
+  if (!courseSlug) return "";
+
+  const supabaseUrl = `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${courseSlug}/cover.svg`;
+  return supabaseUrl;
 }
 
 const COURSE_COVER_FALLBACKS = [
   {
     pattern: /introduction to cybersecurity/i,
-    path: "/upload/lesson/intro-to-cyber-course/cover.svg",
+    slug: "intro-to-cyber-course",
   },
   {
     pattern: /network security/i,
-    path: "/upload/lesson/network-security/cover.svg",
+    slug: "network-security",
   },
   {
     pattern: /web application security|web security/i,
-    path: "/upload/lesson/web-security/cover.svg",
+    slug: "web-security",
   },
   {
     pattern: /incident response|forensics/i,
-    path: "/upload/lesson/incident-response/cover.svg",
+    slug: "incident-response",
   },
   {
     pattern: /ethical hacking/i,
-    path: "/upload/lesson/intro-to-linux-course/cover.svg",
+    slug: "intro-to-linux-course",
   },
 ];
 
@@ -102,7 +112,9 @@ export default function Dashboard() {
 
   const displayedCourses =
     currentTab === "my-courses"
-      ? dedupeCoursesByTitle(courses.filter((course) => enrolledIds.has(course.id)))
+      ? dedupeCoursesByTitle(
+          courses.filter((course) => enrolledIds.has(course.id)),
+        )
       : dedupeCoursesByTitle(courses);
 
   const filteredCourses = displayedCourses.filter((course) => {
@@ -125,12 +137,20 @@ export default function Dashboard() {
       return `${API_BASE}${coverImageUrl}`;
     }
 
-    const fallback = COURSE_COVER_FALLBACKS.find((item) =>
-      item.pattern.test(course?.title || ""),
-    );
+    // Build Supabase URL using course slug or fallback
+    const courseSlug = course?.slug || COURSE_COVER_MAP[Number(course?.id)];
 
-    if (fallback) {
-      return `${API_BASE}${fallback.path}`;
+    // Try to find a fallback slug by course title
+    let fallbackSlug = courseSlug;
+    if (!fallbackSlug) {
+      const fallback = COURSE_COVER_FALLBACKS.find((item) =>
+        item.pattern.test(course?.title || ""),
+      );
+      fallbackSlug = fallback?.slug;
+    }
+
+    if (fallbackSlug) {
+      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${fallbackSlug}/cover.svg`;
     }
 
     return null;
@@ -198,7 +218,9 @@ export default function Dashboard() {
           setSummary({
             enrolledCourses: Number(summaryData.enrolledCourses || ids.size),
             completedCourses: Number(
-              summaryData.completedCourseCount ?? summaryData.completedCourses ?? 0,
+              summaryData.completedCourseCount ??
+                summaryData.completedCourses ??
+                0,
             ),
             hoursLearned: Number(summaryData.hoursLearned || 0),
             recentActivity: summaryData.recentActivity || [],
@@ -665,10 +687,15 @@ export default function Dashboard() {
                             </p>
                             <p
                               className={`mt-1 text-xs uppercase tracking-wide ${
-                                isDarkMode ? "text-[#FE9A00]/80" : "text-amber-700"
+                                isDarkMode
+                                  ? "text-[#FE9A00]/80"
+                                  : "text-amber-700"
                               }`}
                             >
-                              {(item.activity_type || "activity").replace("_", " ")}
+                              {(item.activity_type || "activity").replace(
+                                "_",
+                                " ",
+                              )}
                             </p>
                           </div>
                           <span

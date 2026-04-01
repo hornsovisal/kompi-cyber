@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AlertCircle, Users, Send, X, Check, Clock } from "lucide-react";
 
+const API_BASE = import.meta.env.VITE_API_URL || "";
+
 const CreateCourse = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("create"); // 'create' or 'manage'
@@ -15,7 +17,7 @@ const CreateCourse = () => {
     title: "",
     description: "",
     level: "beginner",
-    duration_hrs: 0,
+    duration: "4 weeks",
   });
 
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -39,12 +41,9 @@ const CreateCourse = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        "http://localhost:5000/api/courses/instructor",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const response = await fetch(`${API_BASE}/api/instructor/courses`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await response.json();
       if (data.success) {
         setCourses(data.data || []);
@@ -61,7 +60,7 @@ const CreateCourse = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:5000/api/invitations/course/${courseId}`,
+        `${API_BASE}/api/invitations/course/${courseId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -82,7 +81,7 @@ const CreateCourse = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "duration_hrs" ? parseInt(value) || 0 : value,
+      [name]: value,
     }));
   };
 
@@ -98,17 +97,13 @@ const CreateCourse = () => {
       setError("");
       const token = localStorage.getItem("token");
 
-      const response = await fetch("http://localhost:5000/api/courses", {
+      const response = await fetch(`${API_BASE}/api/instructor/courses`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          domain_id: 1,
-          ...formData,
-          is_published: false,
-        }),
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
@@ -118,7 +113,7 @@ const CreateCourse = () => {
           title: "",
           description: "",
           level: "beginner",
-          duration_hrs: 0,
+          duration: "4 weeks",
         });
         await fetchTeacherCourses();
         setTimeout(() => setSuccess(""), 3000);
@@ -145,20 +140,17 @@ const CreateCourse = () => {
       setError("");
       const token = localStorage.getItem("token");
 
-      const response = await fetch(
-        "http://localhost:5000/api/invitations/send",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            courseId: selectedCourse.id,
-            studentEmail: inviteEmail,
-          }),
+      const response = await fetch(`${API_BASE}/api/invitations/send`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({
+          courseId: selectedCourse.id,
+          studentEmail: inviteEmail,
+        }),
+      });
 
       const data = await response.json();
       if (data.success) {
@@ -181,7 +173,7 @@ const CreateCourse = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:5000/api/invitations/${invitationId}`,
+        `${API_BASE}/api/invitations/${invitationId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -206,7 +198,7 @@ const CreateCourse = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:5000/api/invitations/${invitationId}/resend`,
+        `${API_BASE}/api/invitations/${invitationId}/resend`,
         {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
@@ -364,15 +356,14 @@ const CreateCourse = () => {
 
                 <div>
                   <label className="block text-slate-200 font-medium mb-2">
-                    Duration (hours)
+                    Duration
                   </label>
                   <input
-                    type="number"
-                    name="duration_hrs"
-                    value={formData.duration_hrs}
+                    type="text"
+                    name="duration"
+                    value={formData.duration}
                     onChange={handleInputChange}
-                    placeholder="0"
-                    min="0"
+                    placeholder="e.g., 4 weeks"
                     className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                   />
                 </div>
@@ -416,7 +407,7 @@ const CreateCourse = () => {
                         <span className="capitalize px-2 py-1 bg-slate-600 rounded">
                           {course.level}
                         </span>
-                        <span>{course.duration_hrs} hrs</span>
+                        <span>{course.duration}</span>
                       </div>
                     </div>
                   ))}

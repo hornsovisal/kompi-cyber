@@ -53,23 +53,35 @@ const mockStudents = [
 // Get all instructor's courses with stats
 const getInstructorCourses = async (req, res) => {
   try {
-    const instructorId = req.user.id;
+    const instructorId = req.user?.sub || req.user?.id;
+    if (!instructorId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
 
     const query = `
       SELECT 
         c.id,
+        c.domain_id,
         c.title,
         c.description,
+        c.cover_image_url,
         c.level,
-        c.duration,
-        c.status,
+        c.duration_hrs AS duration,
+        c.is_published AS status,
         COUNT(DISTINCT e.id) as enrollmentCount,
-        COUNT(DISTINCT q.id) as quizCount,
-        COUNT(DISTINCT m.id) as moduleCount
+        COUNT(DISTINCT m.id) as moduleCount,
+        (SELECT COUNT(*) FROM quiz_questions qq 
+         INNER JOIN lessons l ON qq.lesson_id = l.id
+         INNER JOIN modules m2 ON l.module_id = m2.id
+         WHERE m2.course_id = c.id) as quizCount,
+        COUNT(DISTINCT l.id) as lessonCount
       FROM courses c
       LEFT JOIN enrollments e ON c.id = e.course_id
-      LEFT JOIN quizzes q ON c.id = q.course_id
       LEFT JOIN modules m ON c.id = m.course_id
+      LEFT JOIN lessons l ON m.id = l.module_id
       WHERE c.created_by = ?
       GROUP BY c.id
       ORDER BY c.created_at DESC
@@ -79,53 +91,13 @@ const getInstructorCourses = async (req, res) => {
 
     res.json({
       success: true,
-      data: courses,
+      data: courses || [],
     });
   } catch (error) {
     console.error("Error fetching instructor courses:", error);
-    // Return mock data for testing when database is not available
-    if (process.env.NODE_ENV !== "production") {
-      console.log("Database not available, returning mock course data");
-    }
-    const mockCourses = [
-      {
-        id: 1,
-        title: "Introduction to Cybersecurity",
-        description: "Learn the fundamentals of cybersecurity",
-        level: "beginner",
-        duration: 10,
-        status: "published",
-        enrollmentCount: 25,
-        quizCount: 0,
-        moduleCount: 3,
-      },
-      {
-        id: 2,
-        title: "Network Security Fundamentals",
-        description: "Master network security concepts",
-        level: "intermediate",
-        duration: 15,
-        status: "published",
-        enrollmentCount: 18,
-        quizCount: 0,
-        moduleCount: 4,
-      },
-      {
-        id: 3,
-        title: "Web Security Essentials",
-        description: "Protect web applications from threats",
-        level: "intermediate",
-        duration: 12,
-        status: "draft",
-        enrollmentCount: 0,
-        quizCount: 0,
-        moduleCount: 2,
-      },
-    ];
-
-    res.json({
-      success: true,
-      data: mockCourses,
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch courses",
     });
   }
 };
@@ -133,26 +105,51 @@ const getInstructorCourses = async (req, res) => {
 // Get single course details
 const getCourseDetail = async (req, res) => {
   try {
-    const { id } = req.params;
-    const instructorId = req.user.id;
+    const courseId = Number(req.params.id);
+    const instructorId = req.user?.sub || req.user?.id;
+
+    if (!instructorId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    if (!courseId || courseId <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid course ID",
+      });
+    }
 
     const query = `
       SELECT 
-        c.*,
+        c.id,
+        c.domain_id,
+        c.title,
+        c.description,
+        c.cover_image_url,
+        c.level,
+        c.duration_hrs AS duration,
+        c.is_published AS status,
         COUNT(DISTINCT e.id) as enrollmentCount,
-        COUNT(DISTINCT q.id) as quizCount,
-        COUNT(DISTINCT m.id) as moduleCount
+        COUNT(DISTINCT m.id) as moduleCount,
+        (SELECT COUNT(*) FROM quiz_questions qq 
+         INNER JOIN lessons l ON qq.lesson_id = l.id
+         INNER JOIN modules m2 ON l.module_id = m2.id
+         WHERE m2.course_id = c.id) as quizCount,
+        COUNT(DISTINCT l.id) as lessonCount
       FROM courses c
       LEFT JOIN enrollments e ON c.id = e.course_id
-      LEFT JOIN quizzes q ON c.id = q.course_id
       LEFT JOIN modules m ON c.id = m.course_id
+      LEFT JOIN lessons l ON m.id = l.module_id
       WHERE c.id = ? AND c.created_by = ?
       GROUP BY c.id
     `;
 
-    const [courses] = await db.execute(query, [id, instructorId]);
+    const [courses] = await db.execute(query, [courseId, instructorId]);
 
-    if (courses.length === 0) {
+    if (!courses || courses.length === 0) {
       return res.status(404).json({
         success: false,
         message: "Course not found",
@@ -168,6 +165,7 @@ const getCourseDetail = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch course details",
+      error: process.env.NODE_ENV !== "production" ? error.message : undefined,
     });
   }
 };
@@ -175,44 +173,74 @@ const getCourseDetail = async (req, res) => {
 // Create new course
 const createCourse = async (req, res) => {
   try {
-    const { title, description, level, duration } = req.body;
-    const instructorId = req.user.id;
+    const { title, description, level, duration, domain_id } = req.body;
+    const instructorId = req.user?.sub || req.user?.id;
 
-    // Validate required fields
-    if (!title || !description) {
-      return res.status(400).json({
+    if (!instructorId) {
+      return res.status(401).json({
         success: false,
-        message: "Title and description are required",
+        message: "Unauthorized",
       });
     }
 
+    // Validate required fields
+    if (!title) {
+      return res.status(400).json({
+        success: false,
+        message: "Title is required",
+      });
+    }
+
+    // Use a default domain if not provided
+    const finalDomainId = domain_id || 1;
+
     const query = `
-      INSERT INTO courses (title, description, level, duration, created_by, status, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, 'draft', NOW(), NOW())
+      INSERT INTO courses (
+        domain_id, 
+        title, 
+        description, 
+        level, 
+        duration_hrs, 
+        created_by, 
+        is_published, 
+        created_at, 
+        updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, 0, NOW(), NOW())
     `;
 
     const [result] = await db.execute(query, [
-      title,
-      description,
-      level || "Beginner",
-      duration || "4 weeks",
+      finalDomainId,
+      title.trim(),
+      description?.trim() || "",
+      level || "beginner",
+      parseInt(duration) || 0,
       instructorId,
+    ]);
+
+    if (!result.insertId) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to create course",
+      });
+    }
+
+    // Fetch and return the created course
+    const [courses] = await db.execute("SELECT * FROM courses WHERE id = ?", [
+      result.insertId,
     ]);
 
     res.status(201).json({
       success: true,
       message: "Course created successfully",
-      data: {
-        id: result.insertId,
-        title,
-        description,
-      },
+      data: courses[0],
     });
   } catch (error) {
     console.error("Error creating course:", error);
     res.status(500).json({
       success: false,
       message: "Failed to create course",
+      error: process.env.NODE_ENV !== "production" ? error.message : undefined,
     });
   }
 };
@@ -220,40 +248,115 @@ const createCourse = async (req, res) => {
 // Update course
 const updateCourse = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { title, description, level, duration, status } = req.body;
-    const instructorId = req.user.id;
+    const courseId = Number(req.params.id);
+    const {
+      title,
+      description,
+      level,
+      duration,
+      is_published,
+      cover_image_url,
+      domain_id,
+    } = req.body;
+    const instructorId = req.user?.sub || req.user?.id;
 
-    // Check if course belongs to instructor
-    const [courses] = await db.execute(
-      "SELECT id FROM courses WHERE id = ? AND created_by = ?",
-      [id, instructorId],
-    );
-
-    if (courses.length === 0) {
-      return res.status(403).json({
+    if (!instructorId) {
+      return res.status(401).json({
         success: false,
-        message: "Not authorized to update this course",
+        message: "Unauthorized",
       });
     }
 
-    const query = `
-      UPDATE courses 
-      SET title = ?, description = ?, level = ?, duration = ?, status = ?, updated_at = NOW()
-      WHERE id = ?
-    `;
+    if (!courseId || courseId <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid course ID",
+      });
+    }
 
-    await db.execute(query, [title, description, level, duration, status, id]);
+    // Check if course belongs to instructor
+    const [courses] = await db.execute(
+      "SELECT id, created_by FROM courses WHERE id = ?",
+      [courseId],
+    );
+
+    if (!courses || courses.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
+    }
+
+    if (courses[0].created_by !== instructorId) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized to update this course",
+      });
+    }
+
+    // Build update query dynamically
+    const updateFields = [];
+    const updateValues = [];
+
+    if (domain_id !== undefined) {
+      updateFields.push("domain_id = ?");
+      updateValues.push(domain_id);
+    }
+    if (title !== undefined) {
+      updateFields.push("title = ?");
+      updateValues.push(title.trim());
+    }
+    if (description !== undefined) {
+      updateFields.push("description = ?");
+      updateValues.push(description?.trim() || "");
+    }
+    if (level !== undefined) {
+      updateFields.push("level = ?");
+      updateValues.push(level);
+    }
+    if (duration !== undefined) {
+      updateFields.push("duration_hrs = ?");
+      updateValues.push(parseInt(duration) || 0);
+    }
+    if (is_published !== undefined) {
+      updateFields.push("is_published = ?");
+      updateValues.push(is_published ? 1 : 0);
+    }
+    if (cover_image_url !== undefined) {
+      updateFields.push("cover_image_url = ?");
+      updateValues.push(cover_image_url);
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No fields to update",
+      });
+    }
+
+    updateFields.push("updated_at = NOW()");
+    updateValues.push(courseId);
+
+    const query = `UPDATE courses SET ${updateFields.join(", ")} WHERE id = ?`;
+    await db.execute(query, updateValues);
+
+    // Fetch and return the updated course
+    const [updatedCourses] = await db.execute(
+      "SELECT * FROM courses WHERE id = ?",
+      [courseId],
+    );
 
     res.json({
       success: true,
       message: "Course updated successfully",
+      data: updatedCourses[0],
     });
   } catch (error) {
     console.error("Error updating course:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update course",
+      error: process.env.NODE_ENV !== "production" ? error.message : undefined,
     });
   }
 };
@@ -261,23 +364,44 @@ const updateCourse = async (req, res) => {
 // Delete course
 const deleteCourse = async (req, res) => {
   try {
-    const { id } = req.params;
-    const instructorId = req.user.id;
+    const courseId = Number(req.params.id);
+    const instructorId = req.user?.sub || req.user?.id;
 
-    // Check if course belongs to instructor
-    const [courses] = await db.execute(
-      "SELECT id FROM courses WHERE id = ? AND created_by = ?",
-      [id, instructorId],
-    );
-
-    if (courses.length === 0) {
-      return res.status(403).json({
+    if (!instructorId) {
+      return res.status(401).json({
         success: false,
-        message: "Not authorized to delete this course",
+        message: "Unauthorized",
       });
     }
 
-    await db.execute("DELETE FROM courses WHERE id = ?", [id]);
+    if (!courseId || courseId <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid course ID",
+      });
+    }
+
+    // Check if course belongs to instructor
+    const [courses] = await db.execute(
+      "SELECT id, created_by FROM courses WHERE id = ?",
+      [courseId],
+    );
+
+    if (!courses || courses.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
+    }
+
+    if (courses[0].created_by !== instructorId) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized to delete this course",
+      });
+    }
+
+    await db.execute("DELETE FROM courses WHERE id = ?", [courseId]);
 
     res.json({
       success: true,
@@ -288,6 +412,7 @@ const deleteCourse = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to delete course",
+      error: process.env.NODE_ENV !== "production" ? error.message : undefined,
     });
   }
 };
@@ -295,38 +420,48 @@ const deleteCourse = async (req, res) => {
 // Get dashboard stats
 const getDashboardStats = async (req, res) => {
   try {
-    const instructorId = req.user.id;
+    const instructorId = req.user?.sub || req.user?.id;
+
+    if (!instructorId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
 
     // Get total courses
-    const coursesQuery =
-      "SELECT COUNT(*) as count FROM courses WHERE created_by = ?";
-    const [coursesResult] = await db.execute(coursesQuery, [instructorId]);
+    const [coursesResult] = await db.execute(
+      "SELECT COUNT(*) as count FROM courses WHERE created_by = ?",
+      [instructorId]
+    );
 
     // Get total students enrolled
-    const studentsQuery = `
-      SELECT COUNT(DISTINCT e.user_id) as count 
-      FROM enrollments e
-      JOIN courses c ON e.course_id = c.id
-      WHERE c.created_by = ?
-    `;
-    const [studentsResult] = await db.execute(studentsQuery, [instructorId]);
+    const [studentsResult] = await db.execute(
+      `SELECT COUNT(DISTINCT e.user_id) as count 
+       FROM enrollments e
+       JOIN courses c ON e.course_id = c.id
+       WHERE c.created_by = ?`,
+      [instructorId]
+    );
 
-    // Get total quizzes
-    const quizzesQuery = `
-      SELECT COUNT(*) as count 
-      FROM quizzes q
-      JOIN courses c ON q.course_id = c.id
-      WHERE c.created_by = ?
-    `;
-    const [quizzesResult] = await db.execute(quizzesQuery, [instructorId]);
+    // Get total quiz questions (as a proxy for quizzes)
+    const [quizzesResult] = await db.execute(
+      `SELECT COUNT(DISTINCT qq.lesson_id) as count 
+       FROM quiz_questions qq
+       INNER JOIN lessons l ON qq.lesson_id = l.id
+       INNER JOIN modules m ON l.module_id = m.id
+       INNER JOIN courses c ON m.course_id = c.id
+       WHERE c.created_by = ?`,
+      [instructorId]
+    );
 
     res.json({
       success: true,
       data: {
-        totalCourses: coursesResult[0].count,
-        totalStudents: studentsResult[0].count,
-        totalQuizzes: quizzesResult[0].count,
-        completionRate: 0, // Calculate from lesson_progress
+        totalCourses: coursesResult[0]?.count || 0,
+        totalStudents: studentsResult[0]?.count || 0,
+        totalQuizzes: quizzesResult[0]?.count || 0,
+        completionRate: 0,
       },
     });
   } catch (error) {
@@ -334,6 +469,7 @@ const getDashboardStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch stats",
+      error: process.env.NODE_ENV !== "production" ? error.message : undefined,
     });
   }
 };

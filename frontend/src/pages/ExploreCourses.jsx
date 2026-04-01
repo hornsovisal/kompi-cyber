@@ -4,6 +4,9 @@ import axios from "axios";
 import logo from "../assets/logos/logo-blue.svg";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
+const SUPABASE_URL =
+  import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co";
+const SUPABASE_BUCKET = "upload-lesson";
 const ASSET_BASE = (
   import.meta.env.VITE_API_URL || "http://localhost:3000"
 ).replace(/\/$/, "");
@@ -20,27 +23,27 @@ const COURSE_CATEGORIES = [
 const COURSE_COVER_FALLBACKS = [
   {
     pattern: /introduction to cybersecurity/i,
-    path: "/upload/lesson/intro-to-cyber-course/cover.svg",
+    slug: "intro-to-cyber-course",
   },
   {
     pattern: /network security/i,
-    path: "/upload/lesson/network-security/cover.svg",
+    slug: "network-security",
   },
   {
     pattern: /web application security|web security/i,
-    path: "/upload/lesson/web-security/cover.svg",
+    slug: "web-security",
   },
   {
     pattern: /incident response|forensics/i,
-    path: "/upload/lesson/incident-response/cover.svg",
+    slug: "incident-response",
   },
   {
     pattern: /ethical hacking/i,
-    path: "/upload/lesson/intro-to-linux-course/cover.svg",
+    slug: "intro-to-linux-course",
   },
   {
     pattern: /introduction to linux|linux/i,
-    path: "/upload/lesson/intro-to-linux-course/cover.svg",
+    slug: "intro-to-linux-course",
   },
 ];
 
@@ -69,11 +72,17 @@ export default function ExploreCourses() {
       return `${API_BASE}${coverImageUrl}`;
     }
 
+    // Build Supabase URL using course slug or fallback
+    const courseSlug = course?.slug;
+    if (courseSlug) {
+      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${courseSlug}/cover.svg`;
+    }
+
     const fallback = COURSE_COVER_FALLBACKS.find((item) =>
       item.pattern.test(course?.title || ""),
     );
     if (fallback) {
-      return `${API_BASE}${fallback.path}`;
+      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${fallback.slug}/cover.svg`;
     }
     return null;
   };

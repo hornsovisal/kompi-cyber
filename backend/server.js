@@ -29,27 +29,56 @@ const app = express();
 app.use(helmet());
 app.use(compression());
 
-// CORS configuration
+// CORS configuration - supports both local development and production deployment
 const corsOptions = {
   origin: (origin, callback) => {
+    // Get allowed origins from environment or use defaults
     const allowedOrigins = [
       "http://localhost:3000",
       "http://localhost:5173",
+      "http://localhost:5000",
       process.env.FRONTEND_URL,
+      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+      "https://kompi-cyber.vercel.app",
     ].filter(Boolean);
 
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.warn(`CORS rejected origin: ${origin}`);
-      callback(new Error("Not allowed by CORS"));
+      // Log for debugging but allow in development
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(`CORS warning - origin: ${origin}`);
+        callback(null, true);
+      } else {
+        console.warn(`CORS rejected origin: ${origin}`);
+        callback(new Error("Not allowed by CORS"));
+      }
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
+  maxAge: 3600,
 };
+
+// In production, restrict CORS to specific origins
+if (process.env.NODE_ENV === "production" && process.env.FRONTEND_URL) {
+  corsOptions.origin = (origin, callback) => {
+    const allowedOrigins = [
+      process.env.FRONTEND_URL,
+      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+      "https://kompi-cyber.vercel.app",
+    ].filter(Boolean);
+
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS rejected origin: ${origin}`);
+      callback(new Error("Not allowed by CORS"));
+    }
+  };
+}
 
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
@@ -124,6 +153,15 @@ async function startServer() {
 
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on http://0.0.0.0:${PORT}`);
+      console.log(
+        `Frontend URL: ${process.env.FRONTEND_URL || "not configured"}`,
+      );
+      console.log(
+        `CORS Policy: ${process.env.NODE_ENV === "production" ? "Restricted to configured domains" : "Permissive for development"}`,
+      );
+      if (process.env.VERCEL_URL) {
+        console.log(`Vercel URL: https://${process.env.VERCEL_URL}`);
+      }
     });
   } catch (error) {
     console.error("Failed to start server:", error.message);
