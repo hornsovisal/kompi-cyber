@@ -240,6 +240,26 @@ class LessonModel {
       ];
     }
   }
+
+  async upsertLessonProgress(userId, lessonId, status = "completed") {
+    const normalizedStatus =
+      status === "completed" || status === "in_progress"
+        ? status
+        : "not_started";
+
+    const completedAt = normalizedStatus === "completed" ? "NOW()" : "NULL";
+
+    const [result] = await this.db.execute(
+      `INSERT INTO lesson_progress (user_id, lesson_id, status, completed_at)
+       VALUES (?, ?, ?, ${completedAt})
+       ON DUPLICATE KEY UPDATE
+         status = VALUES(status),
+         completed_at = ${completedAt}`,
+      [userId, lessonId, normalizedStatus],
+    );
+
+    return result;
+  }
 }
 
 module.exports = new LessonModel(db);

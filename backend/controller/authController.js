@@ -59,17 +59,24 @@ class AuthController {
 
       const verificationToken = this.signActionToken(userId, "verify-email", "24h");
 
+      let verificationResult = null;
       try {
-        await emailService.sendVerificationEmail(email, verificationToken);
+        verificationResult = await emailService.sendVerificationEmail(email, verificationToken);
       } catch (emailError) {
         console.error("Email sending failed:", emailError);
         // Don't fail registration if email fails
       }
 
-      res.status(201).json({
+      const responsePayload = {
         message: "User registered successfully. Please check your email to verify your account.",
         user: { id: userId, name, email },
-      });
+      };
+
+      if (!emailService.smtpConfigured && verificationResult?.url) {
+        responsePayload.verificationLink = verificationResult.url;
+      }
+
+      res.status(201).json(responsePayload);
     } catch (error) {
       console.error("Register error:", error);
       res.status(500).json({ message: "Server error" });
@@ -192,15 +199,22 @@ class AuthController {
 
       const verificationToken = this.signActionToken(user.id, "verify-email", "24h");
 
+      let verificationResult = null;
       try {
-        await emailService.sendVerificationEmail(email, verificationToken);
+        verificationResult = await emailService.sendVerificationEmail(email, verificationToken);
       } catch (emailError) {
         console.error("Resend verification email failed:", emailError);
       }
 
-      return res.status(200).json({
+      const responsePayload = {
         message: "Verification email sent. Please check your inbox.",
-      });
+      };
+
+      if (!emailService.smtpConfigured && verificationResult?.url) {
+        responsePayload.verificationLink = verificationResult.url;
+      }
+
+      return res.status(200).json(responsePayload);
     } catch (error) {
       console.error("Resend verification error:", error);
       return res.status(500).json({ message: "Server error" });

@@ -87,6 +87,119 @@ class UserModel {
     return result;
   }
 
+  async softDeleteUserAccount(connection, userId) {
+    const [rows] = await connection.execute(
+      "SELECT email FROM users WHERE id = ? LIMIT 1",
+      [userId],
+    );
+
+    const email = rows[0]?.email || "deleted@example.com";
+    const deletedEmail = `deleted+${Date.now()}+${userId.slice(0, 8)}@example.invalid`;
+    const passwordHash = `deleted:${Date.now()}`;
+
+    const [result] = await connection.execute(
+      `UPDATE users
+       SET full_name = ?, email = ?, password_hash = ?, is_active = 0
+       WHERE id = ?`,
+      ["Deleted User", `${email}#${deletedEmail}`, passwordHash, userId],
+    );
+
+    return result.affectedRows > 0;
+  }
+
+  async deleteUserAccount(userId) {
+    const connection = await this.db.getConnection();
+
+    try {
+      await connection.beginTransaction();
+
+      const [ownedCourses] = await connection.execute(
+        "SELECT id FROM courses WHERE created_by = ? LIMIT 1",
+        [userId],
+      );
+
+      if (ownedCourses.length > 0) {
+        await connection.rollback();
+        return { deleted: false, blocked: true };
+      }
+
+      const [attemptRows] = await connection.execute(
+        "SELECT id FROM quiz_attempts WHERE user_id = ?",
+        [userId],
+      );
+      const attemptIds = attemptRows.map((r) => r.id);
+
+      if (attemptIds.length > 0) {
+        const placeholders = attemptIds.map(() => "?").join(", ");
+        await connection.execute(
+          `DELETE FROM quiz_answers WHERE attempt_id IN (${placeholders})`,
+          attemptIds,
+        );
+      }
+
+      await connection.execute("DELETE FROM quiz_attempts WHERE user_id = ?", [
+        userId,
+      ]);
+      await connection.execute(
+        "DELETE FROM exercise_submissions WHERE user_id = ?",
+        [userId],
+      );
+      await connection.execute("DELETE FROM lesson_progress WHERE user_id = ?", [
+        userId,
+      ]);
+      await connection.execute("DELETE FROM enrollments WHERE user_id = ?", [
+        userId,
+      ]);
+      await connection.execute("DELETE FROM certificates WHERE user_id = ?", [
+        userId,
+      ]);
+
+      // Keep compatibility with schemas where invitation FKs may differ.
+      try {
+        await connection.execute(
+          "UPDATE course_invitations SET student_id = NULL WHERE student_id = ?",
+          [userId],
+        );
+        await connection.execute(
+          "DELETE FROM course_invitations WHERE teacher_id = ?",
+          [userId],
+        );
+      } catch (invitationError) {
+        if (invitationError?.code !== "ER_NO_SUCH_TABLE") {
+          throw invitationError;
+        }
+      }
+
+      let deleteResult;
+      try {
+        [deleteResult] = await connection.execute("DELETE FROM users WHERE id = ?", [
+          userId,
+        ]);
+      } catch (deleteError) {
+        // Some deployed schemas can have extra user FK references.
+        if (deleteError?.code === "ER_ROW_IS_REFERENCED_2") {
+          const softDeleted = await this.softDeleteUserAccount(connection, userId);
+          await connection.commit();
+          return { deleted: softDeleted, blocked: false, softDeleted: true };
+        }
+        throw deleteError;
+      }
+
+      await connection.commit();
+
+      return {
+        deleted: deleteResult.affectedRows > 0,
+        blocked: false,
+        softDeleted: false,
+      };
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
   async getUserProgress(userId) {
     const [rows] = await this.db.execute(
       `SELECT

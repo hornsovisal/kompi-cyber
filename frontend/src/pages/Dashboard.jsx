@@ -43,7 +43,7 @@ const COURSE_COVER_FALLBACKS = [
   },
   {
     pattern: /ethical hacking/i,
-    path: "/upload/lesson/web-security/cover.svg",
+    path: "/upload/lesson/intro-to-linux-course/cover.svg",
   },
 ];
 
@@ -60,6 +60,7 @@ export default function Dashboard() {
     hoursLearned: 0,
     recentActivity: [],
   });
+  const [certificateCount, setCertificateCount] = useState(0);
   const [enrollingId, setEnrollingId] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -78,10 +79,32 @@ export default function Dashboard() {
       ? tab
       : "my-courses";
 
+  const dedupeCoursesByTitle = (courseList) => {
+    const seen = new Set();
+    return (courseList || []).filter((course) => {
+      const key = (course?.title || "")
+        .toString()
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ");
+
+      if (!key) {
+        return true;
+      }
+
+      if (seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    });
+  };
+
   const displayedCourses =
     currentTab === "my-courses"
-      ? courses.filter((course) => enrolledIds.has(course.id))
-      : courses;
+      ? dedupeCoursesByTitle(courses.filter((course) => enrolledIds.has(course.id)))
+      : dedupeCoursesByTitle(courses);
 
   const filteredCourses = displayedCourses.filter((course) => {
     const keyword = searchQuery.trim().toLowerCase();
@@ -121,6 +144,13 @@ export default function Dashboard() {
     (user?.email ? user.email.split("@")[0] : null) ||
     "User";
 
+  const formatActivityTime = (occurredAt) => {
+    if (!occurredAt) return "Unknown time";
+    const date = new Date(occurredAt);
+    if (Number.isNaN(date.getTime())) return "Unknown time";
+    return date.toLocaleString();
+  };
+
   useEffect(() => {
     // Get user from localStorage
     const storedUser = localStorage.getItem("user");
@@ -151,25 +181,38 @@ export default function Dashboard() {
         );
         setEnrolledIds(ids);
 
-        // Keep dashboard usable even if summary endpoint fails.
-        try {
-          const summaryRes = await axios.get(
-            "/api/users/me/dashboard-summary",
-            {
-              baseURL: API_BASE,
-              headers,
-            },
-          );
+        // Keep dashboard usable even if summary/certificates endpoints fail.
+        const [summaryResult, certificatesResult] = await Promise.allSettled([
+          axios.get("/api/users/me/dashboard-summary", {
+            baseURL: API_BASE,
+            headers,
+          }),
+          axios.get("/api/certificates/my", {
+            baseURL: API_BASE,
+            headers,
+          }),
+        ]);
+
+        if (summaryResult.status === "fulfilled") {
+          const summaryData = summaryResult.value.data || {};
           setSummary({
-            enrolledCourses: Number(
-              summaryRes.data?.enrolledCourses || ids.size,
+            enrolledCourses: Number(summaryData.enrolledCourses || ids.size),
+            completedCourses: Number(
+              summaryData.completedCourseCount ?? summaryData.completedCourses ?? 0,
             ),
-            completedCourses: Number(summaryRes.data?.completedCourses || 0),
-            hoursLearned: Number(summaryRes.data?.hoursLearned || 0),
-            recentActivity: summaryRes.data?.recentActivity || [],
+            hoursLearned: Number(summaryData.hoursLearned || 0),
+            recentActivity: summaryData.recentActivity || [],
           });
-        } catch (_summaryError) {
+        } else {
           setSummary((prev) => ({ ...prev, enrolledCourses: ids.size }));
+        }
+
+        if (certificatesResult.status === "fulfilled") {
+          setCertificateCount(
+            Number(certificatesResult.value.data?.certificates?.length || 0),
+          );
+        } else {
+          setCertificateCount(0);
         }
       } catch (err) {
         if (err.response?.status === 401) {
@@ -209,12 +252,6 @@ export default function Dashboard() {
     } finally {
       setEnrollingId(null);
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/");
   };
 
   if (loading) {
@@ -350,11 +387,12 @@ export default function Dashboard() {
 
           {/* User Actions */}
           <div className="flex items-center gap-3 sm:gap-4">
-            <div
-              className={`hidden sm:flex items-center gap-3 px-4 py-2 rounded-lg border border-transition-all duration-500 ${
+            <Link
+              to="/profile"
+              className={`hidden sm:flex items-center gap-3 px-4 py-2 rounded-lg border transition-all duration-200 hover:scale-105 ${
                 isDarkMode
-                  ? "bg-[#1A2840]/40 border-[#1E3A5F]/50"
-                  : "bg-gray-100/40 border-gray-200/50"
+                  ? "bg-[#1A2840]/40 border-[#1E3A5F]/50 hover:border-[#FE9A00]/50 hover:shadow-lg hover:shadow-[#FE9A00]/20"
+                  : "bg-gray-100/40 border-gray-200/50 hover:border-amber-400/50 hover:shadow-lg hover:shadow-amber-400/20"
               }`}
             >
               <div
@@ -377,7 +415,7 @@ export default function Dashboard() {
               >
                 {currentUsername}
               </span>
-            </div>
+            </Link>
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider border transition-all duration-200 flex items-center gap-2 ${
@@ -415,12 +453,6 @@ export default function Dashboard() {
                   <span className="hidden sm:inline">Dark</span>
                 </>
               )}
-            </button>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-red-600 to-red-700 text-white text-xs font-bold uppercase tracking-wider border border-red-500/50 hover:shadow-lg hover:shadow-red-600/40 hover:scale-105 transition-all duration-200"
-            >
-              Logout
             </button>
           </div>
         </div>
@@ -530,7 +562,7 @@ export default function Dashboard() {
                       isDarkMode ? "text-white" : "text-gray-900"
                     }`}
                   >
-                    {enrolledIds.size}
+                    {summary.enrolledCourses || enrolledIds.size}
                   </p>
                 </div>
 
@@ -546,14 +578,14 @@ export default function Dashboard() {
                       isDarkMode ? "text-slate-300" : "text-gray-600"
                     }`}
                   >
-                    Completed
+                    Completed Courses
                   </p>
                   <p
                     className={`mt-2 text-2xl font-bold transition-colors ${
                       isDarkMode ? "text-[#FE9A00]" : "text-amber-600"
                     }`}
                   >
-                    0
+                    {summary.completedCourses}
                   </p>
                 </div>
 
@@ -576,7 +608,7 @@ export default function Dashboard() {
                       isDarkMode ? "text-emerald-400" : "text-emerald-600"
                     }`}
                   >
-                    0
+                    {certificateCount}
                   </p>
                 </div>
 
@@ -599,7 +631,7 @@ export default function Dashboard() {
                       isDarkMode ? "text-[#FE9A00]" : "text-amber-600"
                     }`}
                   >
-                    0
+                    {summary.hoursLearned}
                   </p>
                 </div>
               </div>
@@ -620,13 +652,52 @@ export default function Dashboard() {
                       : "border-gray-200/50 bg-gray-100/20 hover:border-amber-300/30"
                   }`}
                 >
-                  <p
-                    className={`text-center transition-colors ${
-                      isDarkMode ? "text-slate-400" : "text-gray-500"
-                    }`}
-                  >
-                    No recent activity. Start learning now!
-                  </p>
+                  {summary.recentActivity.length === 0 ? (
+                    <p
+                      className={`text-center transition-colors ${
+                        isDarkMode ? "text-slate-400" : "text-gray-500"
+                      }`}
+                    >
+                      No recent activity. Start learning now!
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {summary.recentActivity.map((item, index) => (
+                        <div
+                          key={`${item.activity_type || "activity"}-${item.occurred_at || index}-${index}`}
+                          className={`rounded-xl border px-4 py-3 flex items-start justify-between gap-4 ${
+                            isDarkMode
+                              ? "border-[#1E3A5F]/50 bg-[#0F172A]/40"
+                              : "border-gray-200/70 bg-white/70"
+                          }`}
+                        >
+                          <div className="min-w-0">
+                            <p
+                              className={`text-sm font-semibold truncate ${
+                                isDarkMode ? "text-white" : "text-gray-900"
+                              }`}
+                            >
+                              {item.activity_text || "Activity"}
+                            </p>
+                            <p
+                              className={`mt-1 text-xs uppercase tracking-wide ${
+                                isDarkMode ? "text-[#FE9A00]/80" : "text-amber-700"
+                              }`}
+                            >
+                              {(item.activity_type || "activity").replace("_", " ")}
+                            </p>
+                          </div>
+                          <span
+                            className={`flex-shrink-0 text-xs ${
+                              isDarkMode ? "text-slate-400" : "text-gray-500"
+                            }`}
+                          >
+                            {formatActivityTime(item.occurred_at)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </>
