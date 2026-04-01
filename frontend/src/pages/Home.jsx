@@ -45,10 +45,6 @@ export default function Home() {
     }
   };
 
-  const handleTeacherLogin = () => {
-    navigate("/instructor/login");
-  };
-
   const handleCourseClick = (courseId) => {
     navigate(`/learn/${courseId}`);
   };
@@ -131,12 +127,12 @@ export default function Home() {
         section: "bg-gradient-to-b from-[#192841] to-[#0f1a2e]",
       }
     : {
-        shell: "bg-[#f4efe5] text-[#1f2a44]",
-        nav: "bg-[#f4efe5]/85 border-[#d97706]/20",
-        card: "bg-white/70 border-[#d97706]/20 text-[#1f2a44]",
-        muted: "text-slate-500",
-        soft: "text-slate-600",
-        section: "bg-gradient-to-b from-[#efe8da] to-[#e8dfcf]",
+        shell: "bg-gradient-to-b from-white to-gray-50 text-[#1f2a44]",
+        nav: "bg-white/95 border-orange-200 shadow-sm",
+        card: "bg-gradient-to-br from-white to-orange-50 border-orange-200 text-[#1f2a44] shadow-sm",
+        muted: "text-gray-600",
+        soft: "text-gray-700",
+        section: "bg-gradient-to-b from-gray-50 via-orange-50 to-white",
       };
 
   return (
@@ -163,14 +159,6 @@ export default function Home() {
             <Zap className="text-[#FFA500]" size={32} />
             KOMPI-CYBER
           </motion.button>
-
-          <button
-            type="button"
-            onClick={handleTeacherLogin}
-            className="rounded-lg border border-[#FFA500]/40 bg-[#FFA500]/10 px-3 py-2 text-sm font-semibold text-[#FFA500] transition hover:bg-[#FFA500]/20 md:hidden"
-          >
-            Teacher Login
-          </button>
 
           <div className="hidden gap-8 font-medium md:flex">
             <button
@@ -200,13 +188,6 @@ export default function Home() {
               className="transition duration-300 hover:text-[#FFA500]"
             >
               My Learning
-            </button>
-            <button
-              type="button"
-              onClick={handleTeacherLogin}
-              className="transition duration-300 hover:text-[#FFA500]"
-            >
-              Teacher Login
             </button>
             <button
               type="button"

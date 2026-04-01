@@ -9,12 +9,18 @@ class LessonController {
 
   getLessonById = async (req, res) => {
     try {
-      const id = Number(req.params.id);
-      if (!Number.isInteger(id) || id <= 0) {
-        return res.status(400).json({ message: "Invalid lesson id" });
+      const param = req.params.id;
+      const numId = Number(param);
+
+      let lesson;
+      if (Number.isInteger(numId) && numId > 0) {
+        // Numeric ID
+        lesson = await this.lessonModel.findById(numId);
+      } else {
+        // Slug (string)
+        lesson = await this.lessonModel.findBySlug(param);
       }
 
-      const lesson = await this.lessonModel.findById(id);
       if (!lesson) {
         return res.status(404).json({ message: "Lesson not found" });
       }
@@ -137,6 +143,7 @@ class LessonController {
     }
   };
 
+<<<<<<< HEAD
   markLessonCompleted = async (req, res) => {
     try {
       const lessonId = Number(req.params.id);
@@ -150,10 +157,22 @@ class LessonController {
       }
 
       const lesson = await this.lessonModel.findById(lessonId);
+=======
+  // Get lesson by slug (NEW - security through obscured IDs)
+  getLessonBySlug = async (req, res) => {
+    try {
+      const slug = String(req.params.slug).trim();
+      if (!slug || slug.length === 0) {
+        return res.status(400).json({ message: "Invalid lesson slug" });
+      }
+
+      const lesson = await this.lessonModel.findBySlug(slug);
+>>>>>>> main
       if (!lesson) {
         return res.status(404).json({ message: "Lesson not found" });
       }
 
+<<<<<<< HEAD
       const enrolled = await enrollmentModel.isEnrolled(userId, lesson.course_id);
       if (!enrolled) {
         console.warn(
@@ -175,6 +194,25 @@ class LessonController {
         code: error?.code || null,
         detail: error?.sqlMessage || error?.message || null,
       });
+=======
+      // Lesson content is only available to users enrolled in the lesson course.
+      const userId = req.user?.sub;
+      const enrolled = await enrollmentModel.isEnrolled(
+        userId,
+        lesson.course_id,
+      );
+      if (!enrolled) {
+        return res.status(403).json({
+          message: "You must enroll in this course to access its lessons",
+          enrolled: false,
+        });
+      }
+
+      return res.status(200).json({ lesson });
+    } catch (error) {
+      console.error("getLessonBySlug error:", error);
+      return res.status(500).json({ message: "Server error" });
+>>>>>>> main
     }
   };
 }

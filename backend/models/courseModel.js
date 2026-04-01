@@ -36,10 +36,12 @@ class CourseModel {
       hasCoverImage ? "c.cover_image_url" : "NULL AS cover_image_url",
       "c.level",
       "c.duration_hrs",
+      "c.course_type",
       "c.is_published",
       "c.created_by",
       "c.created_at",
       "c.updated_at",
+      "c.slug",
     ].join(",\n         ");
   }
 
@@ -66,6 +68,21 @@ class CourseModel {
        WHERE c.id = ?
        LIMIT 1`,
       [id],
+    );
+
+    return rows[0] || null;
+  }
+
+  async findBySlug(slug) {
+    const selectFields = await this.getCourseSelectFields();
+    const [rows] = await this.db.execute(
+      `SELECT
+         ${selectFields},
+         (SELECT COUNT(*) FROM modules m WHERE m.course_id = c.id) AS module_count
+       FROM courses c
+       WHERE c.slug = ?
+       LIMIT 1`,
+      [slug],
     );
 
     return rows[0] || null;

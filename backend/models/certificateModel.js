@@ -104,8 +104,8 @@ class CertificateModel {
        FROM certificates c
        INNER JOIN users u ON u.id = c.user_id
        INNER JOIN courses cr ON cr.id = c.course_id
-       WHERE c.certificate_hash = ?`,
-      [certificateHash],
+       WHERE c.certificate_hash LIKE ?`,
+      [`${certificateHash}%`],
     );
     return rows[0] || null;
   }

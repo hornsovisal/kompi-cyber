@@ -20,12 +20,18 @@ class CourseController {
   getCourseById = async (req, res) => {
     try {
       await this.courseModel.ensureSeedFromUploadIfEmpty();
-      const id = Number(req.params.id);
-      if (!Number.isInteger(id) || id <= 0) {
-        return res.status(400).json({ message: "Invalid course id" });
+      const param = req.params.id;
+      const numId = Number(param);
+
+      let course;
+      if (Number.isInteger(numId) && numId > 0) {
+        // Numeric ID
+        course = await this.courseModel.findById(numId);
+      } else {
+        // Slug (string)
+        course = await this.courseModel.findBySlug(param);
       }
 
-      const course = await this.courseModel.findById(id);
       if (!course) {
         return res.status(404).json({ message: "Course not found" });
       }
@@ -58,9 +64,10 @@ class CourseController {
       }
 
       // Validate course_type
-      if (!["online-led", "instructor-led"].includes(course_type)) {
+      if (!["online-led", "instructor-led", "both"].includes(course_type)) {
         return res.status(400).json({
-          message: "course_type must be 'online-led' or 'instructor-led'",
+          message:
+            "course_type must be 'online-led', 'instructor-led', or 'both'",
         });
       }
 
@@ -136,19 +143,25 @@ class CourseController {
   getCourseLessons = async (req, res) => {
     try {
       await this.courseModel.ensureSeedFromUploadIfEmpty();
-      const courseId = Number(req.params.courseId);
-      if (!Number.isInteger(courseId) || courseId <= 0) {
-        return res.status(400).json({ message: "Invalid courseId" });
+      const param = req.params.courseId;
+      const numId = Number(param);
+
+      let course;
+      if (Number.isInteger(numId) && numId > 0) {
+        // Numeric ID
+        course = await this.courseModel.findById(numId);
+      } else {
+        // Slug (string)
+        course = await this.courseModel.findBySlug(param);
       }
 
-      const course = await this.courseModel.findById(courseId);
       if (!course) {
         return res.status(404).json({ message: "Course not found" });
       }
 
       // Learners can browse courses, but lesson lists require enrollment.
       const userId = req.user?.sub;
-      const enrolled = await enrollmentModel.isEnrolled(userId, courseId);
+      const enrolled = await enrollmentModel.isEnrolled(userId, course.id);
       if (!enrolled) {
         return res.status(403).json({
           message: "You must enroll in this course to access its lessons",
@@ -156,14 +169,40 @@ class CourseController {
         });
       }
 
+<<<<<<< HEAD
       const [lessons, modules] = await Promise.all([
         this.courseModel.getLessonsByCourse(courseId),
         this.courseModel.getModulesByCourse(courseId),
       ]);
 
       return res.status(200).json({ courseId, lessons, modules });
+=======
+      const lessons = await this.courseModel.getLessonsByCourse(course.id);
+      return res.status(200).json({ courseId: course.id, lessons });
+>>>>>>> main
     } catch (error) {
       console.error("getCourseLessons error:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  };
+
+  // Get course by slug (NEW - security through obscured IDs)
+  getCourseBySlug = async (req, res) => {
+    try {
+      await this.courseModel.ensureSeedFromUploadIfEmpty();
+      const slug = String(req.params.slug).trim();
+      if (!slug || slug.length === 0) {
+        return res.status(400).json({ message: "Invalid course slug" });
+      }
+
+      const course = await this.courseModel.findBySlug(slug);
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+
+      return res.status(200).json({ course });
+    } catch (error) {
+      console.error("getCourseBySlug error:", error);
       return res.status(500).json({ message: "Server error" });
     }
   };
