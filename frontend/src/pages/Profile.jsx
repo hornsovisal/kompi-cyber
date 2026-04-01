@@ -206,48 +206,57 @@ export default function Profile() {
   // Build a course id -> course object lookup for cover images
   const courseById = Object.fromEntries(courses.map((c) => [c.id, c]));
 
-  const ASSET_BASE = (
-    import.meta.env.VITE_API_URL || "http://localhost:3000"
-  ).replace(/\/$/, "");
+  const SUPABASE_BUCKET = "upload-lesson";
 
   const COVER_FALLBACKS = [
     {
       pattern: /introduction to cybersecurity|intro.*cyber/i,
-      path: "/upload/lesson/intro-to-cyber-course/cover.svg",
+      slug: "intro-to-cyber-course",
     },
     {
       pattern: /network security/i,
-      path: "/upload/lesson/network-security/cover.svg",
+      slug: "network-security",
     },
     {
       pattern: /web.*security|web application/i,
-      path: "/upload/lesson/web-security/cover.svg",
+      slug: "web-security",
     },
     {
       pattern: /ethical hacking/i,
-      path: "/upload/lesson/intro-to-linux-course/cover.svg",
+      slug: "intro-to-linux-course",
     },
     {
       pattern: /incident response|forensics/i,
-      path: "/upload/lesson/incident-response/cover.svg",
+      slug: "incident-response",
     },
     {
       pattern: /linux/i,
-      path: "/upload/lesson/intro-to-linux-course/cover.svg",
+      slug: "intro-to-linux-course",
     },
   ];
 
   const getCourseCoverSrc = (courseId, courseTitle) => {
     const course = courseById[courseId];
+
+    // PRIORITY 1: Use database cover_image_url if it's a FULL Supabase URL
     const coverUrl = course?.cover_image_url;
-    if (coverUrl) {
-      return /^https?:\/\//i.test(coverUrl)
-        ? coverUrl
-        : `${ASSET_BASE}${coverUrl}`;
+    if (coverUrl && /^https:\/\/.*supabase\.co/i.test(coverUrl)) {
+      return coverUrl;
     }
+
+    // PRIORITY 2: Use course slug if available
+    if (course?.slug) {
+      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${course.slug}/cover.svg`;
+    }
+
+    // PRIORITY 3: Try to find a fallback slug by course title
     const title = courseTitle || course?.title || "";
     const fallback = COVER_FALLBACKS.find((f) => f.pattern.test(title));
-    return fallback ? `${ASSET_BASE}${fallback.path}` : null;
+    if (fallback) {
+      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${fallback.slug}/cover.svg`;
+    }
+
+    return null;
   };
 
   const navItems = [

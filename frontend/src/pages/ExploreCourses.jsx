@@ -65,20 +65,19 @@ export default function ExploreCourses() {
   const [error, setError] = useState("");
 
   const getCourseCoverSrc = (course) => {
+    // PRIORITY 1: Use database cover_image_url if it's a FULL Supabase URL
     const coverImageUrl = course?.cover_image_url;
-    if (coverImageUrl) {
-      if (/^https?:\/\//i.test(coverImageUrl)) {
-        return coverImageUrl;
-      }
-      return `${API_BASE}${coverImageUrl}`;
+    if (coverImageUrl && /^https:\/\/.*supabase\.co/i.test(coverImageUrl)) {
+      return coverImageUrl;
     }
 
-    // Build Supabase URL using course slug or fallback
+    // PRIORITY 2: Build Supabase URL using course slug (primary method)
     const courseSlug = course?.slug;
     if (courseSlug) {
       return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${courseSlug}/cover.svg`;
     }
 
+    // PRIORITY 3: Try to find a fallback slug by course title
     const fallback = COURSE_COVER_FALLBACKS.find((item) =>
       item.pattern.test(course?.title || ""),
     );
