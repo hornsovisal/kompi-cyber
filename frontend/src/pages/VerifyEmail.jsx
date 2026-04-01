@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
@@ -18,7 +19,7 @@ export default function VerifyEmail() {
 
     const verifyEmail = async () => {
       try {
-        const response = await axios.post('/api/auth/verify-email', { token });
+        const response = await axios.post(`${API_BASE_URL}/api/auth/verify-email`, { token });
         setStatus('success');
         setMessage('Email verified successfully! You can now log in.');
         setTimeout(() => navigate('/login'), 3000);
