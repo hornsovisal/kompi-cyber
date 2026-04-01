@@ -1,6 +1,6 @@
 const {
   client: supabase,
-  bucket: SUPABASE_BUCKET,
+  certificateBucket: SUPABASE_BUCKET,
 } = require("../config/supabase");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
