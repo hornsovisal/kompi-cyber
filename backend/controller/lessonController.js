@@ -9,12 +9,18 @@ class LessonController {
 
   getLessonById = async (req, res) => {
     try {
-      const id = Number(req.params.id);
-      if (!Number.isInteger(id) || id <= 0) {
-        return res.status(400).json({ message: "Invalid lesson id" });
+      const param = req.params.id;
+      const numId = Number(param);
+
+      let lesson;
+      if (Number.isInteger(numId) && numId > 0) {
+        // Numeric ID
+        lesson = await this.lessonModel.findById(numId);
+      } else {
+        // Slug (string)
+        lesson = await this.lessonModel.findBySlug(param);
       }
 
-      const lesson = await this.lessonModel.findById(id);
       if (!lesson) {
         return res.status(404).json({ message: "Lesson not found" });
       }
