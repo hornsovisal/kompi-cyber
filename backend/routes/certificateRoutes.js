@@ -7,12 +7,17 @@ const authMiddleware = require("../middleware/authMiddleware");
 // Test endpoint - check Supabase connection
 router.get("/test/upload", async (req, res) => {
   try {
-    const { client: supabase, bucket: SUPABASE_BUCKET } = require("../config/supabase");
+    const {
+      client: supabase,
+      bucket: SUPABASE_BUCKET,
+    } = require("../config/supabase");
 
     const testBuffer = Buffer.from("Test PDF content");
     const testFilename = `test-${Date.now()}.pdf`;
 
-    console.log("Testing Supabase upload...");
+    if (process.env.NODE_ENV !== "production") {
+      console.log("Testing Supabase upload...");
+    }
 
     const uploadResult = await supabase.storage
       .from(SUPABASE_BUCKET)
@@ -21,7 +26,9 @@ router.get("/test/upload", async (req, res) => {
         upsert: true,
       });
 
-    console.log("Upload result:", uploadResult);
+    if (process.env.NODE_ENV !== "production") {
+      console.log("Upload result:", uploadResult);
+    }
 
     if (uploadResult.error) {
       return res.status(500).json({

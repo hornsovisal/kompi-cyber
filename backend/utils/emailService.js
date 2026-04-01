@@ -1,10 +1,10 @@
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
 const smtpConfigured = Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
 
 const transporter = smtpConfigured
   ? nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
+      host: process.env.SMTP_HOST || "smtp.mailtrap.io",
       port: Number(process.env.SMTP_PORT) || 2525,
       auth: {
         user: process.env.SMTP_USER,
@@ -14,12 +14,12 @@ const transporter = smtpConfigured
   : null;
 
 const sendVerificationEmail = async (email, token) => {
-  const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
+  const verificationUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/verify-email?token=${token}`;
 
   const mailOptions = {
-    from: process.env.FROM_EMAIL || 'noreply@kompi-cyber.com',
+    from: process.env.FROM_EMAIL || "noreply@kompi-cyber.com",
     to: email,
-    subject: 'Verify Your Email - Kompi-Cyber',
+    subject: "Verify Your Email - Kompi-Cyber",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
@@ -45,32 +45,36 @@ const sendVerificationEmail = async (email, token) => {
           <p>If you didn't create an account with Kompi-Cyber, please ignore this email.</p>
         </div>
       </div>
-    `
+    `,
   };
 
   if (!smtpConfigured) {
-    console.log('\n[DEV] SMTP not configured — verification link:');
-    console.log(verificationUrl + '\n');
+    if (process.env.NODE_ENV !== "production") {
+      console.log("\n[DEV] SMTP not configured — verification link:");
+      console.log(verificationUrl + "\n");
+    }
     return { delivered: false, url: verificationUrl };
   }
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log('Verification email sent to:', email);
+    if (process.env.NODE_ENV !== "production") {
+      console.log("Verification email sent to:", email);
+    }
     return { delivered: true, url: verificationUrl };
   } catch (error) {
-    console.error('Error sending verification email:', error);
-    throw new Error('Failed to send verification email');
+    console.error("Error sending verification email:", error);
+    throw new Error("Failed to send verification email");
   }
 };
 
 const sendPasswordResetEmail = async (email, token) => {
-  const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+  const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/reset-password?token=${token}`;
 
   const mailOptions = {
-    from: process.env.FROM_EMAIL || 'noreply@kompi-cyber.com',
+    from: process.env.FROM_EMAIL || "noreply@kompi-cyber.com",
     to: email,
-    subject: 'Reset Your Password - Kompi-Cyber',
+    subject: "Reset Your Password - Kompi-Cyber",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
@@ -97,27 +101,31 @@ const sendPasswordResetEmail = async (email, token) => {
           <p>For security reasons, this link can only be used once.</p>
         </div>
       </div>
-    `
+    `,
   };
 
   if (!smtpConfigured) {
-    console.log('\n[DEV] SMTP not configured — password reset link:');
-    console.log(resetUrl + '\n');
+    if (process.env.NODE_ENV !== "production") {
+      console.log("\n[DEV] SMTP not configured — password reset link:");
+      console.log(resetUrl + "\n");
+    }
     return { delivered: false, url: resetUrl };
   }
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log('Password reset email sent to:', email);
+    if (process.env.NODE_ENV !== "production") {
+      console.log("Password reset email sent to:", email);
+    }
     return { delivered: true, url: resetUrl };
   } catch (error) {
-    console.error('Error sending password reset email:', error);
-    throw new Error('Failed to send password reset email');
+    console.error("Error sending password reset email:", error);
+    throw new Error("Failed to send password reset email");
   }
 };
 
 module.exports = {
   smtpConfigured,
   sendVerificationEmail,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
 };

@@ -61,4 +61,9 @@ class AuthMiddleware {
   };
 }
 
-module.exports = new AuthMiddleware(process.env.JWT_SECRET || "dev_jwt_secret");
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret && process.env.NODE_ENV === "production") {
+  throw new Error("JWT_SECRET environment variable is required in production");
+}
+
+module.exports = new AuthMiddleware(jwtSecret || "dev_jwt_secret_change_me");

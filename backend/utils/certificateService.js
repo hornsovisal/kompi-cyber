@@ -1,4 +1,7 @@
-const { client: supabase, bucket: SUPABASE_BUCKET } = require("../config/supabase");
+const {
+  client: supabase,
+  bucket: SUPABASE_BUCKET,
+} = require("../config/supabase");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
@@ -16,12 +19,7 @@ function saveCertificateLocally(userId, file, fileName) {
   const absoluteFilePath = path.join(absoluteDir, fileName);
   fs.writeFileSync(absoluteFilePath, file);
 
-  return `/${path.posix.join(
-    "upload",
-    "certificates",
-    safeUserId,
-    fileName,
-  )}`;
+  return `/${path.posix.join("upload", "certificates", safeUserId, fileName)}`;
 }
 
 /**
@@ -113,7 +111,9 @@ async function generateCertificate(certificateData) {
       doc.image(logoPath, 35, 15, { width: 50, height: 50 });
     }
   } catch (err) {
-    console.log("Logo image not found, using text fallback");
+    if (process.env.NODE_ENV !== "production") {
+      console.log("Logo image not found, using text fallback");
+    }
   }
 
   // Logo text (text-based shield logo)
