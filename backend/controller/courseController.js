@@ -169,17 +169,12 @@ class CourseController {
         });
       }
 
-<<<<<<< HEAD
       const [lessons, modules] = await Promise.all([
-        this.courseModel.getLessonsByCourse(courseId),
-        this.courseModel.getModulesByCourse(courseId),
+        this.courseModel.getLessonsByCourse(course.id),
+        this.courseModel.getModulesByCourse(course.id),
       ]);
 
-      return res.status(200).json({ courseId, lessons, modules });
-=======
-      const lessons = await this.courseModel.getLessonsByCourse(course.id);
-      return res.status(200).json({ courseId: course.id, lessons });
->>>>>>> main
+      return res.status(200).json({ courseId: course.id, lessons, modules });
     } catch (error) {
       console.error("getCourseLessons error:", error);
       return res.status(500).json({ message: "Server error" });

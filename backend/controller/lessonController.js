@@ -143,7 +143,6 @@ class LessonController {
     }
   };
 
-<<<<<<< HEAD
   markLessonCompleted = async (req, res) => {
     try {
       const lessonId = Number(req.params.id);
@@ -157,30 +156,25 @@ class LessonController {
       }
 
       const lesson = await this.lessonModel.findById(lessonId);
-=======
-  // Get lesson by slug (NEW - security through obscured IDs)
-  getLessonBySlug = async (req, res) => {
-    try {
-      const slug = String(req.params.slug).trim();
-      if (!slug || slug.length === 0) {
-        return res.status(400).json({ message: "Invalid lesson slug" });
-      }
-
-      const lesson = await this.lessonModel.findBySlug(slug);
->>>>>>> main
       if (!lesson) {
         return res.status(404).json({ message: "Lesson not found" });
       }
 
-<<<<<<< HEAD
-      const enrolled = await enrollmentModel.isEnrolled(userId, lesson.course_id);
+      const enrolled = await enrollmentModel.isEnrolled(
+        userId,
+        lesson.course_id,
+      );
       if (!enrolled) {
         console.warn(
           `markLessonCompleted: user ${userId} is not enrolled in course ${lesson.course_id}; continuing progress save`,
         );
       }
 
-      await this.lessonModel.upsertLessonProgress(userId, lessonId, "completed");
+      await this.lessonModel.upsertLessonProgress(
+        userId,
+        lessonId,
+        "completed",
+      );
 
       return res.status(200).json({
         message: "Lesson marked as completed",
@@ -194,25 +188,6 @@ class LessonController {
         code: error?.code || null,
         detail: error?.sqlMessage || error?.message || null,
       });
-=======
-      // Lesson content is only available to users enrolled in the lesson course.
-      const userId = req.user?.sub;
-      const enrolled = await enrollmentModel.isEnrolled(
-        userId,
-        lesson.course_id,
-      );
-      if (!enrolled) {
-        return res.status(403).json({
-          message: "You must enroll in this course to access its lessons",
-          enrolled: false,
-        });
-      }
-
-      return res.status(200).json({ lesson });
-    } catch (error) {
-      console.error("getLessonBySlug error:", error);
-      return res.status(500).json({ message: "Server error" });
->>>>>>> main
     }
   };
 }

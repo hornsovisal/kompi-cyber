@@ -790,7 +790,6 @@ export default function LearnPage() {
             setLessons(fetchedLessons);
 
             // Load the first lesson
-<<<<<<< HEAD
             const firstLessonId = Number(fetchedLessons[0].id);
             const lessonRes = await axios.get(`/api/lessons/${firstLessonId}`, {
               baseURL: API_BASE,
@@ -801,21 +800,6 @@ export default function LearnPage() {
           } else {
             setLessons([]);
             setActiveLesson(null);
-=======
-            const firstLesson = fetchedLessons[0];
-            const lessonRes = await axios.get(
-              `/api/lessons/${firstLesson.slug || firstLesson.id}`,
-              {
-                baseURL: API_BASE,
-                headers,
-              },
-            );
-            const loadedLesson = lessonRes.data.lesson;
-            setActiveLesson(loadedLesson);
-            const courseSlug = course?.slug || courseId;
-            const lessonSlug = loadedLesson?.slug || loadedLesson?.id;
-            navigate(`/learn/${courseSlug}/${lessonSlug}`, { replace: true });
->>>>>>> main
           }
         } catch (lessonErr) {
           console.error("Failed to load lessons after enrollment:", lessonErr);
@@ -2625,18 +2609,9 @@ export default function LearnPage() {
             </div>
 
             {activeTab === "learn" && (
-<<<<<<< HEAD
-              <div className="fixed bottom-6 left-1/2 z-20 w-[calc(100%-2rem)] max-w-none -translate-x-1/2 rounded-xl border border-blue-900/50 bg-[#0F1E32]/95 p-3 shadow-xl backdrop-blur lg:w-[calc(100%-22rem)]">
-                {completionError && (
-                  <div className="mb-3 rounded-lg border border-red-900/60 bg-red-900/20 px-3 py-2 text-xs text-red-300">
-                    {completionError}
-                  </div>
-                )}
-=======
               <div
                 className={`fixed bottom-6 left-1/2 z-20 w-[calc(100%-2rem)] max-w-none -translate-x-1/2 rounded-xl border p-3 shadow-xl backdrop-blur transition-colors duration-300 lg:w-[calc(100%-22rem)] ${isDarkMode ? "border-blue-900/50 bg-[#0F1E32]/95" : "border-gray-400 bg-white/95"}`}
               >
->>>>>>> main
                 <div className="flex items-center justify-between gap-3">
                   <button
                     onClick={() => openLessonByOffset(-1)}
@@ -2661,18 +2636,12 @@ export default function LearnPage() {
                   </div>
 
                   <button
-<<<<<<< HEAD
-                    onClick={handleCompleteAndContinue}
-                    disabled={completingLesson}
-                    className="rounded-lg bg-cyan-600 px-5 py-2 text-sm font-semibold text-slate-900 transition hover:bg-cyan-500 shadow-lg shadow-cyan-600/30 disabled:opacity-60 disabled:cursor-not-allowed"
-=======
                     onClick={() =>
                       allLessons[activeLessonIndex + 1]
                         ? openLessonByOffset(1)
                         : navigate("/dashboard")
                     }
                     className={`rounded-lg px-5 py-2 text-sm font-semibold transition shadow-lg ${isDarkMode ? "bg-cyan-600 text-slate-900 hover:bg-cyan-500 shadow-cyan-600/30" : "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/30"}`}
->>>>>>> main
                   >
                     {completingLesson
                       ? "Saving..."

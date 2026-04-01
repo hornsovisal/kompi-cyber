@@ -17,7 +17,7 @@ export default function StudentInvitations() {
   const fetchInvitations = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const response = await axios.get("/api/invitations", {
         baseURL: API_BASE,
         headers: { Authorization: `Bearer ${token}` },
@@ -40,7 +40,7 @@ export default function StudentInvitations() {
   const handleAccept = async (invitationId) => {
     try {
       setRespondingTo(invitationId);
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const response = await axios.post(
         `/api/invitations/${invitationId}/accept`,
         {},
@@ -75,7 +75,7 @@ export default function StudentInvitations() {
 
     try {
       setRespondingTo(invitationId);
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       await axios.post(
         `/api/invitations/${invitationId}/reject`,
         {},
