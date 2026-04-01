@@ -93,7 +93,7 @@ export default function Register() {
           email: submittedEmail,
           password: formData.password,
         },
-        { timeout: 10000 } // 10 second timeout
+        { timeout: 10000 }, // 10 second timeout
       );
 
       setAlert({
@@ -131,7 +131,7 @@ export default function Register() {
         {
           email: registeredEmail,
         },
-        { timeout: 10000 } // 10 second timeout
+        { timeout: 10000 }, // 10 second timeout
       );
       setVerificationLink(response.data?.verificationLink || "");
       setResendMessage(

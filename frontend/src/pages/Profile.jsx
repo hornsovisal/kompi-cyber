@@ -3,10 +3,12 @@ import { useNavigate, Link, NavLink } from "react-router-dom";
 import axios from "axios";
 import logo from "../kompi-cyber-logo-slide.svg";
 import { safeGetLocalStorage, safeSetLocalStorage } from "../utils/safeStorage";
+import { getCourseCoverUrl } from "../utils/courseImage";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const SUPABASE_URL =
-  import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co";
+  import.meta.env.VITE_SUPABASE_URL ||
+  "https://xmmcotqzfhicafwblsdr.supabase.co";
 const SUPABASE_BUCKET = "upload";
 
 export default function Profile() {
@@ -237,26 +239,7 @@ export default function Profile() {
 
   const getCourseCoverSrc = (courseId, courseTitle) => {
     const course = courseById[courseId];
-
-    // PRIORITY 1: Use database cover_image_url if it's a FULL Supabase URL
-    const coverUrl = course?.cover_image_url;
-    if (coverUrl && /^https:\/\/.*supabase\.co/i.test(coverUrl)) {
-      return coverUrl;
-    }
-
-    // PRIORITY 2: Use course slug if available
-    if (course?.slug) {
-      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${course.slug}/cover.svg`;
-    }
-
-    // PRIORITY 3: Try to find a fallback slug by course title
-    const title = courseTitle || course?.title || "";
-    const fallback = COVER_FALLBACKS.find((f) => f.pattern.test(title));
-    if (fallback) {
-      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${fallback.slug}/cover.svg`;
-    }
-
-    return null;
+    return getCourseCoverUrl(course, SUPABASE_URL, SUPABASE_BUCKET);
   };
 
   const navItems = [

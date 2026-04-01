@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link, NavLink, useParams } from "react-router-dom";
 import axios from "axios";
 import { safeGetLocalStorage, safeSetLocalStorage } from "../utils/safeStorage";
+import { getCourseCoverUrl } from "../utils/courseImage";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const API_TARGET_LABEL = import.meta.env.VITE_API_URL || "Vite /api proxy";
@@ -20,19 +21,6 @@ const COURSE_COVER_MAP = {
   4: "web-security",
   5: "incident-response",
 };
-
-/**
- * Build Supabase public URL for course cover image
- * Follows pattern: https://{SUPABASE_URL}/storage/v1/object/public/{bucket}/lesson/{slug|courseId}/cover.svg
- */
-function getCourseCoverUrl(course) {
-  // Use course slug if available, otherwise fallback to legacy ID-based mapping
-  const courseSlug = course.slug || COURSE_COVER_MAP[Number(course.id)];
-  if (!courseSlug) return "";
-
-  const supabaseUrl = `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${courseSlug}/cover.svg`;
-  return supabaseUrl;
-}
 
 const COURSE_COVER_FALLBACKS = [
   {
@@ -129,27 +117,7 @@ export default function Dashboard() {
   });
 
   const getCourseCoverSrc = (course) => {
-    // PRIORITY 1: Use database cover_image_url if it's a FULL Supabase URL
-    const coverImageUrl = course?.cover_image_url;
-    if (coverImageUrl && /^https:\/\/.*supabase\.co/i.test(coverImageUrl)) {
-      return coverImageUrl;
-    }
-
-    // PRIORITY 2: Build Supabase URL using course slug (primary method)
-    const courseSlug = course?.slug || COURSE_COVER_MAP[Number(course?.id)];
-    if (courseSlug) {
-      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${courseSlug}/cover.svg`;
-    }
-
-    // PRIORITY 3: Try to find a fallback slug by course title
-    const fallback = COURSE_COVER_FALLBACKS.find((item) =>
-      item.pattern.test(course?.title || ""),
-    );
-    if (fallback) {
-      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${fallback.slug}/cover.svg`;
-    }
-
-    return null;
+    return getCourseCoverUrl(course, SUPABASE_URL, SUPABASE_BUCKET);
   };
 
   const currentUsername =
