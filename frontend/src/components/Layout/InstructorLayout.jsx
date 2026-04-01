@@ -1,6 +1,16 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, LogOut, Home, BookOpen, BarChart3, Settings, FileQuestion, Users } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  Menu,
+  X,
+  LogOut,
+  Home,
+  BookOpen,
+  BarChart3,
+  Settings,
+  FileQuestion,
+  Users,
+} from "lucide-react";
 
 export default function InstructorLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -8,30 +18,42 @@ export default function InstructorLayout({ children }) {
   const location = useLocation();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const instructor = localStorage.getItem('instructor');
+    const token = sessionStorage.getItem("token");
+    const instructor = sessionStorage.getItem("instructor");
+    const sessionExpires = sessionStorage.getItem("sessionExpires");
 
     if (!token || !instructor) {
-      navigate('/instructor/login', { replace: true });
+      navigate("/instructor/login", { replace: true });
+    } else if (
+      sessionExpires &&
+      parseInt(sessionExpires, 10) <= new Date().getTime()
+    ) {
+      // Session expired
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
+      sessionStorage.removeItem("instructor");
+      sessionStorage.removeItem("sessionExpires");
+      navigate("/instructor/login", { replace: true });
     }
   }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('instructor');
-    navigate('/instructor/login');
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("instructor");
+    sessionStorage.removeItem("sessionExpires");
+    navigate("/instructor/login");
   };
 
   const isActive = (path) => location.pathname === path;
 
   const navItems = [
-    { label: 'Dashboard', icon: Home, path: '/instructor/dashboard' },
-    { label: 'Courses', icon: BookOpen, path: '/instructor/courses' },
-    { label: 'Quizzes', icon: FileQuestion, path: '/instructor/quizzes' },
-    { label: 'Performance', icon: Users, path: '/instructor/performance' },
-    { label: 'Analytics', icon: BarChart3, path: '/instructor/analytics' },
-    { label: 'Settings', icon: Settings, path: '/instructor/settings' },
+    { label: "Dashboard", icon: Home, path: "/instructor/dashboard" },
+    { label: "Courses", icon: BookOpen, path: "/instructor/courses" },
+    { label: "Quizzes", icon: FileQuestion, path: "/instructor/quizzes" },
+    { label: "Performance", icon: Users, path: "/instructor/performance" },
+    { label: "Analytics", icon: BarChart3, path: "/instructor/analytics" },
+    { label: "Settings", icon: Settings, path: "/instructor/settings" },
   ];
 
   return (
@@ -39,7 +61,7 @@ export default function InstructorLayout({ children }) {
       {/* Sidebar */}
       <div
         className={`${
-          sidebarOpen ? 'w-64' : 'w-0'
+          sidebarOpen ? "w-64" : "w-0"
         } bg-slate-900 text-white transition-all duration-300 fixed h-screen overflow-y-auto z-40 lg:relative lg:w-64`}
       >
         <div className="p-6">
@@ -60,8 +82,8 @@ export default function InstructorLayout({ children }) {
                 }}
                 className={`w-full px-6 py-3 flex items-center gap-3 transition-colors ${
                   active
-                    ? 'bg-blue-600 text-white border-l-4 border-blue-400'
-                    : 'text-slate-300 hover:bg-slate-800'
+                    ? "bg-blue-600 text-white border-l-4 border-blue-400"
+                    : "text-slate-300 hover:bg-slate-800"
                 }`}
               >
                 <Icon size={20} />

@@ -1,0 +1,47 @@
+
+> backend@1.0.0 start
+> node server.js
+
+[dotenv@17.3.1] injecting env (18) from .env -- tip: ⚙️  override existing env vars with { override: true }
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+Database connected successfully.
+Server running on http://localhost:5000
+Error fetching instructor courses: Error: Bind parameters must not contain undefined. To pass SQL NULL specify JS null
+    at PromisePool.execute (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/mysql2/lib/promise/pool.js:54:22)
+    at getInstructorCourses (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/controller/instructorController.js:41:32)
+    at Layer.handleRequest (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/router/lib/layer.js:152:17)
+    at next (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/router/lib/route.js:117:3)
+    at handle (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/router/lib/layer.js:152:17)
+    at /mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/router/index.js:295:15
+    at processParams (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/router/index.js:582:12)
+    at next (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/router/index.js:291:5) {
+  code: undefined,
+  errno: undefined,
+  sql: undefined,
+  sqlState: undefined,
+  sqlMessage: undefined
+}
+Database not available, returning mock course data
+Error fetching instructor courses: Error: Bind parameters must not contain undefined. To pass SQL NULL specify JS null
+    at PromisePool.execute (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/mysql2/lib/promise/pool.js:54:22)
+    at getInstructorCourses (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/controller/instructorController.js:41:32)
+    at Layer.handleRequest (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/router/lib/layer.js:152:17)
+    at next (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/router/lib/route.js:117:3)
+    at handle (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/router/lib/layer.js:152:17)
+    at /mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/router/index.js:295:15
+    at processParams (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/router/index.js:582:12)
+    at next (/mnt/D/Y2/Term2/Web_Develoment/kompi-cyber/backend/node_modules/router/index.js:291:5) {
+  code: undefined,
+  errno: undefined,
+  sql: undefined,
+  sqlState: undefined,
+  sqlMessage: undefined
+}
+Database not available, returning mock course data
+loginInstructor called with: { email: 'sal123@gmail.com', password: '123' }
+findLecturerByEmail called with: sal123@gmail.com
+Found lecturers: []

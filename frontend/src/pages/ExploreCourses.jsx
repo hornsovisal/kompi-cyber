@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import logo from "../kompi-cyber-logo-slide.svg";
+import logo from "../assets/logos/logo-blue.svg";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const ASSET_BASE = (
@@ -84,8 +84,8 @@ export default function ExploreCourses() {
   }, [isDarkMode]);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
+    const storedUser = sessionStorage.getItem("user");
+    const token = sessionStorage.getItem("token");
 
     if (!storedUser || !token) {
       navigate("/login");
@@ -113,8 +113,9 @@ export default function ExploreCourses() {
         setEnrolledIds(ids);
       } catch (err) {
         if (err.response?.status === 401) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
+          sessionStorage.removeItem("token");
+          sessionStorage.removeItem("user");
+          sessionStorage.removeItem("sessionExpires");
           navigate("/login");
           return;
         }
@@ -170,7 +171,7 @@ export default function ExploreCourses() {
     });
 
   const handleEnroll = async (courseId) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     setEnrollingId(courseId);
     try {
       await axios.post(
@@ -188,8 +189,9 @@ export default function ExploreCourses() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("sessionExpires");
     navigate("/");
   };
 

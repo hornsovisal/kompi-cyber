@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, NavLink, useParams } from "react-router-dom";
 import axios from "axios";
-import logo from "../kompi-cyber-logo-slide.svg";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const API_TARGET_LABEL = import.meta.env.VITE_API_URL || "Vite /api proxy";
@@ -152,9 +151,10 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    // Get user from localStorage
-    const storedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
+    // Get user from sessionStorage and check expiration
+    const storedUser = sessionStorage.getItem("user");
+    const token = sessionStorage.getItem("token");
+    const sessionExpires = sessionStorage.getItem("sessionExpires");
 
     if (!storedUser || !token) {
       navigate("/login");
@@ -216,8 +216,9 @@ export default function Dashboard() {
         }
       } catch (err) {
         if (err.response?.status === 401) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
+          sessionStorage.removeItem("token");
+          sessionStorage.removeItem("user");
+          sessionStorage.removeItem("sessionExpires");
           navigate("/login");
           return;
         }
@@ -306,11 +307,7 @@ export default function Dashboard() {
             className="group flex items-center gap-3 transition-transform hover:scale-105"
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-xl border-2 border-[#FE9A00]/60 bg-gradient-to-br from-[#FE9A00]/15 to-[#FF6B35]/10 shadow-lg shadow-[#FE9A00]/20 group-hover:shadow-[#FE9A00]/40 group-hover:border-[#FE9A00] transition-all">
-              <img
-                src={logo}
-                alt="KOMPI-CYBER"
-                className="h-10 w-10 object-contain"
-              />
+              <span className="text-xl font-bold text-[#FE9A00]">🔐</span>
             </div>
             <div className="hidden sm:flex flex-col">
               <p
@@ -510,19 +507,6 @@ export default function Dashboard() {
                       ? "Expand your skills with industry-leading cybersecurity courses"
                       : "Monitor your achievements and unlock new learning milestones"}
                 </p>
-              </div>
-              <div
-                className={`hidden lg:flex h-28 w-28 items-center justify-center rounded-2xl border-2 shadow-lg flex-shrink-0 transition-all duration-500 ${
-                  isDarkMode
-                    ? "border-[#FE9A00]/40 bg-gradient-to-br from-[#FE9A00]/10 to-[#FF6B35]/5 shadow-[#FE9A00]/15"
-                    : "border-amber-300/40 bg-gradient-to-br from-amber-100/25 to-orange-50/15 shadow-amber-400/15"
-                }`}
-              >
-                <img
-                  src={logo}
-                  alt="KOMPI-CYBER"
-                  className="h-24 w-24 object-contain"
-                />
               </div>
             </div>
           </div>
@@ -852,7 +836,7 @@ export default function Dashboard() {
                       >
                         <path d="M11.99 5V1h-1v4H7.58H6v1h.58H8v10c0 .89.39 1.68 1 2.22V19h1v-1.78c.61-.54 1-1.33 1-2.22V6h2.42H18v-1h-1.58V5h-4.01zm1 12H9V7h3.99v10z" />
                       </svg>
-                      {course.duration_hrs ?? 0}h
+                      {course.duration_hrs}h
                     </span>
                   </div>
 
@@ -975,11 +959,7 @@ export default function Dashboard() {
                           : "border-amber-300/40 bg-gradient-to-br from-amber-100/30 to-orange-100/20 shadow-amber-300/20"
                       }`}
                     >
-                      <img
-                        src={logo}
-                        alt="KOMPI-CYBER"
-                        className="h-28 w-28 object-contain"
-                      />
+                      <span className="text-6xl">🔐</span>
                     </div>
                   </div>
                   <h3
@@ -1040,11 +1020,7 @@ export default function Dashboard() {
                   : "border-amber-300/60 bg-gradient-to-br from-amber-100/30 to-orange-100/20 shadow-amber-300/20"
               }`}
             >
-              <img
-                src={logo}
-                alt="KOMPI-CYBER"
-                className="h-8 w-8 object-contain"
-              />
+              <span className="text-lg font-bold text-[#FE9A00]">🔐</span>
             </div>
             <div className="hidden sm:flex flex-col">
               <span

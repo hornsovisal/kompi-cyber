@@ -48,19 +48,19 @@ router.get("/test/upload", async (req, res) => {
   }
 });
 
-// All routes require authentication
-router.use(authMiddleware.authenticateToken);
-
-// Generate certificate for a course (when completed)
-// POST /api/certificates/generate/:courseId
-router.post("/generate/:courseId", certificateController.generateCertificate);
-
-// Get certificate by hash (for viewing with hash-based URL)
+// Get certificate by hash (PUBLIC endpoint for viewing - no auth required)
 // GET /api/certificates/view/:certificateHash
 router.get(
   "/view/:certificateHash",
   certificateController.getCertificateByHash,
 );
+
+// All routes below require authentication
+router.use(authMiddleware.authenticateToken);
+
+// Generate certificate for a course (when completed)
+// POST /api/certificates/generate/:courseId
+router.post("/generate/:courseId", certificateController.generateCertificate);
 
 // Get certificate for a specific course
 // GET /api/certificates/course/:courseId
