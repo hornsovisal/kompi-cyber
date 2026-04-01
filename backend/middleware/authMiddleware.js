@@ -59,6 +59,41 @@ class AuthMiddleware {
 
     next();
   };
+
+  // Require instructor/teacher role (typically roleId = 2)
+  requireInstructor = (req, res, next) => {
+    const roleId = Number(req.user?.roleId);
+    const userId = req.user?.sub || req.user?.id;
+
+    // Allow role 2 (instructor/teacher) or 3 (admin)
+    if (roleId !== 2 && roleId !== 3) {
+      return res.status(403).json({
+        message: "Instructor or admin access required",
+        roleId,
+      });
+    }
+
+    // Make user ID available for later checks
+    req.instructorId = userId;
+    next();
+  };
+
+  // Require coordinator/curriculum designer role
+  requireCoordinator = (req, res, next) => {
+    const roleId = Number(req.user?.roleId);
+    const userId = req.user?.sub || req.user?.id;
+
+    // This could be roleId 2 (instructor can also coordinate) or a specific coordinator role
+    if (roleId !== 2 && roleId !== 3) {
+      return res.status(403).json({
+        message: "Coordinator or admin access required",
+        roleId,
+      });
+    }
+
+    req.coordinatorId = userId;
+    next();
+  };
 }
 
 const jwtSecret = process.env.JWT_SECRET;

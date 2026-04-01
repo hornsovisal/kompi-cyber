@@ -1,5 +1,5 @@
-const express = require('express');
-const authMiddleware = require('../middleware/authMiddleware');
+const express = require("express");
+const authMiddleware = require("../middleware/authMiddleware");
 const {
   loginInstructor,
   sendInstructorOTP,
@@ -10,7 +10,7 @@ const {
   updateCourse,
   deleteCourse,
   getDashboardStats,
-} = require('../controller/instructorController');
+} = require("../controller/instructorController");
 
 const {
   createQuiz,
@@ -18,27 +18,27 @@ const {
   getQuizById,
   updateQuiz,
   deleteQuiz,
-} = require('../controller/instructorQuizController');
+} = require("../controller/instructorQuizController");
 
 const router = express.Router();
 
 // ── Public routes (no auth required) ───────────────────────────────────────
-router.post('/login', loginInstructor);
-router.post('/send-otp', sendInstructorOTP);
-router.post('/verify-otp', verifyInstructorOTP);
+router.post("/login", loginInstructor);
+router.post("/send-otp", sendInstructorOTP);
+router.post("/verify-otp", verifyInstructorOTP);
 
 // ── All routes below require a valid JWT ───────────────────────────────────
 router.use(authMiddleware.authenticateToken);
 
 // Dashboard stats
-router.get('/stats', getDashboardStats);
+router.get("/stats", getDashboardStats);
 
-// Courses
-router.get('/courses', getInstructorCourses);
-router.post('/courses', createCourse);
-router.get('/courses/:id', getCourseDetail);
-router.put('/courses/:id', updateCourse);
-router.delete('/courses/:id', deleteCourse);
+// Courses - with instructor authorization
+router.get("/courses", getInstructorCourses);
+router.post("/courses", createCourse);
+router.get("/courses/:id", getCourseDetail);
+router.put("/courses/:id", updateCourse);
+router.delete("/courses/:id", deleteCourse);
 
 // ── Quiz Management ─────────────────────────────────────────────────────────
 // POST   /api/instructor/quizzes        — create a quiz
@@ -46,10 +46,10 @@ router.delete('/courses/:id', deleteCourse);
 // GET    /api/instructor/quizzes/:id    — get one quiz
 // PUT    /api/instructor/quizzes/:id    — update a quiz
 // DELETE /api/instructor/quizzes/:id    — delete a quiz
-router.post('/quizzes', createQuiz);
-router.get('/quizzes', getMyQuizzes);
-router.get('/quizzes/:id', getQuizById);
-router.put('/quizzes/:id', updateQuiz);
-router.delete('/quizzes/:id', deleteQuiz);
+router.post("/quizzes", createQuiz);
+router.get("/quizzes", getMyQuizzes);
+router.get("/quizzes/:id", getQuizById);
+router.put("/quizzes/:id", updateQuiz);
+router.delete("/quizzes/:id", deleteQuiz);
 
 module.exports = router;

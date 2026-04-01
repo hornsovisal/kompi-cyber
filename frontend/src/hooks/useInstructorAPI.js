@@ -8,7 +8,7 @@ export const useInstructorAPI = () => {
   const [error, setError] = useState(null);
 
   const getAuthHeaders = () => {
-    const token = sessionStorage.getItem("token");
+    const token = localStorage.getItem("token");
     return {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
@@ -33,12 +33,12 @@ export const useInstructorAPI = () => {
     }
   }, []);
 
-  // Quizzes
+  // Quizzes - Use instructor endpoints
   const fetchMyQuizzes = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`${API_BASE}/api/quizzes/my`, {
+      const response = await axios.get(`${API_BASE}/api/instructor/quizzes`, {
         headers: getAuthHeaders(),
       });
       return response.data.data || [];
@@ -55,7 +55,7 @@ export const useInstructorAPI = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`${API_BASE}/api/quizzes/${quizId}`, {
+      const response = await axios.get(`${API_BASE}/api/instructor/quizzes/${quizId}`, {
         headers: getAuthHeaders(),
       });
       return response.data.data || null;
@@ -73,7 +73,7 @@ export const useInstructorAPI = () => {
       setLoading(true);
       setError(null);
       const response = await axios.post(
-        `${API_BASE}/api/quizzes/create`,
+        `${API_BASE}/api/instructor/quizzes`,
         quizData,
         { headers: getAuthHeaders() },
       );
@@ -92,7 +92,7 @@ export const useInstructorAPI = () => {
       setLoading(true);
       setError(null);
       const response = await axios.put(
-        `${API_BASE}/api/quizzes/${quizId}`,
+        `${API_BASE}/api/instructor/quizzes/${quizId}`,
         quizData,
         { headers: getAuthHeaders() },
       );
@@ -110,7 +110,7 @@ export const useInstructorAPI = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.delete(`${API_BASE}/api/quizzes/${quizId}`, {
+      const response = await axios.delete(`${API_BASE}/api/instructor/quizzes/${quizId}`, {
         headers: getAuthHeaders(),
       });
       return response.data;
@@ -127,7 +127,7 @@ export const useInstructorAPI = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`${API_BASE}/api/students/performance`, {
+      const response = await axios.get(`${API_BASE}/api/instructor/performance`, {
         params: course ? { course } : undefined,
         headers: getAuthHeaders(),
       });

@@ -4,6 +4,9 @@ import axios from "axios";
 import logo from "../kompi-cyber-logo-slide.svg";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
+const SUPABASE_URL =
+  import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co";
+const SUPABASE_BUCKET = "upload-lesson";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -209,27 +212,27 @@ export default function Profile() {
   const COVER_FALLBACKS = [
     {
       pattern: /introduction to cybersecurity|intro.*cyber/i,
-      path: "/upload/lesson/intro-to-cyber-course/cover.svg",
+      slug: "intro-to-cyber-course",
     },
     {
       pattern: /network security/i,
-      path: "/upload/lesson/network-security/cover.svg",
+      slug: "network-security",
     },
     {
       pattern: /web.*security|web application/i,
-      path: "/upload/lesson/web-security/cover.svg",
+      slug: "web-security",
     },
     {
       pattern: /ethical hacking/i,
-      path: "/upload/lesson/intro-to-linux-course/cover.svg",
+      slug: "intro-to-linux-course",
     },
     {
       pattern: /incident response|forensics/i,
-      path: "/upload/lesson/incident-response/cover.svg",
+      slug: "incident-response",
     },
     {
       pattern: /linux/i,
-      path: "/upload/lesson/intro-to-linux-course/cover.svg",
+      slug: "intro-to-linux-course",
     },
   ];
 
@@ -239,11 +242,20 @@ export default function Profile() {
     if (coverUrl) {
       return /^https?:\/\//i.test(coverUrl)
         ? coverUrl
-        : `${ASSET_BASE}${coverUrl}`;
+        : `${API_BASE}${coverUrl}`;
     }
+
+    // Build Supabase URL using course slug
+    const courseSlug = course?.slug;
+    if (courseSlug) {
+      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${courseSlug}/cover.svg`;
+    }
+
     const title = courseTitle || course?.title || "";
     const fallback = COVER_FALLBACKS.find((f) => f.pattern.test(title));
-    return fallback ? `${ASSET_BASE}${fallback.path}` : null;
+    return fallback
+      ? `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${fallback.slug}/cover.svg`
+      : null;
   };
 
   const navItems = [
