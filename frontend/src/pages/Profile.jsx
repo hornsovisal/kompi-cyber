@@ -7,7 +7,7 @@ import { safeGetLocalStorage, safeSetLocalStorage } from "../utils/safeStorage";
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const SUPABASE_URL =
   import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co";
-const SUPABASE_BUCKET = "upload-lesson";
+const SUPABASE_BUCKET = "upload";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -206,7 +206,7 @@ export default function Profile() {
   // Build a course id -> course object lookup for cover images
   const courseById = Object.fromEntries(courses.map((c) => [c.id, c]));
 
-  const SUPABASE_BUCKET = "upload-lesson";
+  const SUPABASE_BUCKET = "upload";
 
   const COVER_FALLBACKS = [
     {

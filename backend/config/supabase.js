@@ -5,7 +5,7 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SUPABASE_CERTIFICATE_BUCKET =
   process.env.SUPABASE_CERTIFICATE_BUCKET || "certificates";
 const SUPABASE_LESSON_BUCKET =
-  process.env.SUPABASE_LESSON_BUCKET || "upload-lesson";
+  process.env.SUPABASE_LESSON_BUCKET || "upload";
 
 let client;
 

@@ -7,7 +7,7 @@ import { safeGetLocalStorage, safeSetLocalStorage } from "../utils/safeStorage";
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const SUPABASE_URL =
   import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co";
-const SUPABASE_BUCKET = "upload-lesson";
+const SUPABASE_BUCKET = "upload";
 const ASSET_BASE = (
   import.meta.env.VITE_API_URL || "http://localhost:3000"
 ).replace(/\/$/, "");

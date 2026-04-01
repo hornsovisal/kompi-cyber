@@ -98,7 +98,7 @@ app.use((req, res, next) => {
 });
 
 // Serve uploaded course assets like /upload/lesson/<slug>/cover.*
-// Note: Primary storage is now Supabase (upload-lesson bucket for lessons, certificates bucket for certs)
+// Note: Primary storage is now Supabase (upload bucket for lessons/courses, certificates bucket for certs)
 // This local path serves as fallback for local development
 app.use(
   "/upload",
