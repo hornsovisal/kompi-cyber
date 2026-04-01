@@ -1,26 +1,25 @@
-import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-
-const API_BASE = import.meta.env.VITE_API_URL || "";
+import { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    password: "",
-    confirmPassword: "",
+    password: '',
+    confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
   const [tokenValid, setTokenValid] = useState(null);
 
   useEffect(() => {
-    const token = searchParams.get("token");
+    const token = searchParams.get('token');
     if (!token) {
       setTokenValid(false);
-      setMessage("Invalid reset link");
+      setMessage('Invalid reset link');
     } else {
       setTokenValid(true);
     }
@@ -28,15 +27,15 @@ export default function ResetPassword() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      [name]: value,
+      [name]: value
     }));
     // Clear errors when user starts typing
     if (errors[name]) {
-      setErrors((prev) => ({
+      setErrors(prev => ({
         ...prev,
-        [name]: "",
+        [name]: ''
       }));
     }
   };
@@ -45,15 +44,15 @@ export default function ResetPassword() {
     const newErrors = {};
 
     if (!formData.password) {
-      newErrors.password = "Password is required";
+      newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+      newErrors.password = 'Password must be at least 6 characters';
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
+      newErrors.confirmPassword = 'Please confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = 'Passwords do not match';
     }
 
     setErrors(newErrors);
@@ -66,27 +65,19 @@ export default function ResetPassword() {
     if (!validateForm()) return;
 
     setIsLoading(true);
-    setMessage("");
+    setMessage('');
 
     try {
-      const token = searchParams.get("token");
-      const response = await axios.post(
-        "/api/auth/reset-password",
-        {
-          token,
-          password: formData.password,
-        },
-        {
-          baseURL: API_BASE,
-        },
-      );
+      const token = searchParams.get('token');
+      const response = await axios.post(`${API_BASE_URL}/api/auth/reset-password`, {
+        token,
+        password: formData.password
+      });
 
-      setMessage(
-        "Password reset successfully! You can now log in with your new password.",
-      );
-      setTimeout(() => navigate("/login"), 3000);
+      setMessage('Password reset successfully! You can now log in with your new password.');
+      setTimeout(() => navigate('/login'), 3000);
     } catch (error) {
-      setMessage(error.response?.data?.message || "Failed to reset password");
+      setMessage(error.response?.data?.message || 'Failed to reset password');
     } finally {
       setIsLoading(false);
     }
@@ -111,23 +102,13 @@ export default function ResetPassword() {
 
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-                <svg
-                  className="h-6 w-6 text-red-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>
               <p className="mb-4 text-red-600 font-medium">{message}</p>
               <button
-                onClick={() => navigate("/login")}
+                onClick={() => navigate('/login')}
                 className="w-full rounded-2xl bg-cadtBlue px-4 py-3 text-sm font-semibold text-white transition hover:bg-cadtNavy focus:outline-none focus:ring-4 focus:ring-blue-200"
               >
                 Go to Login
@@ -160,10 +141,7 @@ export default function ResetPassword() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 New Password
               </label>
               <input
@@ -174,8 +152,8 @@ export default function ResetPassword() {
                 onChange={handleChange}
                 className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:outline-none focus:ring-4 ${
                   errors.password
-                    ? "border-red-300 focus:border-red-500 focus:ring-red-200"
-                    : "border-gray-300 focus:border-cadtBlue focus:ring-blue-200"
+                    ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+                    : 'border-gray-300 focus:border-cadtBlue focus:ring-blue-200'
                 }`}
                 placeholder="Enter new password"
               />
@@ -185,10 +163,7 @@ export default function ResetPassword() {
             </div>
 
             <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                 Confirm New Password
               </label>
               <input
@@ -199,26 +174,22 @@ export default function ResetPassword() {
                 onChange={handleChange}
                 className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:outline-none focus:ring-4 ${
                   errors.confirmPassword
-                    ? "border-red-300 focus:border-red-500 focus:ring-red-200"
-                    : "border-gray-300 focus:border-cadtBlue focus:ring-blue-200"
+                    ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+                    : 'border-gray-300 focus:border-cadtBlue focus:ring-blue-200'
                 }`}
                 placeholder="Confirm new password"
               />
               {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.confirmPassword}
-                </p>
+                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
               )}
             </div>
 
             {message && (
-              <div
-                className={`rounded-2xl p-4 text-sm ${
-                  message.includes("successfully")
-                    ? "bg-green-50 text-green-700 border border-green-200"
-                    : "bg-red-50 text-red-700 border border-red-200"
-                }`}
-              >
+              <div className={`rounded-2xl p-4 text-sm ${
+                message.includes('successfully')
+                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  : 'bg-red-50 text-red-700 border border-red-200'
+              }`}>
                 {message}
               </div>
             )}
@@ -234,14 +205,14 @@ export default function ResetPassword() {
                   Resetting Password...
                 </div>
               ) : (
-                "Reset Password"
+                'Reset Password'
               )}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <button
-              onClick={() => navigate("/login")}
+              onClick={() => navigate('/login')}
               className="text-sm text-cadtBlue hover:text-cadtNavy transition"
             >
               Back to Login
