@@ -46,11 +46,15 @@ export default function Login() {
     setVerificationLink("");
 
     try {
-      const response = await axios.post("/api/auth/resend-verification", {
-        email,
-      }, {
-        baseURL: API_BASE,
-      });
+      const response = await axios.post(
+        "/api/auth/resend-verification",
+        {
+          email,
+        },
+        {
+          baseURL: API_BASE,
+        },
+      );
       setResendMessage(
         response.data?.message ||
           "Verification email sent. Please check your inbox.",
@@ -79,12 +83,16 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await axios.post("/api/auth/login", {
-        email: formData.email.trim(),
-        password: formData.password,
-      }, {
-        baseURL: API_BASE,
-      });
+      const response = await axios.post(
+        "/api/auth/login",
+        {
+          email: formData.email.trim(),
+          password: formData.password,
+        },
+        {
+          baseURL: API_BASE,
+        },
+      );
 
       setAlert({ type: "success", message: "Login successful!" });
 
