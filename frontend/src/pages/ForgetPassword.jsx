@@ -1,36 +1,42 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { API_BASE_URL } from '../config/api';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 export default function ForgetPassword() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
-    setError('');
+    setMessage("");
+    setError("");
 
     try {
       const response = await axios.post(
         `${API_BASE_URL}/api/auth/forgot-password`,
         { email },
-        { timeout: 10000 } // 10 second timeout
+        { timeout: 10000 }, // 10 second timeout
       );
       setMessage(response.data.message);
     } catch (err) {
-      if (err.code === 'ECONNABORTED') {
-        setError('Request timed out. Please check your connection and try again.');
+      if (err.code === "ECONNABORTED") {
+        setError(
+          "Request timed out. Please check your connection and try again.",
+        );
       } else if (err.response?.status === 404) {
-        setError('Password reset endpoint not found. Please contact support.');
+        setError("Password reset endpoint not found. Please contact support.");
       } else {
-        setError(err.response?.data?.message || err.message || 'An error occurred. Please try again.');
+        setError(
+          err.response?.data?.message ||
+            err.message ||
+            "An error occurred. Please try again.",
+        );
       }
-      console.error('Forgot password error:', err);
+      console.error("Forgot password error:", err);
     } finally {
       setLoading(false);
     }
@@ -51,16 +57,19 @@ export default function ForgetPassword() {
               Forgot Password
             </h1>
             <p className="mt-2 text-sm text-slate-500">
-              Enter your email address and we'll send you a link to reset your password.
+              Enter your email address and we'll send you a link to reset your
+              password.
             </p>
           </div>
 
           {(message || error) && (
-            <div className={`mb-5 rounded-2xl border px-4 py-3 text-sm font-medium ${
-              error
-                ? 'border-red-200 bg-red-50 text-red-700'
-                : 'border-green-200 bg-green-50 text-green-700'
-            }`}>
+            <div
+              className={`mb-5 rounded-2xl border px-4 py-3 text-sm font-medium ${
+                error
+                  ? "border-red-200 bg-red-50 text-red-700"
+                  : "border-green-200 bg-green-50 text-green-700"
+              }`}
+            >
               {error || message}
             </div>
           )}
@@ -90,12 +99,12 @@ export default function ForgetPassword() {
               disabled={loading}
               className="w-full rounded-2xl bg-cadtBlue px-4 py-3 text-sm font-semibold text-white transition hover:bg-cadtNavy focus:outline-none focus:ring-4 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {loading ? 'Sending...' : 'Send Reset Link'}
+              {loading ? "Sending..." : "Send Reset Link"}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-slate-500">
-            Remember your password?{' '}
+            Remember your password?{" "}
             <Link
               to="/login"
               className="font-semibold text-cadtBlue hover:text-cadtNavy"

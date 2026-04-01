@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import logo from "../assets/logos/logo-blue.svg";
 import { safeGetLocalStorage, safeSetLocalStorage } from "../utils/safeStorage";
+import { getCourseCoverUrl } from "../utils/courseImage";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const SUPABASE_URL =
@@ -65,26 +66,7 @@ export default function ExploreCourses() {
   const [error, setError] = useState("");
 
   const getCourseCoverSrc = (course) => {
-    // PRIORITY 1: Use database cover_image_url if it's a FULL Supabase URL
-    const coverImageUrl = course?.cover_image_url;
-    if (coverImageUrl && /^https:\/\/.*supabase\.co/i.test(coverImageUrl)) {
-      return coverImageUrl;
-    }
-
-    // PRIORITY 2: Build Supabase URL using course slug (primary method)
-    const courseSlug = course?.slug;
-    if (courseSlug) {
-      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${courseSlug}/cover.svg`;
-    }
-
-    // PRIORITY 3: Try to find a fallback slug by course title
-    const fallback = COURSE_COVER_FALLBACKS.find((item) =>
-      item.pattern.test(course?.title || ""),
-    );
-    if (fallback) {
-      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${fallback.slug}/cover.svg`;
-    }
-    return null;
+    return getCourseCoverUrl(course, SUPABASE_URL, SUPABASE_BUCKET);
   };
 
   // Save theme preference to localStorage whenever it changes
