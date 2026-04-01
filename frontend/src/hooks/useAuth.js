@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 /**
  * Hook for checking user role and managing role-based access control
@@ -15,7 +16,7 @@ export const useAuth = () => {
 
   const getUserRole = async () => {
     try {
-      const response = await axios.get("/api/user/profile", {
+      const response = await axios.get(`${API_BASE_URL}/api/user/profile`, {
         headers: getAuthHeaders(),
       });
 
