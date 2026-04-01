@@ -69,10 +69,14 @@ export default function ResetPassword() {
 
     try {
       const token = searchParams.get('token');
-      const response = await axios.post(`${API_BASE_URL}/api/auth/reset-password`, {
-        token,
-        password: formData.password
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/api/auth/reset-password`,
+        {
+          token,
+          password: formData.password
+        },
+        { timeout: 10000 } // 10 second timeout
+      );
 
       setMessage('Password reset successfully! You can now log in with your new password.');
       setTimeout(() => navigate('/login'), 3000);

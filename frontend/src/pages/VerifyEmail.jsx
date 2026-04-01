@@ -19,7 +19,11 @@ export default function VerifyEmail() {
 
     const verifyEmail = async () => {
       try {
-        const response = await axios.post(`${API_BASE_URL}/api/auth/verify-email`, { token });
+        const response = await axios.post(
+          `${API_BASE_URL}/api/auth/verify-email`,
+          { token },
+          { timeout: 10000 } // 10 second timeout
+        );
         setStatus('success');
         setMessage('Email verified successfully! You can now log in.');
         setTimeout(() => navigate('/login'), 3000);

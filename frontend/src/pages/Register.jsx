@@ -86,11 +86,15 @@ export default function Register() {
 
     try {
       const submittedEmail = formData.email.trim();
-      const response = await axios.post(`${API_BASE_URL}/api/auth/register`, {
-        name: formData.name.trim(),
-        email: submittedEmail,
-        password: formData.password,
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/api/auth/register`,
+        {
+          name: formData.name.trim(),
+          email: submittedEmail,
+          password: formData.password,
+        },
+        { timeout: 10000 } // 10 second timeout
+      );
 
       setAlert({
         type: "success",
@@ -122,9 +126,13 @@ export default function Register() {
     setResendMessage("");
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/resend-verification`, {
-        email: registeredEmail,
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/api/auth/resend-verification`,
+        {
+          email: registeredEmail,
+        },
+        { timeout: 10000 } // 10 second timeout
+      );
       setVerificationLink(response.data?.verificationLink || "");
       setResendMessage(
         response.data?.message ||
