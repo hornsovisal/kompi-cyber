@@ -42,6 +42,8 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 // Serve uploaded course assets like /upload/lesson/<slug>/cover.*
+// Note: Primary storage is now Supabase (upload-lesson bucket for lessons, certificates bucket for certs)
+// This local path serves as fallback for local development
 app.use("/upload", express.static(path.resolve(__dirname, "../upload")));
 
 app.use("/api/auth", authRoutes);

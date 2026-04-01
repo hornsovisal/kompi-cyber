@@ -2,15 +2,19 @@ const { createClient } = require("@supabase/supabase-js");
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const SUPABASE_BUCKET = process.env.SUPABASE_BUCKET || "certificates";
+const SUPABASE_CERTIFICATE_BUCKET =
+  process.env.SUPABASE_CERTIFICATE_BUCKET || "certificates";
+const SUPABASE_LESSON_BUCKET =
+  process.env.SUPABASE_LESSON_BUCKET || "upload-lesson";
 
 let client;
 
 if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
   client = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  console.log("✅ Supabase configured successfully");
 } else {
   console.warn(
-    "Supabase is not configured (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing). Certificate upload features are disabled.",
+    "⚠️ Supabase is not configured (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing). File upload features will use local storage as fallback.",
   );
 
   client = {
@@ -28,5 +32,7 @@ if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
 
 module.exports = {
   client,
-  bucket: SUPABASE_BUCKET,
+  certificateBucket: SUPABASE_CERTIFICATE_BUCKET,
+  lessonBucket: SUPABASE_LESSON_BUCKET,
+  isConfigured: !!(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY),
 };
