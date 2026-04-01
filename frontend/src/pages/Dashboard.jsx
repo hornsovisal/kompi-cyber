@@ -129,29 +129,24 @@ export default function Dashboard() {
   });
 
   const getCourseCoverSrc = (course) => {
+    // PRIORITY 1: Use database cover_image_url if it's a FULL Supabase URL
     const coverImageUrl = course?.cover_image_url;
-    if (coverImageUrl) {
-      if (/^https?:\/\//i.test(coverImageUrl)) {
-        return coverImageUrl;
-      }
-
-      return `${API_BASE}${coverImageUrl}`;
+    if (coverImageUrl && /^https:\/\/.*supabase\.co/i.test(coverImageUrl)) {
+      return coverImageUrl;
     }
 
-    // Build Supabase URL using course slug or fallback
+    // PRIORITY 2: Build Supabase URL using course slug (primary method)
     const courseSlug = course?.slug || COURSE_COVER_MAP[Number(course?.id)];
-
-    // Try to find a fallback slug by course title
-    let fallbackSlug = courseSlug;
-    if (!fallbackSlug) {
-      const fallback = COURSE_COVER_FALLBACKS.find((item) =>
-        item.pattern.test(course?.title || ""),
-      );
-      fallbackSlug = fallback?.slug;
+    if (courseSlug) {
+      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${courseSlug}/cover.svg`;
     }
 
-    if (fallbackSlug) {
-      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${fallbackSlug}/cover.svg`;
+    // PRIORITY 3: Try to find a fallback slug by course title
+    const fallback = COURSE_COVER_FALLBACKS.find((item) =>
+      item.pattern.test(course?.title || ""),
+    );
+    if (fallback) {
+      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${fallback.slug}/cover.svg`;
     }
 
     return null;

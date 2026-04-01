@@ -35,9 +35,13 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: process.env.NODE_ENV === "production" ? 20 : 10,
+  maxIdle: process.env.NODE_ENV === "production" ? 10 : 5,
+  idleTimeout: 60000,
   queueLimit: 0,
   enableKeepAlive: true,
+  keepAliveInitialDelayMs: 0,
+  decimalNumbers: true, // Handle large numbers properly
   ...(sslConfig && { ssl: sslConfig }),
 });
 
