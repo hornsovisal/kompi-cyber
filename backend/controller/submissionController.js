@@ -165,6 +165,15 @@ exports.submitQuiz = async (req, res) => {
       );
     }
 
+    await connection.query(
+      `INSERT INTO lesson_progress (user_id, lesson_id, status, completed_at)
+       VALUES (?, ?, 'completed', NOW())
+       ON DUPLICATE KEY UPDATE
+         status = 'completed',
+         completed_at = NOW()`,
+      [userId, lessonId],
+    );
+
     await connection.commit();
 
     return res.json({

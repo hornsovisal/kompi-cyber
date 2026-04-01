@@ -9,6 +9,7 @@ export default function Register() {
   const [alert, setAlert] = useState(null);
   const [resendMessage, setResendMessage] = useState("");
   const [registeredEmail, setRegisteredEmail] = useState("");
+  const [verificationLink, setVerificationLink] = useState("");
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     name: "",
@@ -54,6 +55,7 @@ export default function Register() {
     e.preventDefault();
     setAlert(null);
     setResendMessage("");
+    setVerificationLink("");
 
     if (!validateForm()) {
       return;
@@ -73,6 +75,7 @@ export default function Register() {
         type: "success",
         message: response.data.message || "Registration successful!",
       });
+      setVerificationLink(response.data?.verificationLink || "");
       setRegisteredEmail(submittedEmail);
       setFormData({ name: "", email: "", password: "", confirmPassword: "" });
     } catch (error) {
@@ -96,6 +99,7 @@ export default function Register() {
       const response = await axios.post("/api/auth/resend-verification", {
         email: registeredEmail,
       });
+      setVerificationLink(response.data?.verificationLink || "");
       setResendMessage(
         response.data?.message || "Verification email sent. Please check your inbox.",
       );
@@ -192,6 +196,14 @@ export default function Register() {
               </div>
               {resendMessage && (
                 <p className="mt-3 text-xs text-slate-300">{resendMessage}</p>
+              )}
+              {verificationLink && (
+                <a
+                  href={verificationLink}
+                  className="mt-3 block rounded-xl bg-cyan-500/15 px-4 py-2 text-center text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/25"
+                >
+                  Verify now (dev link)
+                </a>
               )}
             </div>
           )}

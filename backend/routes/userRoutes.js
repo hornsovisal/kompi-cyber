@@ -16,6 +16,9 @@ router.get("/me/dashboard-summary", userController.getMyDashboardSummary);
 // PUT  /api/users/me
 router.put("/me", userController.updateMe);
 
+// DELETE /api/users/me
+router.delete("/me", userController.deleteMe);
+
 // GET  /api/users (admin only)
 router.get("/", authMiddleware.requireAdmin, userController.getUsers);
 
