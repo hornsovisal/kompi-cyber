@@ -16,10 +16,21 @@ export default function ForgetPassword() {
     setError('');
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/forgot-password`, { email });
+      const response = await axios.post(
+        `${API_BASE_URL}/api/auth/forgot-password`,
+        { email },
+        { timeout: 10000 } // 10 second timeout
+      );
       setMessage(response.data.message);
     } catch (err) {
-      setError(err.response?.data?.message || 'An error occurred');
+      if (err.code === 'ECONNABORTED') {
+        setError('Request timed out. Please check your connection and try again.');
+      } else if (err.response?.status === 404) {
+        setError('Password reset endpoint not found. Please contact support.');
+      } else {
+        setError(err.response?.data?.message || err.message || 'An error occurred. Please try again.');
+      }
+      console.error('Forgot password error:', err);
     } finally {
       setLoading(false);
     }
