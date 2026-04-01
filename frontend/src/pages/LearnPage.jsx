@@ -425,6 +425,7 @@ export default function LearnPage() {
   const [activeTab, setActiveTab] = useState("learn");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [course, setCourse] = useState(null);
+  const [courseModules, setCourseModules] = useState([]);
   const [lessons, setLessons] = useState([]);
   const [activeLesson, setActiveLesson] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -437,11 +438,15 @@ export default function LearnPage() {
   const [quizError, setQuizError] = useState("");
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submittingQuiz, setSubmittingQuiz] = useState(false);
+  const [completingLesson, setCompletingLesson] = useState(false);
+  const [completionError, setCompletionError] = useState("");
   const [quizResult, setQuizResult] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [progressLoading, setProgressLoading] = useState(false);
   const [progressError, setProgressError] = useState("");
   const [practiceHistory, setPracticeHistory] = useState([]);
+  const [progressCompletedLessonIds, setProgressCompletedLessonIds] =
+    useState([]);
   const [practiceView, setPracticeView] = useState("list");
   const [practiceItems, setPracticeItems] = useState([]);
   const [practiceListLoading, setPracticeListLoading] = useState(false);
@@ -485,12 +490,12 @@ export default function LearnPage() {
   }, [activeLesson?.id]);
 
   const groupedModules = useMemo(() => {
-    const map = new Map();
+    const lessonsByModule = new Map();
 
     lessons.forEach((lesson) => {
-      const moduleId = lesson.module_id;
-      if (!map.has(moduleId)) {
-        map.set(moduleId, {
+      const moduleId = Number(lesson.module_id);
+      if (!lessonsByModule.has(moduleId)) {
+        lessonsByModule.set(moduleId, {
           module_id: moduleId,
           module_title:
             lesson.module_title || `Module ${lesson.module_order || ""}`,
@@ -498,11 +503,42 @@ export default function LearnPage() {
           lessons: [],
         });
       }
-      map.get(moduleId).lessons.push(lesson);
+      lessonsByModule.get(moduleId).lessons.push(lesson);
     });
 
-    return [...map.values()].sort((a, b) => a.module_order - b.module_order);
-  }, [lessons]);
+    if (courseModules.length === 0) {
+      return [...lessonsByModule.values()].sort(
+        (a, b) => Number(a.module_order || 0) - Number(b.module_order || 0),
+      );
+    }
+
+    const modules = courseModules.map((module) => {
+      const moduleId = Number(module.module_id ?? module.id);
+      const lessonGroup = lessonsByModule.get(moduleId);
+
+      return {
+        module_id: moduleId,
+        module_title:
+          module.module_title ||
+          module.title ||
+          lessonGroup?.module_title ||
+          `Module ${module.module_order || ""}`,
+        module_order:
+          Number(module.module_order ?? lessonGroup?.module_order ?? 0) || 0,
+        lessons: lessonGroup?.lessons || [],
+      };
+    });
+
+    lessonsByModule.forEach((module, moduleId) => {
+      if (!modules.some((item) => Number(item.module_id) === moduleId)) {
+        modules.push(module);
+      }
+    });
+
+    return modules.sort(
+      (a, b) => Number(a.module_order || 0) - Number(b.module_order || 0),
+    );
+  }, [courseModules, lessons]);
 
   const allLessons = useMemo(() => {
     return [...lessons].sort((a, b) => {
@@ -520,17 +556,20 @@ export default function LearnPage() {
     );
   }, [allLessons, activeLesson]);
 
-  // Calculate progress based on completed quizzes (quiz attempts), not lesson navigation
+  // Calculate progress based on either quiz attempts or persisted lesson completion.
   const completedLessonIds = useMemo(() => {
     const completedIds = new Set(
       practiceHistory.map((item) => Number(item.lessonId)),
     );
+    progressCompletedLessonIds.forEach((lessonId) => {
+      completedIds.add(Number(lessonId));
+    });
     return completedIds;
-  }, [practiceHistory]);
+  }, [practiceHistory, progressCompletedLessonIds]);
 
   const progressPercent = useMemo(() => {
     if (allLessons.length === 0) return 0;
-    // Progress = (lessons with quiz attempts / total lessons) * 100
+    // Progress = (completed lessons / total lessons) * 100
     return Math.round((completedLessonIds.size / allLessons.length) * 100);
   }, [allLessons.length, completedLessonIds]);
 
@@ -575,6 +614,9 @@ export default function LearnPage() {
       setLoading(true);
       setError("");
       setNotEnrolled(false);
+      setCourseModules([]);
+      setLessons([]);
+      setActiveLesson(null);
       try {
         // Load course and check if courseId is numeric (old format) and needs redirect to slug
         const courseRes = await axios.get(`/api/courses/${courseId}`, {
@@ -612,6 +654,8 @@ export default function LearnPage() {
         }
 
         const fetchedLessons = lessonsRes.data.lessons || [];
+        const fetchedModules = lessonsRes.data.modules || [];
+        setCourseModules(fetchedModules);
         setLessons(fetchedLessons);
         if (fetchedLessons.length === 0) {
           setActiveLesson(null);
@@ -740,10 +784,24 @@ export default function LearnPage() {
           );
 
           const fetchedLessons = lessonsRes.data.lessons || [];
+          const fetchedModules = lessonsRes.data.modules || [];
+          setCourseModules(fetchedModules);
           if (fetchedLessons.length > 0) {
             setLessons(fetchedLessons);
 
             // Load the first lesson
+<<<<<<< HEAD
+            const firstLessonId = Number(fetchedLessons[0].id);
+            const lessonRes = await axios.get(`/api/lessons/${firstLessonId}`, {
+              baseURL: API_BASE,
+              headers,
+            });
+            setActiveLesson(lessonRes.data.lesson);
+            navigate(`/learn/${courseId}/${firstLessonId}`, { replace: true });
+          } else {
+            setLessons([]);
+            setActiveLesson(null);
+=======
             const firstLesson = fetchedLessons[0];
             const lessonRes = await axios.get(
               `/api/lessons/${firstLesson.slug || firstLesson.id}`,
@@ -757,6 +815,7 @@ export default function LearnPage() {
             const courseSlug = course?.slug || courseId;
             const lessonSlug = loadedLesson?.slug || loadedLesson?.id;
             navigate(`/learn/${courseSlug}/${lessonSlug}`, { replace: true });
+>>>>>>> main
           }
         } catch (lessonErr) {
           console.error("Failed to load lessons after enrollment:", lessonErr);
@@ -1072,24 +1131,54 @@ export default function LearnPage() {
     setProgressLoading(true);
     setProgressError("");
     try {
-      const requests = allLessons.map((lesson) =>
-        axios
-          .get(`/api/quizzes/lesson/${lesson.id}/attempt`, {
-            baseURL: API_BASE,
-            headers,
-            timeout: REQUEST_TIMEOUT_MS,
-          })
-          .then((res) => ({ lesson, attempt: res.data?.data || null }))
-          .catch((err) => {
-            if (err.response?.status === 404) {
-              return { lesson, attempt: null };
-            }
-            throw err;
-          }),
-      );
+      const [meRes, quizResults] = await Promise.all([
+        axios.get("/api/users/me", {
+          baseURL: API_BASE,
+          headers,
+          timeout: REQUEST_TIMEOUT_MS,
+        }),
+        Promise.all(
+          allLessons.map((lesson) =>
+            axios
+              .get(`/api/quizzes/lesson/${lesson.id}/attempt`, {
+                baseURL: API_BASE,
+                headers,
+                timeout: REQUEST_TIMEOUT_MS,
+              })
+              .then((res) => ({ lesson, attempt: res.data?.data || null }))
+              .catch((err) => {
+                if (err.response?.status === 404) {
+                  return { lesson, attempt: null };
+                }
+                throw err;
+              }),
+          ),
+        ),
+      ]);
 
-      const results = await Promise.all(requests);
-      const rows = results
+      const userId = meRes.data?.user?.id;
+      let persistedCompletedIds = [];
+
+      if (userId) {
+        const progressRes = await axios.get(`/api/users/${userId}/progress`, {
+          baseURL: API_BASE,
+          headers,
+          timeout: REQUEST_TIMEOUT_MS,
+        });
+
+        const courseLessonIds = new Set(allLessons.map((lesson) => Number(lesson.id)));
+        persistedCompletedIds = (progressRes.data?.progress || [])
+          .filter(
+            (row) =>
+              row.status === "completed" &&
+              courseLessonIds.has(Number(row.lesson_id)),
+          )
+          .map((row) => Number(row.lesson_id));
+      }
+
+      setProgressCompletedLessonIds(persistedCompletedIds);
+
+      const rows = quizResults
         .filter((item) => item.attempt)
         .map((item) => ({
           lessonId: item.lesson.id,
@@ -1125,15 +1214,15 @@ export default function LearnPage() {
 
   // Load progress when progress tab is active
   useEffect(() => {
-    if (activeTab !== "progress") return;
     if (!token || allLessons.length === 0) {
       setPracticeHistory([]);
+      setProgressCompletedLessonIds([]);
       return;
     }
 
     const headers = { Authorization: `Bearer ${token}` };
     loadProgressData(headers);
-  }, [activeTab, allLessons, token]);
+  }, [allLessons, token]);
 
   // Reload progress when a quiz is submitted to update the progress bar
   useEffect(() => {
@@ -1142,6 +1231,61 @@ export default function LearnPage() {
     const headers = { Authorization: `Bearer ${token}` };
     loadProgressData(headers);
   }, [quizResult, token, allLessons]);
+
+  const handleCompleteAndContinue = async () => {
+    const currentLessonId = Number(activeLesson?.id);
+    if (!currentLessonId || !token) {
+      return;
+    }
+
+    setCompletingLesson(true);
+    setCompletionError("");
+
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+
+      await axios.post(
+        `/api/lessons/${currentLessonId}/complete`,
+        {},
+        {
+          baseURL: API_BASE,
+          headers,
+          timeout: REQUEST_TIMEOUT_MS,
+        },
+      );
+
+      await loadProgressData(headers);
+
+      if (allLessons[activeLessonIndex + 1]) {
+        await openLessonByOffset(1);
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      if (err.code === "ECONNABORTED") {
+        setCompletionError(
+          "Request timed out. Please check backend/database and try again.",
+        );
+      } else if (!err.response) {
+        setCompletionError(`Cannot connect to backend API (${API_TARGET_LABEL})`);
+      } else {
+        const backendMessage = err.response?.data?.message;
+        const backendDetail = err.response?.data?.detail;
+        const status = err.response?.status;
+        const statusText = err.response?.statusText;
+        const fallbackMessage = status
+          ? `Failed to save lesson completion (${status}${statusText ? ` ${statusText}` : ""}).`
+          : "Failed to save lesson completion. Please try again.";
+        setCompletionError(
+          [backendMessage || fallbackMessage, backendDetail]
+            .filter(Boolean)
+            .join(" - "),
+        );
+      }
+    } finally {
+      setCompletingLesson(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -2481,9 +2625,18 @@ export default function LearnPage() {
             </div>
 
             {activeTab === "learn" && (
+<<<<<<< HEAD
+              <div className="fixed bottom-6 left-1/2 z-20 w-[calc(100%-2rem)] max-w-none -translate-x-1/2 rounded-xl border border-blue-900/50 bg-[#0F1E32]/95 p-3 shadow-xl backdrop-blur lg:w-[calc(100%-22rem)]">
+                {completionError && (
+                  <div className="mb-3 rounded-lg border border-red-900/60 bg-red-900/20 px-3 py-2 text-xs text-red-300">
+                    {completionError}
+                  </div>
+                )}
+=======
               <div
                 className={`fixed bottom-6 left-1/2 z-20 w-[calc(100%-2rem)] max-w-none -translate-x-1/2 rounded-xl border p-3 shadow-xl backdrop-blur transition-colors duration-300 lg:w-[calc(100%-22rem)] ${isDarkMode ? "border-blue-900/50 bg-[#0F1E32]/95" : "border-gray-400 bg-white/95"}`}
               >
+>>>>>>> main
                 <div className="flex items-center justify-between gap-3">
                   <button
                     onClick={() => openLessonByOffset(-1)}
@@ -2508,16 +2661,24 @@ export default function LearnPage() {
                   </div>
 
                   <button
+<<<<<<< HEAD
+                    onClick={handleCompleteAndContinue}
+                    disabled={completingLesson}
+                    className="rounded-lg bg-cyan-600 px-5 py-2 text-sm font-semibold text-slate-900 transition hover:bg-cyan-500 shadow-lg shadow-cyan-600/30 disabled:opacity-60 disabled:cursor-not-allowed"
+=======
                     onClick={() =>
                       allLessons[activeLessonIndex + 1]
                         ? openLessonByOffset(1)
                         : navigate("/dashboard")
                     }
                     className={`rounded-lg px-5 py-2 text-sm font-semibold transition shadow-lg ${isDarkMode ? "bg-cyan-600 text-slate-900 hover:bg-cyan-500 shadow-cyan-600/30" : "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/30"}`}
+>>>>>>> main
                   >
-                    {allLessons[activeLessonIndex + 1]
-                      ? "Complete and Continue"
-                      : "Back to Dashboard"}
+                    {completingLesson
+                      ? "Saving..."
+                      : allLessons[activeLessonIndex + 1]
+                        ? "Complete and Continue"
+                        : "Complete and Back to Dashboard"}
                   </button>
                 </div>
               </div>

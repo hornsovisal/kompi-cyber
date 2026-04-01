@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 
-const smtpConfigured = process.env.SMTP_USER && process.env.SMTP_PASS;
+const smtpConfigured = Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
 
 const transporter = smtpConfigured
   ? nodemailer.createTransport({
@@ -51,12 +51,13 @@ const sendVerificationEmail = async (email, token) => {
   if (!smtpConfigured) {
     console.log('\n[DEV] SMTP not configured — verification link:');
     console.log(verificationUrl + '\n');
-    return;
+    return { delivered: false, url: verificationUrl };
   }
 
   try {
     await transporter.sendMail(mailOptions);
     console.log('Verification email sent to:', email);
+    return { delivered: true, url: verificationUrl };
   } catch (error) {
     console.error('Error sending verification email:', error);
     throw new Error('Failed to send verification email');
@@ -102,12 +103,13 @@ const sendPasswordResetEmail = async (email, token) => {
   if (!smtpConfigured) {
     console.log('\n[DEV] SMTP not configured — password reset link:');
     console.log(resetUrl + '\n');
-    return;
+    return { delivered: false, url: resetUrl };
   }
 
   try {
     await transporter.sendMail(mailOptions);
     console.log('Password reset email sent to:', email);
+    return { delivered: true, url: resetUrl };
   } catch (error) {
     console.error('Error sending password reset email:', error);
     throw new Error('Failed to send password reset email');
@@ -115,6 +117,7 @@ const sendPasswordResetEmail = async (email, token) => {
 };
 
 module.exports = {
+  smtpConfigured,
   sendVerificationEmail,
   sendPasswordResetEmail
 };

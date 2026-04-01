@@ -52,6 +52,41 @@ class UserController {
     }
   };
 
+  deleteMe = async (req, res) => {
+    try {
+      const userId = req.user.sub;
+
+      const existing = await this.userModel.findById(userId);
+      if (!existing) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const result = await this.userModel.deleteUserAccount(userId);
+
+      if (result?.blocked) {
+        return res.status(409).json({
+          message:
+            "Account cannot be deleted while you still own courses. Transfer or remove your courses first.",
+          blockedBy: "owned_courses",
+        });
+      }
+
+      if (!result?.deleted) {
+        return res.status(500).json({ message: "Failed to delete account" });
+      }
+
+      return res.status(200).json({
+        message: result.softDeleted
+          ? "Account deleted successfully"
+          : "Account deleted successfully",
+        mode: result.softDeleted ? "soft-delete" : "hard-delete",
+      });
+    } catch (error) {
+      console.error("deleteMe error:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  };
+
   getUser = async (req, res) => {
     try {
       const { id } = req.params;

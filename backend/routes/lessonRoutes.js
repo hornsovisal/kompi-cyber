@@ -40,6 +40,9 @@ router.get("/:identifier", (req, res, next) => {
   }
 });
 
+// POST /api/lessons/:id/complete
+router.post("/:id/complete", lessonController.markLessonCompleted);
+
 // POST /api/lessons
 router.post("/", lessonController.createLesson);
 

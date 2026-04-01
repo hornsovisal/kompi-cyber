@@ -5,7 +5,10 @@ class CertificateModel {
     this.db = database;
   }
 
-  // Check if user has completed course (attempted all lessons)
+  // Check if user has completed course
+  // A lesson counts as completed when either:
+  // 1) lesson_progress status is completed, or
+  // 2) user has at least one quiz attempt for that lesson.
   async hasCourseCompletion(userId, courseId) {
     try {
       // Get total lessons in course
@@ -20,19 +23,25 @@ class CertificateModel {
 
       if (totalLessons === 0) return false;
 
-      // Count distinct lesson IDs user has attempted
-      const [attemptedResult] = await this.db.execute(
-        `SELECT COUNT(DISTINCT qa.lesson_id) as attempted FROM quiz_attempts qa
-         INNER JOIN lessons l ON l.id = qa.lesson_id
+      const [completedResult] = await this.db.execute(
+        `SELECT COUNT(DISTINCT l.id) as completed
+         FROM lessons l
          INNER JOIN modules m ON m.id = l.module_id
-         WHERE qa.user_id = ? AND m.course_id = ?`,
-        [userId, courseId],
+         LEFT JOIN lesson_progress lp
+           ON lp.lesson_id = l.id
+          AND lp.user_id = ?
+          AND lp.status = 'completed'
+         LEFT JOIN quiz_attempts qa
+           ON qa.lesson_id = l.id
+          AND qa.user_id = ?
+         WHERE m.course_id = ?
+           AND (lp.lesson_id IS NOT NULL OR qa.lesson_id IS NOT NULL)`,
+        [userId, userId, courseId],
       );
 
-      const attemptedLessons = attemptedResult[0]?.attempted || 0;
+      const completedLessons = Number(completedResult[0]?.completed || 0);
 
-      // Course is complete if user has attempted all lessons
-      return attemptedLessons >= totalLessons;
+      return completedLessons >= totalLessons;
     } catch (error) {
       console.error("Error checking course completion:", error);
       return false;
@@ -124,14 +133,23 @@ class CertificateModel {
     const [stats] = await this.db.execute(
       `SELECT 
         COUNT(DISTINCT l.id) as total_lessons,
-        COUNT(DISTINCT qa.lesson_id) as completed_lessons,
+        COUNT(
+          DISTINCT CASE
+            WHEN lp.lesson_id IS NOT NULL OR qa.lesson_id IS NOT NULL THEN l.id
+            ELSE NULL
+          END
+        ) as completed_lessons,
         AVG(qa.score) as average_score,
         MAX(qa.score) as highest_score
        FROM lessons l
        INNER JOIN modules m ON m.id = l.module_id
+       LEFT JOIN lesson_progress lp
+         ON lp.lesson_id = l.id
+        AND lp.user_id = ?
+        AND lp.status = 'completed'
        LEFT JOIN quiz_attempts qa ON l.id = qa.lesson_id AND qa.user_id = ?
        WHERE m.course_id = ?`,
-      [userId, courseId],
+      [userId, userId, courseId],
     );
     return stats[0] || {};
   }

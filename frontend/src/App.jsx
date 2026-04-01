@@ -15,6 +15,7 @@ import VerifyEmail from "./pages/VerifyEmail";
 import ResetPassword from "./pages/ResetPassword";
 import ViewCertificate from "./pages/ViewCertificate";
 import StudentInvitations from "./pages/StudentInvitations";
+import Profile from "./pages/Profile";
 import InstructorLayout from "./components/Layout/InstructorLayout";
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 import InstructorLogin from "./pages/instructor/InstructorLogin";
@@ -46,6 +47,7 @@ export default function App() {
           element={<ViewCertificate />}
         />
         <Route path="/invitations" element={<StudentInvitations />} />
+        <Route path="/profile" element={<Profile />} />
 
         {/* Instructor Routes */}
         <Route path="/instructor" element={<Navigate to="/instructor/login" replace />} />

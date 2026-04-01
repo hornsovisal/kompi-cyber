@@ -36,7 +36,7 @@ const COURSE_COVER_FALLBACKS = [
   },
   {
     pattern: /ethical hacking/i,
-    path: "/upload/lesson/web-security/cover.svg",
+    path: "/upload/lesson/intro-to-linux-course/cover.svg",
   },
   {
     pattern: /introduction to linux|linux/i,
