@@ -16,7 +16,7 @@ const StudentInvitations = () => {
     try {
       setLoading(true);
       setError("");
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const response = await fetch("http://localhost:5000/api/invitations", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -39,7 +39,7 @@ const StudentInvitations = () => {
     try {
       setRespondingId(invitationId);
       setError("");
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const response = await fetch(
         `http://localhost:5000/api/invitations/${invitationId}/accept`,
@@ -72,7 +72,7 @@ const StudentInvitations = () => {
     try {
       setRespondingId(invitationId);
       setError("");
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const response = await fetch(
         `http://localhost:5000/api/invitations/${invitationId}/reject`,

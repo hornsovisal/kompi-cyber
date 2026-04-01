@@ -39,7 +39,7 @@ export default function Home() {
 
   const handleProfile = () => {
     if (isAuthenticated()) {
-      navigate("/dashboard");
+      navigate("/profile");
     } else {
       navigate("/login");
     }

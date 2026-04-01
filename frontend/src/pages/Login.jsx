@@ -44,11 +44,6 @@ export default function Login() {
     setVerificationLink("");
 
     try {
-<<<<<<< HEAD
-      const response = await axios.post("/api/auth/resend-verification", { email });
-      setVerificationLink(response.data?.verificationLink || "");
-      setResendMessage(response.data?.message || "Verification email sent. Please check your inbox.");
-=======
       const response = await axios.post("/api/auth/resend-verification", {
         email,
       });
@@ -56,7 +51,6 @@ export default function Login() {
         response.data?.message ||
           "Verification email sent. Please check your inbox.",
       );
->>>>>>> main
     } catch (error) {
       setResendMessage(
         error.response?.data?.message ||

@@ -22,7 +22,7 @@ export default function ViewCertificate() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState(false);
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   useEffect(() => {
     fetchData();

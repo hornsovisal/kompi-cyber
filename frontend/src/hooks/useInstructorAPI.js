@@ -1,17 +1,17 @@
-import { useState, useCallback } from 'react';
-import axios from 'axios';
+import { useState, useCallback } from "react";
+import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const API_BASE = import.meta.env.VITE_API_URL || "";
 
 export const useInstructorAPI = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem("token");
     return {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
   };
 
@@ -25,7 +25,7 @@ export const useInstructorAPI = () => {
       });
       return response.data.data || [];
     } catch (err) {
-      const errorMsg = err.response?.data?.message || 'Failed to fetch courses';
+      const errorMsg = err.response?.data?.message || "Failed to fetch courses";
       setError(errorMsg);
       throw err;
     } finally {
@@ -43,7 +43,7 @@ export const useInstructorAPI = () => {
       });
       return response.data.data || [];
     } catch (err) {
-      const errorMsg = err.response?.data?.message || 'Failed to fetch quizzes';
+      const errorMsg = err.response?.data?.message || "Failed to fetch quizzes";
       setError(errorMsg);
       throw err;
     } finally {
@@ -60,7 +60,7 @@ export const useInstructorAPI = () => {
       });
       return response.data.data || null;
     } catch (err) {
-      const errorMsg = err.response?.data?.message || 'Failed to fetch quiz';
+      const errorMsg = err.response?.data?.message || "Failed to fetch quiz";
       setError(errorMsg);
       throw err;
     } finally {
@@ -75,11 +75,11 @@ export const useInstructorAPI = () => {
       const response = await axios.post(
         `${API_BASE}/api/quizzes/create`,
         quizData,
-        { headers: getAuthHeaders() }
+        { headers: getAuthHeaders() },
       );
       return response.data;
     } catch (err) {
-      const errorMsg = err.response?.data?.message || 'Failed to create quiz';
+      const errorMsg = err.response?.data?.message || "Failed to create quiz";
       setError(errorMsg);
       throw err;
     } finally {
@@ -94,11 +94,11 @@ export const useInstructorAPI = () => {
       const response = await axios.put(
         `${API_BASE}/api/quizzes/${quizId}`,
         quizData,
-        { headers: getAuthHeaders() }
+        { headers: getAuthHeaders() },
       );
       return response.data;
     } catch (err) {
-      const errorMsg = err.response?.data?.message || 'Failed to update quiz';
+      const errorMsg = err.response?.data?.message || "Failed to update quiz";
       setError(errorMsg);
       throw err;
     } finally {
@@ -115,7 +115,7 @@ export const useInstructorAPI = () => {
       });
       return response.data;
     } catch (err) {
-      const errorMsg = err.response?.data?.message || 'Failed to delete quiz';
+      const errorMsg = err.response?.data?.message || "Failed to delete quiz";
       setError(errorMsg);
       throw err;
     } finally {
@@ -133,7 +133,8 @@ export const useInstructorAPI = () => {
       });
       return response.data.data || {};
     } catch (err) {
-      const errorMsg = err.response?.data?.message || 'Failed to fetch student performance';
+      const errorMsg =
+        err.response?.data?.message || "Failed to fetch student performance";
       setError(errorMsg);
       throw err;
     } finally {

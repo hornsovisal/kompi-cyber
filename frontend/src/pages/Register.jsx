@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
+import { validatePasswordStrength } from "../utils/passwordValidator";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -11,6 +12,12 @@ export default function Register() {
   const [registeredEmail, setRegisteredEmail] = useState("");
   const [verificationLink, setVerificationLink] = useState("");
   const [errors, setErrors] = useState({});
+  const [passwordStrength, setPasswordStrength] = useState({
+    score: 0,
+    level: "Weak",
+    errors: [],
+    feedback: [],
+  });
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,7 +28,14 @@ export default function Register() {
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    // Real-time password strength validation
+    if (name === "password") {
+      const strength = validatePasswordStrength(value);
+      setPasswordStrength(strength);
+    }
   };
 
   const validateForm = () => {
@@ -39,6 +53,12 @@ export default function Register() {
 
     if (!formData.password) {
       newErrors.password = "Password is required.";
+    } else {
+      // Check password strength
+      const strength = validatePasswordStrength(formData.password);
+      if (strength.errors.length > 0) {
+        newErrors.password = strength.errors[0]; // Show first error
+      }
     }
 
     if (!formData.confirmPassword) {
@@ -78,6 +98,11 @@ export default function Register() {
       setVerificationLink(response.data?.verificationLink || "");
       setRegisteredEmail(submittedEmail);
       setFormData({ name: "", email: "", password: "", confirmPassword: "" });
+
+      // Redirect to login after 1.5 seconds
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
     } catch (error) {
       const message =
         error.response?.data?.message ||
@@ -101,7 +126,8 @@ export default function Register() {
       });
       setVerificationLink(response.data?.verificationLink || "");
       setResendMessage(
-        response.data?.message || "Verification email sent. Please check your inbox.",
+        response.data?.message ||
+          "Verification email sent. Please check your inbox.",
       );
     } catch (error) {
       setResendMessage(
@@ -172,147 +198,191 @@ export default function Register() {
             </div>
           )}
 
-          {alert?.type === "success" && registeredEmail && (
-            <div className="mb-5 rounded-2xl border border-cyan-300/20 bg-cyan-500/5 p-4">
-              <p className="text-sm text-slate-300">
-                Verified email is required before sign in.
+          {registeredEmail && alert?.type === "success" && (
+            <div className="rounded-2xl border border-emerald-300/30 bg-emerald-500/5 p-6 text-center">
+              <p className="mb-4 text-sm text-slate-300">
+                Registration successful! Please log in with your credentials to
+                continue.
               </p>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={handleResendVerification}
-                  disabled={resendLoading}
-                  className="rounded-xl border border-cyan-300/40 px-4 py-2 text-sm font-semibold text-cyan-200 transition hover:bg-cyan-400/10 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {resendLoading ? "Sending..." : "Resend verification email"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate("/login")}
-                  className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-2 text-sm font-semibold text-white transition hover:from-cyan-400 hover:to-blue-400"
-                >
-                  Go to Login
-                </button>
-              </div>
-              {resendMessage && (
-                <p className="mt-3 text-xs text-slate-300">{resendMessage}</p>
-              )}
-              {verificationLink && (
-                <a
-                  href={verificationLink}
-                  className="mt-3 block rounded-xl bg-cyan-500/15 px-4 py-2 text-center text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/25"
-                >
-                  Verify now (dev link)
-                </a>
-              )}
+              <button
+                onClick={() => navigate("/login")}
+                className="w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-3 text-sm font-semibold text-white transition hover:from-cyan-400 hover:to-blue-400 focus:outline-none focus:ring-4 focus:ring-cyan-400/30"
+              >
+                Go to Login
+              </button>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label
-                htmlFor="name"
-                className="mb-2 block text-sm font-semibold text-slate-200"
+          {!registeredEmail && (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label
+                  htmlFor="name"
+                  className="mb-2 block text-sm font-semibold text-slate-200"
+                >
+                  Name
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="w-full rounded-2xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-300 focus:ring-4 focus:ring-cyan-500/20"
+                />
+                {errors.name && (
+                  <p className="mt-1 text-sm text-rose-300">{errors.name}</p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="email"
+                  className="mb-2 block text-sm font-semibold text-slate-200"
+                >
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="student@example.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full rounded-2xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-300 focus:ring-4 focus:ring-cyan-500/20"
+                />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-rose-300">{errors.email}</p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="password"
+                  className="mb-2 block text-sm font-semibold text-slate-200"
+                >
+                  Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="Create a strong password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full rounded-2xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-300 focus:ring-4 focus:ring-cyan-500/20"
+                />
+
+                {/* Password Strength Indicator */}
+                {formData.password && (
+                  <div className="mt-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-400">
+                        Password Strength
+                      </span>
+                      <span
+                        className={`text-xs font-bold ${
+                          passwordStrength.level === "Strong"
+                            ? "text-emerald-400"
+                            : passwordStrength.level === "Medium"
+                              ? "text-yellow-400"
+                              : "text-rose-400"
+                        }`}
+                      >
+                        {passwordStrength.level}
+                      </span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-700/50">
+                      <div
+                        className={`h-full transition-all duration-300 ${
+                          passwordStrength.level === "Strong"
+                            ? "w-full bg-emerald-500"
+                            : passwordStrength.level === "Medium"
+                              ? "w-2/3 bg-yellow-500"
+                              : "w-1/3 bg-rose-500"
+                        }`}
+                      />
+                    </div>
+
+                    {/* Requirements Checklist */}
+                    <div className="mt-2 space-y-1">
+                      {passwordStrength.feedback.length > 0 && (
+                        <div className="text-xs text-slate-400">
+                          {passwordStrength.feedback.map((item, idx) => (
+                            <div
+                              key={idx}
+                              className={`flex items-center gap-1 ${
+                                passwordStrength.errors.length === 0
+                                  ? "text-emerald-400"
+                                  : "text-slate-400"
+                              }`}
+                            >
+                              <span>
+                                {passwordStrength.errors.length === 0
+                                  ? "✓"
+                                  : "○"}
+                              </span>
+                              {item}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {errors.password && (
+                  <p className="mt-2 text-sm text-rose-300">
+                    {errors.password}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="confirmPassword"
+                  className="mb-2 block text-sm font-semibold text-slate-200"
+                >
+                  Confirm Password
+                </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="Re-enter your password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full rounded-2xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-300 focus:ring-4 focus:ring-cyan-500/20"
+                />
+                {errors.confirmPassword && (
+                  <p className="mt-1 text-sm text-rose-300">
+                    {errors.confirmPassword}
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-3 text-sm font-semibold text-white transition hover:from-cyan-400 hover:to-blue-400 focus:outline-none focus:ring-4 focus:ring-cyan-400/30 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                Name
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                placeholder="Enter your full name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-300 focus:ring-4 focus:ring-cyan-500/20"
-              />
-              {errors.name && (
-                <p className="mt-1 text-sm text-rose-300">{errors.name}</p>
-              )}
-            </div>
+                {loading ? "Registering..." : "Register"}
+              </button>
+            </form>
+          )}
 
-            <div>
-              <label
-                htmlFor="email"
-                className="mb-2 block text-sm font-semibold text-slate-200"
+          {!registeredEmail && (
+            <p className="mt-6 text-center text-sm text-slate-400">
+              Already have an account?{" "}
+              <Link
+                to="/login"
+                className="font-semibold text-cyan-300 transition hover:text-cyan-200"
               >
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="student@example.com"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-300 focus:ring-4 focus:ring-cyan-500/20"
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-rose-300">{errors.email}</p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="mb-2 block text-sm font-semibold text-slate-200"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Create a strong password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-300 focus:ring-4 focus:ring-cyan-500/20"
-              />
-              {errors.password && (
-                <p className="mt-1 text-sm text-rose-300">{errors.password}</p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="mb-2 block text-sm font-semibold text-slate-200"
-              >
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                placeholder="Re-enter your password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-300 focus:ring-4 focus:ring-cyan-500/20"
-              />
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-rose-300">
-                  {errors.confirmPassword}
-                </p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-3 text-sm font-semibold text-white transition hover:from-cyan-400 hover:to-blue-400 focus:outline-none focus:ring-4 focus:ring-cyan-400/30 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {loading ? "Registering..." : "Register"}
-            </button>
-          </form>
-
-          <p className="mt-6 text-center text-sm text-slate-400">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="font-semibold text-cyan-300 transition hover:text-cyan-200"
-            >
-              Go to Login
-            </Link>
-          </p>
+                Go to Login
+              </Link>
+            </p>
+          )}
         </div>
       </main>
     </div>
