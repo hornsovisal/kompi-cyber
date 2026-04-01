@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { validatePasswordStrength } from "../utils/passwordValidator";
+import { API_BASE_URL } from "../config/api";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -85,7 +86,7 @@ export default function Register() {
 
     try {
       const submittedEmail = formData.email.trim();
-      const response = await axios.post("/api/auth/register", {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/register`, {
         name: formData.name.trim(),
         email: submittedEmail,
         password: formData.password,
@@ -121,7 +122,7 @@ export default function Register() {
     setResendMessage("");
 
     try {
-      const response = await axios.post("/api/auth/resend-verification", {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/resend-verification`, {
         email: registeredEmail,
       });
       setVerificationLink(response.data?.verificationLink || "");
