@@ -1,16 +1,53 @@
-const db = require('../config/db');
-const LecturerModel = require('../models/IntructorModel');
+const db = require("../config/db");
+const LecturerModel = require("../models/IntructorModel");
 
 // In-memory quiz store for quick demo / no database mode
 let quizMemory = [];
 
 // Mock student performance data
 const mockStudents = [
-  { id: 101, name: 'Alice Nguyen', course: 'network-security', scores: [{ quizId: 1, score: 90 }, { quizId: 2, score: 85 }] },
-  { id: 102, name: 'Sok Chenda', course: 'web-security', scores: [{ quizId: 3, score: 76 }, { quizId: 4, score: 88 }] },
-  { id: 103, name: 'Maya Soth', course: 'incident-response', scores: [{ quizId: 5, score: 92 }, { quizId: 6, score: 81 }] },
-  { id: 104, name: 'Vincent Lim', course: 'intro-to-linux-course', scores: [{ quizId: 7, score: 84 }, { quizId: 8, score: 79 }] },
-  { id: 105, name: 'Student A', course: 'intro-to-cyber-course', scores: [{ quizId: 9, score: 88 }] },
+  {
+    id: 101,
+    name: "Alice Nguyen",
+    course: "network-security",
+    scores: [
+      { quizId: 1, score: 90 },
+      { quizId: 2, score: 85 },
+    ],
+  },
+  {
+    id: 102,
+    name: "Sok Chenda",
+    course: "web-security",
+    scores: [
+      { quizId: 3, score: 76 },
+      { quizId: 4, score: 88 },
+    ],
+  },
+  {
+    id: 103,
+    name: "Maya Soth",
+    course: "incident-response",
+    scores: [
+      { quizId: 5, score: 92 },
+      { quizId: 6, score: 81 },
+    ],
+  },
+  {
+    id: 104,
+    name: "Vincent Lim",
+    course: "intro-to-linux-course",
+    scores: [
+      { quizId: 7, score: 84 },
+      { quizId: 8, score: 79 },
+    ],
+  },
+  {
+    id: 105,
+    name: "Student A",
+    course: "intro-to-cyber-course",
+    scores: [{ quizId: 9, score: 88 }],
+  },
 ];
 
 // Get all instructor's courses with stats
@@ -45,9 +82,11 @@ const getInstructorCourses = async (req, res) => {
       data: courses,
     });
   } catch (error) {
-    console.error('Error fetching instructor courses:', error);
+    console.error("Error fetching instructor courses:", error);
     // Return mock data for testing when database is not available
-    console.log('Database not available, returning mock course data');
+    if (process.env.NODE_ENV !== "production") {
+      console.log("Database not available, returning mock course data");
+    }
     const mockCourses = [
       {
         id: 1,
@@ -58,32 +97,32 @@ const getInstructorCourses = async (req, res) => {
         status: "published",
         enrollmentCount: 25,
         quizCount: 0,
-        moduleCount: 3
+        moduleCount: 3,
       },
       {
         id: 2,
-        title: "Network Security Fundamentals", 
+        title: "Network Security Fundamentals",
         description: "Master network security concepts",
         level: "intermediate",
         duration: 15,
         status: "published",
         enrollmentCount: 18,
         quizCount: 0,
-        moduleCount: 4
+        moduleCount: 4,
       },
       {
         id: 3,
         title: "Web Security Essentials",
         description: "Protect web applications from threats",
-        level: "intermediate", 
+        level: "intermediate",
         duration: 12,
         status: "draft",
         enrollmentCount: 0,
         quizCount: 0,
-        moduleCount: 2
-      }
+        moduleCount: 2,
+      },
     ];
-    
+
     res.json({
       success: true,
       data: mockCourses,
@@ -116,7 +155,7 @@ const getCourseDetail = async (req, res) => {
     if (courses.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Course not found',
+        message: "Course not found",
       });
     }
 
@@ -125,10 +164,10 @@ const getCourseDetail = async (req, res) => {
       data: courses[0],
     });
   } catch (error) {
-    console.error('Error fetching course detail:', error);
+    console.error("Error fetching course detail:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch course details',
+      message: "Failed to fetch course details",
     });
   }
 };
@@ -143,7 +182,7 @@ const createCourse = async (req, res) => {
     if (!title || !description) {
       return res.status(400).json({
         success: false,
-        message: 'Title and description are required',
+        message: "Title and description are required",
       });
     }
 
@@ -155,14 +194,14 @@ const createCourse = async (req, res) => {
     const [result] = await db.execute(query, [
       title,
       description,
-      level || 'Beginner',
-      duration || '4 weeks',
+      level || "Beginner",
+      duration || "4 weeks",
       instructorId,
     ]);
 
     res.status(201).json({
       success: true,
-      message: 'Course created successfully',
+      message: "Course created successfully",
       data: {
         id: result.insertId,
         title,
@@ -170,10 +209,10 @@ const createCourse = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error creating course:', error);
+    console.error("Error creating course:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to create course',
+      message: "Failed to create course",
     });
   }
 };
@@ -187,14 +226,14 @@ const updateCourse = async (req, res) => {
 
     // Check if course belongs to instructor
     const [courses] = await db.execute(
-      'SELECT id FROM courses WHERE id = ? AND created_by = ?',
-      [id, instructorId]
+      "SELECT id FROM courses WHERE id = ? AND created_by = ?",
+      [id, instructorId],
     );
 
     if (courses.length === 0) {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to update this course',
+        message: "Not authorized to update this course",
       });
     }
 
@@ -208,13 +247,13 @@ const updateCourse = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Course updated successfully',
+      message: "Course updated successfully",
     });
   } catch (error) {
-    console.error('Error updating course:', error);
+    console.error("Error updating course:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update course',
+      message: "Failed to update course",
     });
   }
 };
@@ -227,28 +266,28 @@ const deleteCourse = async (req, res) => {
 
     // Check if course belongs to instructor
     const [courses] = await db.execute(
-      'SELECT id FROM courses WHERE id = ? AND created_by = ?',
-      [id, instructorId]
+      "SELECT id FROM courses WHERE id = ? AND created_by = ?",
+      [id, instructorId],
     );
 
     if (courses.length === 0) {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to delete this course',
+        message: "Not authorized to delete this course",
       });
     }
 
-    await db.execute('DELETE FROM courses WHERE id = ?', [id]);
+    await db.execute("DELETE FROM courses WHERE id = ?", [id]);
 
     res.json({
       success: true,
-      message: 'Course deleted successfully',
+      message: "Course deleted successfully",
     });
   } catch (error) {
-    console.error('Error deleting course:', error);
+    console.error("Error deleting course:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete course',
+      message: "Failed to delete course",
     });
   }
 };
@@ -259,7 +298,8 @@ const getDashboardStats = async (req, res) => {
     const instructorId = req.user.id;
 
     // Get total courses
-    const coursesQuery = 'SELECT COUNT(*) as count FROM courses WHERE created_by = ?';
+    const coursesQuery =
+      "SELECT COUNT(*) as count FROM courses WHERE created_by = ?";
     const [coursesResult] = await db.execute(coursesQuery, [instructorId]);
 
     // Get total students enrolled
@@ -290,10 +330,10 @@ const getDashboardStats = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
+    console.error("Error fetching dashboard stats:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch stats',
+      message: "Failed to fetch stats",
     });
   }
 };
@@ -305,21 +345,43 @@ const getInstructorDashboard = async (req, res) => {
 
     const lecturer = await LecturerModel.findLecturerById(lecturerId);
     if (!lecturer) {
-      return res.status(404).json({ success: false, message: 'Lecturer not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Lecturer not found" });
     }
 
-    const lecturerQuizzes = quizMemory.filter((q) => q.createdBy === lecturer.id);
-    const totalStudents = mockStudents.filter((s) => lecturer.courses.includes(s.course)).length;
+    const lecturerQuizzes = quizMemory.filter(
+      (q) => q.createdBy === lecturer.id,
+    );
+    const totalStudents = mockStudents.filter((s) =>
+      lecturer.courses.includes(s.course),
+    ).length;
 
     const quizScores = mockStudents
-      .flatMap((s) => s.scores.filter((score) => lecturerQuizzes.some((q) => q.id === score.quizId)))
+      .flatMap((s) =>
+        s.scores.filter((score) =>
+          lecturerQuizzes.some((q) => q.id === score.quizId),
+        ),
+      )
       .map((item) => item.score);
 
-    const averageScore = quizScores.length ? Number((quizScores.reduce((a, b) => a + b, 0) / quizScores.length).toFixed(2)) : 0;
+    const averageScore = quizScores.length
+      ? Number(
+          (quizScores.reduce((a, b) => a + b, 0) / quizScores.length).toFixed(
+            2,
+          ),
+        )
+      : 0;
 
     const upcomingQuizzes = lecturerQuizzes
-      .filter((q) => new Date(`${q.dueDate}T${q.dueTime}`).getTime() > Date.now())
-      .sort((a, b) => new Date(`${a.dueDate}T${a.dueTime}`) - new Date(`${b.dueDate}T${b.dueTime}`));
+      .filter(
+        (q) => new Date(`${q.dueDate}T${q.dueTime}`).getTime() > Date.now(),
+      )
+      .sort(
+        (a, b) =>
+          new Date(`${a.dueDate}T${a.dueTime}`) -
+          new Date(`${b.dueDate}T${b.dueTime}`),
+      );
 
     return res.json({
       success: true,
@@ -340,8 +402,11 @@ const getInstructorDashboard = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error fetching instructor dashboard:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch instructor dashboard' });
+    console.error("Error fetching instructor dashboard:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch instructor dashboard",
+    });
   }
 };
 
@@ -352,18 +417,27 @@ const getStudentPerformance = async (req, res) => {
     const lecturer = await LecturerModel.findLecturerById(lecturerId);
 
     if (!lecturer) {
-      return res.status(404).json({ success: false, message: 'Lecturer not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Lecturer not found" });
     }
 
     const students = mockStudents.filter((student) => {
       const belongsToLecturer = lecturer.courses.includes(student.course);
-      const matchesCourse = course ? String(student.course) === String(course) : true;
+      const matchesCourse = course
+        ? String(student.course) === String(course)
+        : true;
       return belongsToLecturer && matchesCourse;
     });
 
     const performance = students.map((student) => {
       const average = student.scores.length
-        ? Number((student.scores.reduce((sum, s) => sum + s.score, 0) / student.scores.length).toFixed(2))
+        ? Number(
+            (
+              student.scores.reduce((sum, s) => sum + s.score, 0) /
+              student.scores.length
+            ).toFixed(2),
+          )
         : 0;
       return {
         ...student,
@@ -373,7 +447,14 @@ const getStudentPerformance = async (req, res) => {
 
     const totalStudents = performance.length;
     const averageScore = totalStudents
-      ? Number((performance.reduce((sum, student) => sum + student.averageScore, 0) / totalStudents).toFixed(2))
+      ? Number(
+          (
+            performance.reduce(
+              (sum, student) => sum + student.averageScore,
+              0,
+            ) / totalStudents
+          ).toFixed(2),
+        )
       : 0;
 
     return res.json({
@@ -386,8 +467,10 @@ const getStudentPerformance = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error fetching student performance:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch student performance' });
+    console.error("Error fetching student performance:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch student performance" });
   }
 };
 
@@ -397,16 +480,22 @@ const createQuizForInstructor = async (req, res) => {
     const { title, description, course, dueDate, dueTime } = req.body;
 
     if (!title || !description || !course || !dueDate || !dueTime) {
-      return res.status(400).json({ success: false, message: 'Missing quiz fields' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing quiz fields" });
     }
 
     const lecturer = await LecturerModel.findLecturerById(lecturerId);
     if (!lecturer) {
-      return res.status(404).json({ success: false, message: 'Lecturer not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Lecturer not found" });
     }
 
     if (!lecturer.courses.includes(course)) {
-      return res.status(403).json({ success: false, message: 'Cannot assign quiz to this course' });
+      return res
+        .status(403)
+        .json({ success: false, message: "Cannot assign quiz to this course" });
     }
 
     const newQuiz = {
@@ -424,8 +513,8 @@ const createQuizForInstructor = async (req, res) => {
 
     res.status(201).json({ success: true, data: newQuiz });
   } catch (error) {
-    console.error('Error creating quiz:', error);
-    res.status(500).json({ success: false, message: 'Failed to create quiz' });
+    console.error("Error creating quiz:", error);
+    res.status(500).json({ success: false, message: "Failed to create quiz" });
   }
 };
 
@@ -435,8 +524,10 @@ const getMyQuizzes = async (req, res) => {
     const quizzes = quizMemory.filter((q) => q.createdBy === lecturerId);
     res.json({ success: true, data: quizzes });
   } catch (error) {
-    console.error('Error fetching my quizzes:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch quizzes' });
+    console.error("Error fetching my quizzes:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch quizzes" });
   }
 };
 
@@ -446,9 +537,13 @@ const updateQuizById = async (req, res) => {
     const quizId = Number(req.params.id);
     const { title, description, course, dueDate, dueTime } = req.body;
 
-    const quizIndex = quizMemory.findIndex((q) => q.id === quizId && q.createdBy === lecturerId);
+    const quizIndex = quizMemory.findIndex(
+      (q) => q.id === quizId && q.createdBy === lecturerId,
+    );
     if (quizIndex === -1) {
-      return res.status(404).json({ success: false, message: 'Quiz not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Quiz not found" });
     }
 
     const updatedQuiz = {
@@ -464,8 +559,8 @@ const updateQuizById = async (req, res) => {
     quizMemory[quizIndex] = updatedQuiz;
     res.json({ success: true, data: updatedQuiz });
   } catch (error) {
-    console.error('Error updating quiz:', error);
-    res.status(500).json({ success: false, message: 'Failed to update quiz' });
+    console.error("Error updating quiz:", error);
+    res.status(500).json({ success: false, message: "Failed to update quiz" });
   }
 };
 
@@ -474,27 +569,30 @@ const deleteQuizById = async (req, res) => {
     const lecturerId = req.user.id || req.user.sub;
     const quizId = Number(req.params.id);
 
-    const quizIndex = quizMemory.findIndex((q) => q.id === quizId && q.createdBy === lecturerId);
+    const quizIndex = quizMemory.findIndex(
+      (q) => q.id === quizId && q.createdBy === lecturerId,
+    );
     if (quizIndex === -1) {
-      return res.status(404).json({ success: false, message: 'Quiz not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Quiz not found" });
     }
 
     quizMemory.splice(quizIndex, 1);
-    res.json({ success: true, message: 'Quiz deleted' });
+    res.json({ success: true, message: "Quiz deleted" });
   } catch (error) {
-    console.error('Error deleting quiz:', error);
-    res.status(500).json({ success: false, message: 'Failed to delete quiz' });
+    console.error("Error deleting quiz:", error);
+    res.status(500).json({ success: false, message: "Failed to delete quiz" });
   }
 };
 
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const emailService = require('../utils/emailService');
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const emailService = require("../utils/emailService");
 
 // Instructor login
 const loginInstructor = async (req, res) => {
-  console.log('loginInstructor called with:', req.body);
   try {
     const { email, password } = req.body;
 
@@ -502,20 +600,17 @@ const loginInstructor = async (req, res) => {
     const lecturers = await LecturerModel.findLecturerByEmail(email);
     if (lecturers.length === 0) {
       return res.status(401).json({
-        message: 'Invalid email or password',
+        message: "Invalid email or password",
       });
     }
 
     const lecturer = lecturers[0];
 
-    console.log('Lecturer found:', lecturer);
-    console.log('isVerified:', lecturer.isVerified);
-
     // Check password
     const isPasswordMatch = await bcrypt.compare(password, lecturer.password);
     if (!isPasswordMatch) {
       return res.status(401).json({
-        message: 'Invalid email or password',
+        message: "Invalid email or password",
       });
     }
 
@@ -541,12 +636,12 @@ const loginInstructor = async (req, res) => {
         sub: lecturer.id,
         id: lecturer.id,
         email: lecturer.email,
-        role: 'instructor',
+        role: "instructor",
         department: lecturer.department,
         employeeId: lecturer.employeeId,
       },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '24h' }
+      process.env.JWT_SECRET || "dev_jwt_secret_change_me",
+      { expiresIn: "24h" },
     );
 
     res.json({
@@ -563,9 +658,9 @@ const loginInstructor = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Instructor login error:', error);
+    console.error("Instructor login error:", error);
     res.status(500).json({
-      message: 'Server error',
+      message: "Server error",
     });
   }
 };
@@ -578,7 +673,7 @@ const sendInstructorOTP = async (req, res) => {
     const lecturers = await LecturerModel.findLecturerByEmail(email);
     if (lecturers.length === 0) {
       return res.status(404).json({
-        message: 'Instructor not found',
+        message: "Instructor not found",
       });
     }
 
@@ -588,14 +683,18 @@ const sendInstructorOTP = async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Store OTP (in production, use Redis or similar)
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    await LecturerModel.updateLecturerVerification(lecturer.id, false, verificationToken);
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    await LecturerModel.updateLecturerVerification(
+      lecturer.id,
+      false,
+      verificationToken,
+    );
 
     // Send email with OTP
     const mailOptions = {
-      from: process.env.FROM_EMAIL || 'noreply@kompi-cyber.com',
+      from: process.env.FROM_EMAIL || "noreply@kompi-cyber.com",
       to: lecturer.email,
-      subject: 'Verify Your Instructor Account - Kompi-Cyber',
+      subject: "Verify Your Instructor Account - Kompi-Cyber",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
@@ -622,29 +721,31 @@ const sendInstructorOTP = async (req, res) => {
             <p>Kompi-Cyber Cybersecurity Learning Platform</p>
           </div>
         </div>
-      `
+      `,
     };
 
     try {
-      await emailService.sendVerificationEmail(lecturer.email, verificationToken);
+      await emailService.sendVerificationEmail(
+        lecturer.email,
+        verificationToken,
+      );
       // Note: In a real implementation, you'd store the OTP securely
       // For demo, we'll return it in response for testing
       res.json({
         success: true,
-        message: 'Verification code sent to your email',
-        otp: process.env.NODE_ENV === 'development' ? otp : undefined, // Only show in dev
+        message: "Verification code sent to your email",
+        otp: process.env.NODE_ENV === "development" ? otp : undefined, // Only show in dev
       });
     } catch (emailError) {
-      console.error('Email sending failed:', emailError);
+      console.error("Email sending failed:", emailError);
       res.status(500).json({
-        message: 'Failed to send verification email',
+        message: "Failed to send verification email",
       });
     }
-
   } catch (error) {
-    console.error('Send OTP error:', error);
+    console.error("Send OTP error:", error);
     res.status(500).json({
-      message: 'Server error',
+      message: "Server error",
     });
   }
 };
@@ -657,7 +758,7 @@ const verifyInstructorOTP = async (req, res) => {
     const lecturers = await LecturerModel.findLecturerByEmail(email);
     if (lecturers.length === 0) {
       return res.status(404).json({
-        message: 'Instructor not found',
+        message: "Instructor not found",
       });
     }
 
@@ -667,7 +768,7 @@ const verifyInstructorOTP = async (req, res) => {
     // For demo, we'll accept any 6-digit code
     if (!otp || otp.length !== 6 || !/^\d{6}$/.test(otp)) {
       return res.status(400).json({
-        message: 'Invalid verification code',
+        message: "Invalid verification code",
       });
     }
 
@@ -680,12 +781,12 @@ const verifyInstructorOTP = async (req, res) => {
         sub: lecturer.id,
         id: lecturer.id,
         email: lecturer.email,
-        role: 'instructor',
+        role: "instructor",
         department: lecturer.department,
         employeeId: lecturer.employeeId,
       },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '24h' }
+      process.env.JWT_SECRET || "dev_jwt_secret_change_me",
+      { expiresIn: "24h" },
     );
 
     res.json({
@@ -702,9 +803,9 @@ const verifyInstructorOTP = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Verify OTP error:', error);
+    console.error("Verify OTP error:", error);
     res.status(500).json({
-      message: 'Server error',
+      message: "Server error",
     });
   }
 };
@@ -726,6 +827,3 @@ module.exports = {
   updateQuizById,
   deleteQuizById,
 };
-
-
-

@@ -1,0 +1,60 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+LICENSE
+SECURITY_AUDIT_2024.md
+SECURITY_REMEDIATION_CHECKLIST.md
+
+# Development
+.env.local
+.env.*.local
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-error.log*
+
+# Build
+dist
+build
+.next
+.cache
+
+# Database
+*.db
+*.sqlite
+*.sql.bak
+
+# Test
+__tests__
+.test.js
+.spec.js
+test
+.coverage
+
+# Logs
+logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database migrations (local only)
+database/migrations
+
+# Upload files (keep for production)
+# upload/
+
+# Temporary
+temp
+tmp

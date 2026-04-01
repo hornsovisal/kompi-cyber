@@ -37,7 +37,9 @@ exports.createQuiz = async (req, res) => {
     res.json({ success: true, message: "Quiz created successfully" });
   } catch (err) {
     // Store in memory if database is not available
-    console.log("Database not available, storing quiz in memory");
+    if (process.env.NODE_ENV !== "production") {
+      console.log("Database not available, storing quiz in memory");
+    }
     quizzes.set(lessonId, questions);
     res.json({ success: true, message: "Quiz created successfully" });
   }
@@ -168,7 +170,9 @@ exports.getQuizByLesson = async (req, res) => {
     return res.json({ success: true, data: Array.from(questionsMap.values()) });
   } catch (err) {
     // Return data from in-memory storage
-    console.log("Database not available, returning in-memory quiz data");
+    if (process.env.NODE_ENV !== "production") {
+      console.log("Database not available, returning in-memory quiz data");
+    }
     const questions = quizzes.get(lessonId) || [];
     if (questions.length === 0) {
       return res.status(404).json({ message: "No quiz found for this lesson" });

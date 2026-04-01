@@ -66,7 +66,6 @@ export default function ViewCertificate() {
             );
             if (lessonsRes.ok) {
               const lessonsData = await lessonsRes.json();
-              console.log("Lessons fetched:", lessonsData);
               setLessons(lessonsData.lessons || lessonsData || []);
             } else {
               console.warn(
@@ -80,7 +79,6 @@ export default function ViewCertificate() {
               );
               if (altRes.ok) {
                 const altData = await altRes.json();
-                console.log("Lessons from alternative endpoint:", altData);
                 setLessons(altData.lessons || altData || []);
               }
             }
@@ -88,7 +86,7 @@ export default function ViewCertificate() {
             console.warn("Could not fetch lessons:", lessonErr);
           }
         } catch (err) {
-          console.log("Could not fetch course details or lessons:", err);
+          // Silently fail - lessons are optional
         }
       }
     } catch (err) {
@@ -140,7 +138,7 @@ export default function ViewCertificate() {
           url: window.location.href,
         });
       } catch (err) {
-        console.log("Share cancelled");
+        // Share cancelled or unavailable
       }
     } else {
       // Fallback: copy to clipboard

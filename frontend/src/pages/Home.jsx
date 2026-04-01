@@ -72,7 +72,6 @@ export default function Home() {
         setCourses(nextCourses);
       })
       .catch((err) => {
-        console.log(err);
         setCourses([]);
         setCoursesError(
           err.response?.data?.message ||

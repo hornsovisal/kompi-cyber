@@ -119,10 +119,12 @@ class InvitationController {
         await enrollmentModel.enroll(studentId, invitation.course_id);
       } catch (enrollError) {
         // Student might already be enrolled, ignore
-        console.log(
-          "Enrollment error (maybe already enrolled):",
-          enrollError.message,
-        );
+        if (process.env.NODE_ENV !== "production") {
+          console.log(
+            "Enrollment error (maybe already enrolled):",
+            enrollError.message,
+          );
+        }
       }
 
       return res.status(200).json({

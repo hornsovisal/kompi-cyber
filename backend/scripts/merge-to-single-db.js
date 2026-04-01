@@ -1,7 +1,13 @@
 const mysql = require("mysql2/promise");
+require("dotenv").config();
 
 async function run() {
-  const cfg = { host: "localhost", port: 8889, user: "root", password: "root" };
+  const cfg = {
+    host: process.env.DB_HOST || "localhost",
+    port: process.env.DB_PORT || 8889,
+    user: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "root",
+  };
   const oldDb = "kompi-cyber";
   const newDb = "kompi_cyber";
 
@@ -53,9 +59,13 @@ async function run() {
     }
   }
 
-  const [courseCount] = await newConn.query("SELECT COUNT(*) AS n FROM courses");
+  const [courseCount] = await newConn.query(
+    "SELECT COUNT(*) AS n FROM courses",
+  );
   const [userCount] = await newConn.query("SELECT COUNT(*) AS n FROM users");
-  const [quizCount] = await newConn.query("SELECT COUNT(*) AS n FROM quiz_questions");
+  const [quizCount] = await newConn.query(
+    "SELECT COUNT(*) AS n FROM quiz_questions",
+  );
   const [me] = await newConn.query(
     "SELECT id, email FROM users WHERE email = ? LIMIT 1",
     ["vathana@gmail.com"],
