@@ -55,20 +55,34 @@ class AuthController {
 
       const hashedPassword = await bcrypt.hash(password, 10);
       // is_active = 0 until email is verified
-      const { id: userId } = await this.userModel.createUser(name, email, hashedPassword, 1, 0);
+      const { id: userId } = await this.userModel.createUser(
+        name,
+        email,
+        hashedPassword,
+        1,
+        0,
+      );
 
-      const verificationToken = this.signActionToken(userId, "verify-email", "24h");
+      const verificationToken = this.signActionToken(
+        userId,
+        "verify-email",
+        "24h",
+      );
 
       let verificationResult = null;
       try {
-        verificationResult = await emailService.sendVerificationEmail(email, verificationToken);
+        verificationResult = await emailService.sendVerificationEmail(
+          email,
+          verificationToken,
+        );
       } catch (emailError) {
         console.error("Email sending failed:", emailError);
         // Don't fail registration if email fails
       }
 
       const responsePayload = {
-        message: "User registered successfully. Please check your email to verify your account.",
+        message:
+          "User registered successfully. Please check your email to verify your account.",
         user: { id: userId, name, email },
       };
 
@@ -93,13 +107,18 @@ class AuthController {
         return res.status(401).json({ message: "Invalid email or password" });
       }
 
-      const isPasswordMatch = await bcrypt.compare(password, user.password_hash);
+      const isPasswordMatch = await bcrypt.compare(
+        password,
+        user.password_hash,
+      );
       if (!isPasswordMatch) {
         return res.status(401).json({ message: "Invalid email or password" });
       }
 
       if (!user.is_active) {
-        return res.status(403).json({ message: "Please verify your email before logging in" });
+        return res
+          .status(403)
+          .json({ message: "Please verify your email before logging in" });
       }
 
       const token = this.signToken(user);
@@ -130,7 +149,8 @@ class AuthController {
       if (!user) {
         // Don't reveal if email exists or not for security
         return res.status(200).json({
-          message: "If an account with that email exists, a password reset link has been sent.",
+          message:
+            "If an account with that email exists, a password reset link has been sent.",
         });
       }
 
@@ -143,7 +163,8 @@ class AuthController {
       }
 
       res.status(200).json({
-        message: "If an account with that email exists, a password reset link has been sent.",
+        message:
+          "If an account with that email exists, a password reset link has been sent.",
       });
     } catch (error) {
       console.error("Forgot password error:", error);
@@ -156,14 +177,18 @@ class AuthController {
       const { token } = req.body;
 
       if (!token) {
-        return res.status(400).json({ message: "Verification token is required" });
+        return res
+          .status(400)
+          .json({ message: "Verification token is required" });
       }
 
       let userId;
       try {
         userId = this.verifyActionToken(token, "verify-email");
       } catch (tokenError) {
-        return res.status(400).json({ message: "Invalid or expired verification token" });
+        return res
+          .status(400)
+          .json({ message: "Invalid or expired verification token" });
       }
 
       await this.userModel.activateUser(userId);
@@ -189,21 +214,39 @@ class AuthController {
       // Keep a generic response when user is missing to avoid email enumeration.
       if (!user) {
         return res.status(200).json({
-          message: "If an account exists and is not verified, a verification email has been sent.",
+          message:
+            "If an account exists and is not verified, a verification email has been sent.",
         });
       }
 
       if (user.is_active) {
-        return res.status(400).json({ message: "This email is already verified" });
+        return res
+          .status(400)
+          .json({ message: "This email is already verified" });
       }
 
-      const verificationToken = this.signActionToken(user.id, "verify-email", "24h");
+      const verificationToken = this.signActionToken(
+        user.id,
+        "verify-email",
+        "24h",
+      );
 
       let verificationResult = null;
       try {
-        verificationResult = await emailService.sendVerificationEmail(email, verificationToken);
+        verificationResult = await emailService.sendVerificationEmail(
+          email,
+          verificationToken,
+        );
       } catch (emailError) {
         console.error("Resend verification email failed:", emailError);
+        // In production with SMTP configured, this is a real error
+        if (emailService.smtpConfigured) {
+          return res.status(500).json({
+            message:
+              "Failed to send verification email. Please try again later.",
+          });
+        }
+        // In development without SMTP, continue to show the dev link
       }
 
       const responsePayload = {
@@ -233,7 +276,9 @@ class AuthController {
       try {
         userId = this.verifyActionToken(token, "reset-password");
       } catch (tokenError) {
-        return res.status(400).json({ message: "Invalid or expired reset token" });
+        return res
+          .status(400)
+          .json({ message: "Invalid or expired reset token" });
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -247,6 +292,4 @@ class AuthController {
   };
 }
 
-module.exports = new AuthController(
-  process.env.JWT_SECRET || "dev_jwt_secret",
-);
+module.exports = new AuthController(process.env.JWT_SECRET || "dev_jwt_secret");
