@@ -3,9 +3,6 @@
   "installCommand": "npm install",
   "outputDirectory": "frontend/dist",
   "framework": "vite",
-  "env": {
-    "VITE_API_BASE": "@vite_api_base"
-  },
   "redirects": [],
   "headers": [
     {
