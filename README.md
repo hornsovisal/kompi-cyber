@@ -16,7 +16,7 @@
 
 ##  Overview
 
-**KOMPI-CYBER** is a comprehensive cybersecurity curriculum platform inspired by Cisco NetAcad. It supports multi-role learning: **Students**, **Instructors**, and **Administrators** with collaborative features, progress tracking, and certification systems.
+**KOMPI-CYBER** is a comprehensive cybersecurity learning platform. It supports multi-role learning: **Students**, **Instructors**, and **Administrators** with collaborative features, progress tracking, and certification systems.
 
 ---
 
