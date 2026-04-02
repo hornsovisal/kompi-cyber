@@ -22,9 +22,9 @@ export function titleToSlug(title) {
 }
 
 /**
- * Get course cover image URL directly from Supabase storage.
+ * Get course cover image URL directly from Supabase storage using signed URLs.
  *
- * Images are loaded directly from Supabase public storage to avoid
+ * Images are loaded directly from Supabase storage using signed URLs to avoid
  * CORS issues with Railway's strict cross-origin-resource-policy headers.
  *
  * Priority:
@@ -40,16 +40,16 @@ export function getCourseCoverUrl(course) {
     "https://xmmcotqzfhicafwblsdr.supabase.co";
   const BUCKET = "upload";
 
-  // PRIORITY 1: Build Supabase URL using course TITLE converted to slug
+  // PRIORITY 1: Build Supabase signed URL using course TITLE converted to slug
   // This matches the Supabase folder naming convention
   const titleSlug = titleToSlug(course.title);
   if (titleSlug) {
-    return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/lesson/${titleSlug}/cover.svg`;
+    return `${SUPABASE_URL}/storage/v1/object/sign/${BUCKET}/lesson/${titleSlug}/cover.svg`;
   }
 
   // PRIORITY 2: Fallback to course.slug if available
   if (course.slug) {
-    return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/lesson/${course.slug}/cover.svg`;
+    return `${SUPABASE_URL}/storage/v1/object/sign/${BUCKET}/lesson/${course.slug}/cover.svg`;
   }
 
   return null;
