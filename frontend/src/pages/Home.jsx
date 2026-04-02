@@ -775,7 +775,7 @@ export default function Home() {
                 role: "Frontend Developer",
                 image: "/team/khy-gio.png",
                 borderColor: "border-slate-600",
-                github: "https://github.com",
+                github: "https://github.com/KhyGio",
                 portfolio: "https://portfolio.com",
               },
               {
@@ -783,7 +783,7 @@ export default function Home() {
                 role: "Frontend Developer",
                 image: "/team/kuyseng-marakot.png",
                 borderColor: "border-slate-600",
-                github: "https://github.com",
+                github: "https://github.com/KuysengMarakat",
                 portfolio: "https://portfolio.com",
               },
               {
@@ -792,7 +792,7 @@ export default function Home() {
                 image: "/team/chhit-sovathana.png",
                 borderColor: "border-blue-500",
                 highlight: true,
-                github: "https://github.com",
+                github: "https://github.com/Vaathanaa",
                 portfolio: "https://portfolio.com",
               },
               {
@@ -800,7 +800,7 @@ export default function Home() {
                 role: "Backend Developer",
                 image: "/team/kue-chanchesika.png",
                 borderColor: "border-slate-600",
-                github: "https://github.com",
+                github: "https://github.com/ChessiKaizen",
                 portfolio: "https://portfolio.com",
               },
             ].map((member, index) => (
