@@ -753,13 +753,13 @@ export default function Home() {
           <div className="mt-2 h-1 w-16 bg-gradient-to-r from-[#FFA500] to-blue-500 mx-auto rounded-full" />
         </motion.div>
 
-        {/* Horizontal scrollable carousel */}
-        <div className="overflow-x-auto pb-6 md:overflow-x-visible">
+        {/* Responsive grid layout */}
+        <div>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="flex gap-6 min-w-max md:min-w-full md:justify-center px-2"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-2 max-w-6xl mx-auto"
           >
             {[
               {
@@ -809,7 +809,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * index }}
-                className={`group flex-shrink-0 w-44 sm:w-52 md:w-64 rounded-3xl overflow-hidden backdrop-blur transition duration-300 hover:shadow-2xl ${
+                className={`group rounded-3xl overflow-hidden backdrop-blur transition duration-300 hover:shadow-2xl ${
                   member.highlight
                     ? "ring-2 ring-blue-400 ring-offset-2 ring-offset-[#192841] border-2 border-blue-500"
                     : "border-2 " + member.borderColor
