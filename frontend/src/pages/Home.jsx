@@ -816,11 +816,11 @@ export default function Home() {
                 }`}
               >
                 {/* Image Container with overlay */}
-                <div className="relative h-52 sm:h-60 md:h-72 overflow-hidden bg-gradient-to-b from-slate-700 to-slate-900">
+                <div className="relative h-64 sm:h-72 md:h-96 overflow-hidden bg-gradient-to-b from-slate-700 to-slate-900">
                   <img
                     src={member.image}
                     alt={member.name}
-                    className="w-full h-full object-cover transition duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover object-top transition duration-500 group-hover:scale-110"
                     onError={(e) => {
                       e.target.src =
                         "https://via.placeholder.com/400x500/1a3a52/ffffff?text=" +
