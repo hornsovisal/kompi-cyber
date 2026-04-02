@@ -69,6 +69,8 @@ class AuthController {
         "24h",
       );
 
+      // Generate verification link (email sending disabled - Railway blocks SMTP)
+      // Users will click the link directly from the frontend
       let verificationResult = null;
       try {
         verificationResult = await emailService.sendVerificationEmail(
@@ -76,8 +78,8 @@ class AuthController {
           verificationToken,
         );
       } catch (emailError) {
-        console.error("Email sending failed:", emailError);
-        // Don't fail registration if email fails
+        console.error("Verification link generation failed:", emailError);
+        // Don't fail registration if link generation fails
       }
 
       const responsePayload = {
@@ -228,6 +230,8 @@ class AuthController {
         "24h",
       );
 
+      // Generate verification link (email sending disabled - Railway blocks SMTP)
+      // Frontend will automatically redirect user to the verification link
       let verificationResult = null;
       try {
         verificationResult = await emailService.sendVerificationEmail(
@@ -235,12 +239,15 @@ class AuthController {
           verificationToken,
         );
       } catch (emailError) {
-        console.error("Resend verification email failed:", emailError);
+        console.error(
+          "Resend verification link generation failed:",
+          emailError,
+        );
         // In production with SMTP configured, this is a real error
         if (emailService.smtpConfigured) {
           return res.status(500).json({
             message:
-              "Failed to send verification email. Please try again later.",
+              "Failed to generate verification link. Please try again later.",
           });
         }
         // In development without SMTP, continue to show the dev link
@@ -248,7 +255,7 @@ class AuthController {
 
       const responsePayload = {
         message:
-          "Verification email link generated. Click the link below to verify your email.",
+          "Verification link generated. Redirecting you to verify your email now...",
         verificationLink: verificationResult?.url || "",
       };
 
