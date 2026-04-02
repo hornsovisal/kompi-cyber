@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const path = require("path");
+const fs = require("fs");
 
 const courseController = require("../controller/courseController");
 const authMiddleware = require("../middleware/authMiddleware");
@@ -8,25 +10,29 @@ const { isConfigured, lessonBucket } = require("../config/supabase");
 // Public course catalog routes.
 router.get("/", courseController.getCourses);
 
-// GET /api/courses/cover/:slug
-// Proxies course cover SVG images from Supabase with proper CORS headers
+// GET /api/courses/cover/:slug - MUST come before /:id route
+// Serves course cover SVG images from local backend/upload/lesson directory with proper CORS headers
 router.get("/cover/:slug", async (req, res) => {
   try {
     const { slug } = req.params;
-    const supabaseUrl = process.env.SUPABASE_URL;
 
-    if (!supabaseUrl || !isConfigured) {
-      return res.status(503).json({ message: "Image storage not configured" });
+    // Build path to local file: backend/upload/lesson/{slug}/cover.svg
+    const filePath = path.join(
+      __dirname,
+      "../upload/lesson",
+      slug,
+      "cover.svg",
+    );
+
+    // Security check: ensure the resolved path is within upload directory
+    const uploadsDir = path.join(__dirname, "../upload");
+    if (!filePath.startsWith(uploadsDir)) {
+      return res.status(403).json({ message: "Access denied" });
     }
 
-    const bucket = "upload";
-    // Try public path first
-    const imageUrl = `${supabaseUrl}/storage/v1/object/public/${bucket}/lesson/${slug}/cover.svg`;
-
-    const response = await fetch(imageUrl);
-
-    if (!response.ok) {
-      return res.status(404).json({ message: "Image not found" });
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: "Cover image not found" });
     }
 
     // Set CORS and resource policy headers for cross-origin image access
@@ -35,9 +41,9 @@ router.get("/cover/:slug", async (req, res) => {
     res.setHeader("Content-Type", "image/svg+xml");
     res.setHeader("Cache-Control", "public, max-age=86400");
 
-    // Read response body and send with headers
-    const buffer = await response.arrayBuffer();
-    res.send(Buffer.from(buffer));
+    // Read and send file with proper headers
+    const fileContent = fs.readFileSync(filePath);
+    res.send(fileContent);
   } catch (error) {
     console.error("Error fetching cover image:", error);
     res.status(500).json({ message: "Error fetching image" });
