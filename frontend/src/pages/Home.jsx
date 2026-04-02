@@ -187,6 +187,13 @@ export default function Home() {
             </button>
             <button
               type="button"
+              onClick={() => scrollToSection("founders")}
+              className="transition duration-300 hover:text-[#FFA500]"
+            >
+              Founders
+            </button>
+            <button
+              type="button"
               onClick={handleStart}
               className="transition duration-300 hover:text-[#FFA500]"
             >
@@ -289,6 +296,16 @@ export default function Home() {
               className="block w-full py-2 text-left transition duration-300 hover:text-[#FFA500]"
             >
               Programs
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                scrollToSection("founders");
+                setMobileMenuOpen(false);
+              }}
+              className="block w-full py-2 text-left transition duration-300 hover:text-[#FFA500]"
+            >
+              Founders
             </button>
             <button
               type="button"
@@ -707,6 +724,105 @@ export default function Home() {
             START YOUR JOURNEY NOW
           </motion.button>
         </motion.div>
+      </section>
+
+      <section id="founders" className="px-4 py-12 sm:px-6 md:px-20 md:py-16">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mb-12 text-center md:mb-16"
+        >
+          <h2 className="mb-3 text-3xl font-black sm:text-4xl md:mb-4 md:text-5xl">
+            <span className="text-[#FFA500]">MEET OUR TEAM</span>
+          </h2>
+          <p className="text-center text-2xl font-bold mt-4 text-white">
+            Thank You
+          </p>
+        </motion.div>
+
+        {/* Horizontal scrollable carousel */}
+        <div className="overflow-x-auto pb-4 md:overflow-x-visible">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="flex gap-6 min-w-max md:min-w-full md:justify-center px-2"
+          >
+            {[
+              {
+                name: "HORN Sovisai",
+                role: "Backend Developer",
+                image: "/upload/team/horn-sovisai.png",
+                borderColor: "border-slate-600",
+              },
+              {
+                name: "KHY Gio",
+                role: "Frontend Developer",
+                image: "/upload/team/khy-gio.png",
+                borderColor: "border-slate-600",
+              },
+              {
+                name: "KUYSENG Marakot",
+                role: "Frontend Developer",
+                image: "/upload/team/kuyseng-marakot.png",
+                borderColor: "border-slate-600",
+              },
+              {
+                name: "CHHIT Sovathana",
+                role: "DB & Frontend Developer",
+                image: "/upload/team/chhit-sovathana.png",
+                borderColor: "border-blue-500",
+                highlight: true,
+              },
+              {
+                name: "KUE Chanchesika",
+                role: "Backend Developer",
+                image: "/upload/team/kue-chanchesika.png",
+                borderColor: "border-slate-600",
+              },
+            ].map((member, index) => (
+              <motion.div
+                key={member.name}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index }}
+                className={`group flex-shrink-0 w-40 sm:w-48 md:w-56 rounded-2xl border-2 ${member.borderColor} overflow-hidden backdrop-blur transition hover:shadow-2xl ${
+                  member.highlight
+                    ? "ring-2 ring-blue-400 ring-offset-2 ring-offset-[#192841]"
+                    : ""
+                }`}
+              >
+                {/* Image Container */}
+                <div className="relative h-48 sm:h-56 md:h-64 overflow-hidden bg-gradient-to-b from-slate-700 to-slate-900">
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className="w-full h-full object-cover transition group-hover:scale-105"
+                    onError={(e) => {
+                      e.target.src =
+                        "https://via.placeholder.com/300x400/1a3a52/ffffff?text=" +
+                        member.name;
+                    }}
+                  />
+                </div>
+
+                {/* Info Container */}
+                <div className="bg-gradient-to-b from-slate-800 to-slate-900 p-3 sm:p-4 text-center">
+                  {/* Role Badge */}
+                  <div className="mb-2 inline-block rounded-full bg-red-600/80 px-3 py-1 text-xs font-bold text-white sm:text-sm">
+                    {member.role}
+                  </div>
+
+                  {/* Name */}
+                  <p className="text-sm font-bold text-white sm:text-base">
+                    {member.name}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
       </section>
 
       <footer className="border-t border-[#FFA500]/20 bg-black/50 px-4 py-8 text-white backdrop-blur sm:px-6 md:px-20 md:py-12">

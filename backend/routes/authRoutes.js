@@ -4,16 +4,12 @@ const router = express.Router();
 const authController = require("../controller/authController");
 const authMiddleware = require("../middleware/authMiddleware");
 
-router.post(
-  "/register",
-  authMiddleware.validateRegister,
-  (req, res) => authController.registerUser(req, res),
+router.post("/register", authMiddleware.validateRegister, (req, res) =>
+  authController.registerUser(req, res),
 );
 
-router.post(
-  "/login",
-  authMiddleware.validateLogin,
-  (req, res) => authController.loginUser(req, res),
+router.post("/login", authMiddleware.validateLogin, (req, res) =>
+  authController.loginUser(req, res),
 );
 router.post("/forgot-password", (req, res) =>
   authController.forgotPassword(req, res),
