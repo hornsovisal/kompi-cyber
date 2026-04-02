@@ -40,7 +40,8 @@ const CreateCourse = () => {
   const fetchTeacherCourses = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
+      const token =
+        sessionStorage.getItem("token") || localStorage.getItem("token");
       const response = await fetch(`${API_BASE}/api/instructor/courses`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -58,7 +59,8 @@ const CreateCourse = () => {
 
   const fetchCourseInvitations = async (courseId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        sessionStorage.getItem("token") || localStorage.getItem("token");
       const response = await fetch(
         `${API_BASE}/api/invitations/course/${courseId}`,
         {
@@ -95,7 +97,8 @@ const CreateCourse = () => {
     try {
       setLoading(true);
       setError("");
-      const token = localStorage.getItem("token");
+      const token =
+        sessionStorage.getItem("token") || localStorage.getItem("token");
 
       const response = await fetch(`${API_BASE}/api/instructor/courses`, {
         method: "POST",
@@ -138,7 +141,8 @@ const CreateCourse = () => {
     try {
       setInviteLoading((prev) => ({ ...prev, [inviteEmail]: true }));
       setError("");
-      const token = localStorage.getItem("token");
+      const token =
+        sessionStorage.getItem("token") || localStorage.getItem("token");
 
       const response = await fetch(`${API_BASE}/api/invitations/send`, {
         method: "POST",
@@ -171,7 +175,8 @@ const CreateCourse = () => {
 
   const handleCancelInvitation = async (invitationId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        sessionStorage.getItem("token") || localStorage.getItem("token");
       const response = await fetch(
         `${API_BASE}/api/invitations/${invitationId}`,
         {
@@ -196,7 +201,8 @@ const CreateCourse = () => {
 
   const handleResendInvitation = async (invitationId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        sessionStorage.getItem("token") || localStorage.getItem("token");
       const response = await fetch(
         `${API_BASE}/api/invitations/${invitationId}/resend`,
         {
