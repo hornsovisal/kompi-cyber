@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Introduction to Cybersecurity">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b2f5b" />
+      <stop offset="100%" stop-color="#1d4f91" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#g)" />
+  <circle cx="1040" cy="90" r="140" fill="rgba(255,255,255,0.12)" />
+  <circle cx="150" cy="520" r="170" fill="rgba(255,255,255,0.08)" />
+  <text x="90" y="270" fill="#ffffff" font-size="72" font-family="Arial, sans-serif" font-weight="700">Introduction to</text>
+  <text x="90" y="355" fill="#dbeafe" font-size="84" font-family="Arial, sans-serif" font-weight="800">Cybersecurity</text>
+</svg>

@@ -51,8 +51,9 @@ lerna-debug.log*
 *.sqlite3
 *.sql.bak
 
-# Uploads/Certificates
-upload/
+# Uploads/Certificates (keep course covers, ignore user uploads)
+/upload/team/
+/upload/user-uploads/
 certificates/
 temp/
 
