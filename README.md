@@ -1,179 +1,575 @@
-# KOMPI-CYBER 
+# 🛡️ Kompi-Cyber: Cybersecurity Learning Management Platform
 
-> A modern cybersecurity learning platform for cyber security student
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Quick Start](#quick-start)
-- [Users & Roles](#users--roles)
-- [API Documentation](#api-documentation)
-- [Deployment](#deployment)
+**Kompi-Cyber** is a **comprehensive, interactive learning management system** designed to deliver **structured cybersecurity education** with hands-on labs, real-time feedback, and progress tracking. Built with a modern tech stack (React + Express + MySQL), it provides students with an engaging platform to learn cybersecurity concepts through courses, exercises, quizzes, and practical simulations.
 
 ---
 
-##  Overview
+## 🎯 Project Purpose
 
-**KOMPI-CYBER** is a comprehensive cybersecurity learning platform. It supports multi-role learning: **Students**, **Instructors**, and **Administrators** with collaborative features, progress tracking, and certification systems.
+Kompi-Cyber was created to democratize cybersecurity education for CADT students by providing:
+
+- **Structured Learning Paths:** Organized courses with modules and lessons
+- **Interactive Content:** Quizzes, exercises, and practical labs
+- **Progress Tracking:** Real-time completion metrics and student performance analytics
+- **Instructor Tools:** Dashboard for course management and student oversight
+- **Certification System:** Earn recognized certificates upon course completion
+- **Flexible Enrollment:** Both self-paced and instructor-led course options
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
-### For Students
-- Structured course curriculum (Domains → Courses → Modules → Lessons)
-- Interactive quizzes & coding exercises
-- Progress tracking & performance analytics
-- Digital certificates on course completion
-- Persistent learning state
+### 📚 Course Management
 
-### For Instructors
-- Student roster & invitation system
-- Class analytics & student performance metrics
-- Add Quiz to course
-- File storage for lesson resources
+- **Dual Course Types:** Self-paced (online-led) and cohort-based (instructor-led) models
+- **Structured Content:** Courses → Modules → Lessons → Exercises & Quizzes
+- **Multiple Cybersecurity Courses:**
+  - 🔒 Network Security Basics (Week 1-6)
+  - 🖥️ Introduction to Cybersecurity
+  - 🚨 Web Security & Vulnerability Assessment
+  - 🔐 System Administration & Hardening
 
-### For Cordinator
-- Course authoring & content management
+### 👥 User Roles & Management
+
+- **Student Accounts:** Registration, course enrollment, progress tracking
+- **Instructor Dashboard:** Create courses, invite students, monitor progress
+- **Role-Based Access Control:** Different permissions for students, instructors, and admins
+
+### 📖 Learning Features
+
+- **Lesson Content:** Rich markdown support with embedded code examples
+- **Quizzes:** Multiple-choice assessments with instant feedback
+- **Exercises:** Hands-on coding/lab challenges with test case validation
+- **Progress Tracking:** Module/lesson completion percentages and time analytics
+- **Certificates:** Auto-generated certificates upon course completion
+
+### 🔐 Security & Authentication
+
+- **JWT Token-Based Auth:** Secure user authentication and session management
+- **Password Hashing:** bcryptjs for secure password storage
+- **Email Verification:** Nodemailer integration for confirmation and notifications
+- **Input Validation:** express-validator for XSS/SQL injection prevention
+- **Security Headers:** Helmet.js for HTTP security headers
+- **Rate Limiting:** Protection against brute force attacks
+
+### 📊 Enrollment Management
+
+- **Email Invitations:** Teachers invite students via email
+- **Pending/Accepted/Rejected Status Tracking:** Manage invitation workflows
+- **Auto-Enrollment:** Students automatically enrolled upon accepting invitations
+- **Bulk Operations:** Send multiple invitations at once
+
+### 🎓 Student Tools
+
+- **Course Catalog:** Browse all available courses
+- **Invitation Dashboard:** View and respond to course invitations
+- **Progress Dashboard:** Track completion and performance metrics
+- **Exercise Submissions:** Submit solutions with automated grading
+- **Quiz Attempts:** Multiple attempts with score history
+
+### 👨‍🏫 Instructor Tools
+
+- **Course Creator:** Define course structure and add content
+- **Student Management:** View enrolled students, track progress
+- **Invitation Manager:** Send, resend, and revoke course invitations
+- **Analytics:** See which students are struggling, completion rates
+- **Content Editor:** Update lesson content and exercises
+
+### 📄 Reporting & Certificates
+
+- **PDF Certificates:** Auto-generated upon course completion
+- **Performance Reports:** Detailed student performance analytics
+- **Completion Tracking:** Module/lesson progress visualization
+
 ---
 
-## 🛠️ Tech Stack
+## 🔧 Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React 18.2 + Vite 7.1 + Tailwind CSS |
-| **Backend** | Node.js + Express.js 4.18 |
-| **Database** | MySQL 8.0 (Aiven Cloud) |
-| **Storage** | Supabase (file storage) |
-| **Auth** | JWT + bcryptjs |
-| **Frontend Deployment** | Vercel |
-| **Backend Deployment** | Railway |
+### Backend
 
-**Live Links:**
-- Website URL: https://kompi-cyber2323.vercel.app
+- **Framework:** Express.js 5.2.1
+- **Database:** MySQL 8.0+ (mysql2/promise)
+- **Authentication:** JWT (jsonwebtoken)
+- **Password Hashing:** bcryptjs
+- **File Storage:** Supabase (Images, Documents)
+- **Email Service:** Nodemailer + Resend
+- **Security:** Helmet.js, express-rate-limit, sanitize-html
+- **Validation:** express-validator
+- **PDF Generation:** PDFKit
+- **Development:** Nodemon (auto-reload)
+
+### Frontend
+
+- **Framework:** React 18.2.0 + Vite
+- **Routing:** React Router v6
+- **HTTP Client:** Axios
+- **CSS Framework:** Tailwind CSS 3.3.7
+- **Animations:** Framer Motion
+- **Icons:** Lucide React
+- **Database Client:** Supabase JS
+
+### Database
+
+- **Primary DB:** MySQL (Courses, Users, Enrollments, Exercises)
+- **Cloud Storage:** Supabase (File uploads, images)
+- **Migrations:** SQL-based schema management
+
 ---
 
-## 🚀 Quick Start
+## 📋 System Requirements
 
 ### Prerequisites
-- Node.js 18+
-- Git
 
-### 1. Setup Backend
+- **Node.js:** v18.0.0 or higher
+- **npm:** v9.0.0 or higher (or yarn)
+- **MySQL:** v8.0 or higher
+- **Git:** For version control
+- **Environment Variables:** `.env` file configuration
+
+### Recommended
+
+- **Postman:** For API testing
+- **VS Code:** Code editor with extensions (ES7+, Prettier, Thunder Client)
+- **MySQL Workbench:** Database management GUI
+
+---
+
+## 🚀 Installation & Setup
+
+### 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/kompi-cyber.git
+cd kompi-cyber
+```
+
+### 2️⃣ Backend Setup
+
+#### Install Dependencies
+
 ```bash
 cd backend
 npm install
-
-# Create .env file
-cat > .env << 'ENVEOF'
-NODE_ENV=development
-PORT=3000
-DB_HOST=mysql-xxx.e.aivencloud.com
-DB_PORT=19044
-DB_USER=avnadmin
-DB_PASSWORD=***
-DB_NAME=kompiCyber
-JWT_SECRET=your_secret
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_KEY=your_key
-ENVEOF
-
-npm run dev
 ```
 
-### 2. Setup Frontend
+#### Configure Environment Variables
+
+Create a `.env` file in the `backend/` directory:
+
+```env
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=kompi_cyber
+
+# Server
+PORT=5000
+NODE_ENV=development
+
+# JWT
+JWT_SECRET=your_super_secret_jwt_key_here
+
+# Supabase
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your_supabase_key
+
+# Email Service
+RESEND_API_KEY=your_resend_api_key
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password
+
+# Frontend URL
+FRONTEND_URL=http://localhost:5173
+```
+
+#### Initialize Database
+
+```bash
+# Run migrations
+mysql -u root -p kompi_cyber < database/schema.sql
+mysql -u root -p kompi_cyber < database/seed.sql
+
+# (Optional) Add sample cybersecurity courses
+node scripts/add-network-security-modules.js
+```
+
+#### Start Backend Server
+
+```bash
+# Development mode (with nodemon)
+npm start
+
+# You should see:
+# ✅ Backend server running on http://localhost:5000
+```
+
+### 3️⃣ Frontend Setup
+
+#### Install Dependencies
+
 ```bash
 cd frontend
 npm install
-npm run dev    # dev server
-npm run build  # production build
 ```
 
-### 3. Initialize Database
+#### Configure Environment Variables
+
+Create a `.env.local` file in the `frontend/` directory:
+
+```env
+VITE_API_BASE_URL=http://localhost:5000
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your_supabase_key
+```
+
+#### Start Development Server
+
 ```bash
-mysql -h $DB_HOST -p$DB_PASSWORD $DB_NAME < database/schema.sql
+npm run dev
+
+# You should see:
+# ➜  Local:   http://localhost:5173/
+# ➜  press q to quit
 ```
 
----
+### 4️⃣ Verify Installation
 
-## 👥 Users & Roles
+Visit `http://localhost:5173` in your browser:
 
-### Test Accounts (Ready to Use)
-
-| Role | Email | Password | Purpose |
-|------|-------|----------|---------|
-| **Admin** | `coordinator@test.com` | `TestPass123!` | Platform management |
-| **Instructor** | `teacher1@test.com` | `TestPass123!` | Course management |
-| **Instructor** | `teacher2@test.com` | `TestPass123!` | Course management |
-| **Instructor** | `teacher3@test.com` | `TestPass123!` | Course management |
-
-### Login Example
-```bash
-curl -X POST https://kompi-cyber.up.railway.app/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"teacher1@test.com","password":"TestPass123!"}'
-```
+- ✅ Homepage loads
+- ✅ Can navigate to course catalog
+- ✅ Registration/login works
+- ✅ Backend API responds (check console for errors)
 
 ---
 
-## 📚 API Documentation
+## 🎯 Quick Start
 
-### Key Endpoints
+### For Students
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/auth/login` | POST | User login |
-| `/api/courses` | GET | List all courses |
-| `/api/enrollments` | POST | Enroll in course |
-| `/api/quizzes/:lessonId/submit` | POST | Submit quiz |
-| `/api/certificates/:courseId` | GET | Get certificate |
+1. **Register Account**
+   - Visit `http://localhost:5173`
+   - Click "Sign Up"
+   - Verify email
 
-📖 **Full API Documentation:** [docs/API_FRONTEND.md](./docs/API_FRONTEND.md)
+2. **Enroll in Courses**
+   - Browse course catalog
+   - Join self-paced courses directly
+   - Accept instructor invitations via email
+
+3. **Complete Lessons**
+   - Read lesson content
+   - Take quizzes
+   - Submit exercises
+   - Track progress
+
+4. **Earn Certificates**
+   - Complete all modules
+   - Pass final assessment
+   - Download certificate
+
+### For Instructors
+
+1. **Login as Instructor**
+   - Use instructor account (admin creates these)
+   - Access instructor dashboard
+
+2. **Create a Course**
+   - Click "Create New Course"
+   - Select course type (Online-Led or Instructor-Led)
+   - Add title, description, syllabus
+
+3. **Add Content**
+   - Create modules (weeks)
+   - Add lessons with markdown content
+   - Create quizzes and exercises
+
+4. **Manage Students**
+   - Copy invitation link or send via email
+   - View enrolled students
+   - Monitor progress and performance
 
 ---
 
-## 💻 Development
+## 📁 Project Structure
 
-### Project Structure
 ```
 kompi-cyber/
-├── frontend/          # React + Vite (Vercel)
-├── backend/           # Express.js (Railway)
-├── database/          # SQL schemas & migrations
-└── docs/              # API & setup documentation
+├── backend/                           # Express.js API Server
+│   ├── config/                        # Database & Supabase config
+│   │   ├── db.js                     # MySQL connection pool
+│   │   └── supabase.js               # Supabase client
+│   ├── controller/                    # Business logic
+│   │   ├── authController.js         # User auth, registration
+│   │   ├── courseController.js       # Course CRUD operations
+│   │   ├── lessonController.js       # Lesson management
+│   │   ├── quizController.js         # Quiz & questions
+│   │   ├── exerciseController.js     # Exercise handling
+│   │   ├── instructorController.js   # Instructor dashboard
+│   │   └── enrollmentController.js   # Enrollment logic
+│   ├── middleware/                    # Express middleware
+│   │   └── authMiddleware.js         # JWT verification
+│   ├── models/                        # Database models/queries
+│   │   ├── userModel.js
+│   │   ├── courseModel.js
+│   │   ├── lessonModel.js
+│   │   ├── quizModel.js
+│   │   └── submissionModel.js
+│   ├── routes/                        # API endpoints
+│   │   ├── authRoutes.js
+│   │   ├── courseRoutes.js
+│   │   ├── lessonRoutes.js
+│   │   ├── quizRoutes.js
+│   │   ├── exerciseRoutes.js
+│   │   └── instructorRoutes.js
+│   ├── utils/                         # Helper functions
+│   ├── scripts/                       # Setup & migration scripts
+│   │   ├── add-network-security-modules.js
+│   │   └── add-intro-to-cyber-modules.js
+│   ├── server.js                      # Express app setup
+│   ├── package.json                   # Dependencies
+│   └── .env                           # Environment variables
+
+├── frontend/                          # React + Vite Frontend
+│   ├── src/
+│   │   ├── components/                # Reusable React components
+│   │   │   ├── student/              # Student-specific components
+│   │   │   ├── instructor/           # Instructor-specific components
+│   │   │   ├── auth/                 # Login/Register components
+│   │   │   └── common/               # Shared components
+│   │   ├── pages/                     # Page components
+│   │   │   ├── CourseCatalog.jsx
+│   │   │   ├── StudentDashboard.jsx
+│   │   │   ├── InstructorDashboard.jsx
+│   │   │   └── LessonView.jsx
+│   │   ├── utils/                     # Helper functions
+│   │   ├── hooks/                     # Custom React hooks
+│   │   ├── App.jsx                    # Main app component
+│   │   └── main.jsx                   # Entry point
+│   ├── package.json                   # Dependencies
+│   ├── vite.config.js                 # Vite configuration
+│   └── .env.local                     # Environment variables
+
+├── database/                          # Database schemas & migrations
+│   ├── schema.sql                     # Complete database schema
+│   ├── seed.sql                       # Sample data
+│   ├── migrations/                    # Database migrations
+│   └── scripts/                       # SQL utility scripts
+
+├── docs/                              # Documentation
+│   ├── SETUP_GUIDE.md                # Installation guide
+│   ├── API_FRONTEND.md                # API endpoints documentation
+│   ├── NETACAD_COURSE_SYSTEM.md      # Course invitation system
+│   ├── INSTRUCTOR_DASHBOARD_GUIDE.md  # Admin guide
+│   └── IMPLEMENTATION_SUMMARY.md      # Implementation details
+
+├── upload/                            # File uploads directory
+│   └── lesson/                        # Lesson content uploads
+
+├── README.md                          # This file
+├── package.json                       # Root package.json
+└── .env.example                       # Environment template
 ```
 
-### Development Workflow
+---
+
+## 🔌 API Endpoints
+
+### Authentication
+
+```
+POST   /api/auth/register              # Create new user account
+POST   /api/auth/login                 # User login (returns JWT)
+POST   /api/auth/logout                # Logout user
+GET    /api/auth/me                    # Get current logged-in user
+POST   /api/auth/refresh               # Refresh JWT token
+```
+
+### Courses
+
+```
+GET    /api/courses                    # List all courses
+GET    /api/courses/:id                # Get course details
+POST   /api/courses                    # Create new course (instructor)
+PUT    /api/courses/:id                # Update course (instructor)
+DELETE /api/courses/:id                # Delete course (instructor)
+```
+
+### Lessons
+
+```
+GET    /api/lessons/course/:courseId   # Get lessons in a course
+GET    /api/lessons/:id                # Get lesson details
+POST   /api/lessons                    # Create lesson (instructor)
+PUT    /api/lessons/:id                # Update lesson (instructor)
+```
+
+### Quizzes & Exercises
+
+```
+GET    /api/quizzes/lesson/:lessonId   # Get quiz for lesson
+POST   /api/quizzes/attempt            # Submit quiz attempt
+GET    /api/exercises/lesson/:lessonId # Get exercises for lesson
+POST   /api/exercises/submit           # Submit exercise solution
+```
+
+### Enrollment
+
+```
+GET    /api/enrollments/my-courses     # Get student's courses
+POST   /api/enrollments/enroll         # Enroll in a course
+GET    /api/enrollments/course/:id     # Get course enrollment stats
+```
+
+### Invitations
+
+```
+GET    /api/invitations/my-invitations # Get student's invitations
+POST   /api/invitations/accept         # Accept course invitation
+POST   /api/invitations/reject         # Reject invitation
+POST   /api/invitations/send           # Instructor send invitations
+```
+
+---
+
+## 🗄️ Database Schema Overview
+
+### Core Tables
+
+- **users** - User accounts (students, instructors, admins)
+- **courses** - Course definitions
+- **modules** - Course modules/weeks
+- **lessons** - Individual lessons
+- **enrollments** - Student course enrollments
+- **course_invitations** - Invitation workflow
+
+### Learning Tables
+
+- **quizzes** - Quiz definitions
+- **quiz_questions** - Individual quiz questions
+- **quiz_options** - Multiple choice options
+- **quiz_attempts** - Student quiz attempts
+- **exercises** - Coding/lab exercises
+- **exercise_submissions** - Student solutions
+- **lesson_progress** - Lesson completion tracking
+
+### Certificates
+
+- **certificates** - Earned certificates
+- **certificate_templates** - Certificate designs
+
+---
+
+## 🧪 Testing the System
+
+### Test API Endpoints
+
 ```bash
-# Terminal 1: Start backend
-cd backend && npm run dev
+# Using curl
+curl -X GET http://localhost:5000/api/courses
 
-# Terminal 2: Start frontend
-cd frontend && npm run dev
+# Using Postman
+Import API_FRONTEND.md for full endpoint collection
+```
+
+### Create Test Course
+
+```bash
+cd backend
+node scripts/add-network-security-modules.js
+```
+
+### Test Student Workflow
+
+1. Register as student
+2. Enroll in "Network Security Basics"
+3. Complete Lesson 1
+4. Take quiz
+5. Submit exercise
+
+### Test Instructor Workflow
+
+1. Login as instructor
+2. Create new course (instructor-led)
+3. Add 2-3 lessons
+4. Send invitations to test students
+5. Monitor student progress
+
+---
+
+## 🛡️ Security Features
+
+✅ **JWT Authentication** - Secure token-based user sessions
+✅ **Password Hashing** - bcryptjs (salted & hashed)
+✅ **Input Validation** - express-validator prevents XSS
+✅ **HTML Sanitization** - Prevent script injection
+✅ **CORS Protection** - Whitelist allowed origins
+✅ **Rate Limiting** - Prevent brute force attacks
+✅ **Security Headers** - Helmet.js for HTTP hardening
+✅ **SQL Injection Prevention** - Parameterized queries
+✅ **Email Verification** - Confirm user identity
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how to get involved:
+
+### Contribution Areas
+
+1. **Frontend Features**
+   - UI/UX improvements
+   - New student/instructor components
+   - Mobile responsiveness
+
+2. **Backend Features**
+   - New API endpoints
+   - Database optimizations
+   - Performance improvements
+
+3. **Documentation**
+   - API docs
+   - Setup guides
+   - Video tutorials
+
+4. **Bug Fixes**
+   - Report issues on GitHub
+   - Submit pull requests
+
+### How to Contribute
+
+```bash
+# 1. Fork the repository
+# 2. Create feature branch
+git checkout -b feature/your-feature-name
+
+# 3. Commit changes
+git commit -m "Add: description of changes"
+
+# 4. Push to your fork
+git push origin feature/your-feature-name
+
+# 5. Create Pull Request on GitHub
 ```
 
 ---
 
-## 🧪 Testing the Instructor Dashboard
+### Team & Credits
 
-1. Login with teacher account: `teacher1@test.com` / `TestPass123!`
-2. Navigate to "Instructor Dashboard"
-3. Create a new course
-4. Add modules and lessons
-5. Invite students via email
-6. View student performance analytics
+**Developed By:** Kompi-Cyber Development Team
 
----
+**Course:** Web Development
 
+**Institution:** Cambodia Academy of Digital Technology (CADT)
 
-## 👥 Team
-
-**Cambodia Academy of Digital Technology (CADT)**
+**Key Contributors:**
 
 - Horn Sovisal – Backend Developer
-- Kue Chanchessika – Backend Developer  
+- Kue Chanchessika – Backend Developer
 - Chhit Sovathana – Database Developer
 - Khy Gio – Frontend Developer
 - Kuyseng Marakat – Frontend Developer
@@ -182,8 +578,42 @@ cd frontend && npm run dev
 
 ## 📄 License
 
-Proprietary - KOMPI-CYBER Learning Platform
-© 2026 All rights reserved.
+This project is licensed under the ISC License - see [LICENSE](LICENSE) file for details.
 
 ---
 
+## 🗺️ Project Roadmap
+
+### V1.0 (Current)
+
+✅ Basic course management
+✅ Student enrollment
+✅ Quiz and exercise system
+✅ Instructor dashboard
+✅ Certificate generation
+
+### V2.0 (Planned)
+
+🚧 AI-powered adaptive learning
+🚧 Virtual lab sandbox environment
+🚧 Real-time code execution
+🚧 Peer review system
+🚧 Advanced analytics
+
+### V3.0 (Future)
+
+📅 Mobile app
+📅 LMS integration (Canvas, Moodle)
+📅 Gamification (badges, leaderboards)
+📅 Live instructor sessions
+📅 AI tutoring assistant
+
+---
+
+## 🎓 Getting Started Resources
+
+- 📖 [Setup Guide](docs/SETUP_GUIDE.md)
+- 🔌 [API Documentation](docs/API_FRONTEND.md)
+- 👨‍🏫 [Instructor Guide](docs/INSTRUCTOR_DASHBOARD_GUIDE.md)
+- 🎯 [Course System](docs/NETACAD_COURSE_SYSTEM.md)
+- 🔐 [Security Audit](SECURITY_AUDIT_2024.md)
