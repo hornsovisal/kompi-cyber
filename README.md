@@ -1,10 +1,6 @@
-# KOMPI-CYBER 🛡️
+# KOMPI-CYBER 
 
-> A modern, scalable cybersecurity learning platform for institutions and enterprises
-
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
-![Status](https://img.shields.io/badge/status-active-brightgreen)
-![License](https://img.shields.io/badge/license-proprietary-red)
+> A modern cybersecurity learning platform for cyber security student
 
 ## 📋 Table of Contents
 
@@ -18,39 +14,29 @@
 
 ---
 
-## 🎯 Overview
+##  Overview
 
 **KOMPI-CYBER** is a comprehensive cybersecurity curriculum platform inspired by Cisco NetAcad. It supports multi-role learning: **Students**, **Instructors**, and **Administrators** with collaborative features, progress tracking, and certification systems.
-
-**Cybersecurity Courses:**
-- Introduction to Cybersecurity
-- Networking Fundamentals
-- Linux System Administration
-- Web Application Security
-- Network Security
-- Incident Response & Forensics
 
 ---
 
 ## ✨ Features
 
 ### For Students
-- 📚 Structured course curriculum (Domains → Courses → Modules → Lessons)
-- 🧪 Interactive quizzes & coding exercises
-- 📊 Progress tracking & performance analytics
-- 🎓 Digital certificates on course completion
-- 💾 Persistent learning state
+- Structured course curriculum (Domains → Courses → Modules → Lessons)
+- Interactive quizzes & coding exercises
+- Progress tracking & performance analytics
+- Digital certificates on course completion
+- Persistent learning state
 
 ### For Instructors
-- 📝 Course authoring & content management
-- 👥 Student roster & invitation system
-- 📈 Class analytics & student performance metrics
-- 📤 File storage for lesson resources
+- Student roster & invitation system
+- Class analytics & student performance metrics
+- Add Quiz to course
+- File storage for lesson resources
 
-### For Administrators
-- 🔧 System configuration & user management
-- 🔐 Role-based access control (RBAC)
-
+### For Cordinator
+- Course authoring & content management
 ---
 
 ## 🛠️ Tech Stack
@@ -66,9 +52,7 @@
 | **Backend Deployment** | Railway |
 
 **Live Links:**
-- Frontend: https://kompi-cyber2323.vercel.app
-- Backend API: https://kompi-cyber.up.railway.app
-
+- Website URL: https://kompi-cyber2323.vercel.app
 ---
 
 ## 🚀 Quick Start
@@ -172,18 +156,6 @@ cd frontend && npm run dev
 
 ---
 
-## 🌐 Deployment
-
-### Auto-Deployment Pipeline
-1. **Code Push** → GitHub
-2. Frontend → **Vercel** (www-5yl.vercel.app)
-3. Backend → **Railway** (kompi-cyber.up.railway.app)
-4. Database → **Aiven Cloud** (Managed MySQL)
-
-All deployments happen automatically on GitHub push to main branch.
-
----
-
 ## 🧪 Testing the Instructor Dashboard
 
 1. Login with teacher account: `teacher1@test.com` / `TestPass123!`
@@ -195,13 +167,6 @@ All deployments happen automatically on GitHub push to main branch.
 
 ---
 
-## 📞 Support
-
-- **Documentation:** [docs/DOCUMENTATION_INDEX.md](./docs/DOCUMENTATION_INDEX.md)
-- **Issues:** GitHub Issues
-- **API Docs:** [docs/API_FRONTEND.md](./docs/API_FRONTEND.md)
-
----
 
 ## 👥 Team
 
@@ -218,8 +183,7 @@ All deployments happen automatically on GitHub push to main branch.
 ## 📄 License
 
 Proprietary - KOMPI-CYBER Learning Platform
-© 2024-2026 All rights reserved.
+© 2026 All rights reserved.
 
 ---
 
-**Happy Learning! 🛡️🔐**
