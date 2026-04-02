@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, NavLink, useParams } from "react-router-dom";
 import axios from "axios";
+import { safeGetLocalStorage, safeSetLocalStorage } from "../utils/safeStorage";
+import { getCourseCoverUrl } from "../utils/courseImage";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const API_TARGET_LABEL = import.meta.env.VITE_API_URL || "Vite /api proxy";
 const SUPABASE_URL =
   import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co";
-const SUPABASE_BUCKET = "upload-lesson";
+const SUPABASE_BUCKET = "upload";
 const ASSET_BASE = (
   import.meta.env.VITE_API_URL || "http://localhost:3000"
 ).replace(/\/$/, "");
@@ -19,19 +21,6 @@ const COURSE_COVER_MAP = {
   4: "web-security",
   5: "incident-response",
 };
-
-/**
- * Build Supabase public URL for course cover image
- * Follows pattern: https://{SUPABASE_URL}/storage/v1/object/public/{bucket}/lesson/{slug|courseId}/cover.svg
- */
-function getCourseCoverUrl(course) {
-  // Use course slug if available, otherwise fallback to legacy ID-based mapping
-  const courseSlug = course.slug || COURSE_COVER_MAP[Number(course.id)];
-  if (!courseSlug) return "";
-
-  const supabaseUrl = `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${courseSlug}/cover.svg`;
-  return supabaseUrl;
-}
 
 const COURSE_COVER_FALLBACKS = [
   {
@@ -74,13 +63,13 @@ export default function Dashboard() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem("theme");
+    const saved = safeGetLocalStorage("theme");
     return saved ? saved === "dark" : true;
   });
 
   // Save theme preference to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    safeSetLocalStorage("theme", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 
   const currentTab =
@@ -128,32 +117,7 @@ export default function Dashboard() {
   });
 
   const getCourseCoverSrc = (course) => {
-    const coverImageUrl = course?.cover_image_url;
-    if (coverImageUrl) {
-      if (/^https?:\/\//i.test(coverImageUrl)) {
-        return coverImageUrl;
-      }
-
-      return `${API_BASE}${coverImageUrl}`;
-    }
-
-    // Build Supabase URL using course slug or fallback
-    const courseSlug = course?.slug || COURSE_COVER_MAP[Number(course?.id)];
-
-    // Try to find a fallback slug by course title
-    let fallbackSlug = courseSlug;
-    if (!fallbackSlug) {
-      const fallback = COURSE_COVER_FALLBACKS.find((item) =>
-        item.pattern.test(course?.title || ""),
-      );
-      fallbackSlug = fallback?.slug;
-    }
-
-    if (fallbackSlug) {
-      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${fallbackSlug}/cover.svg`;
-    }
-
-    return null;
+    return getCourseCoverUrl(course, SUPABASE_URL, SUPABASE_BUCKET);
   };
 
   const currentUsername =
@@ -260,7 +224,8 @@ export default function Dashboard() {
   }, [navigate]);
 
   const handleEnroll = async (courseId) => {
-    const token = localStorage.getItem("token");
+    const token =
+      sessionStorage.getItem("token") || localStorage.getItem("token");
     setEnrollingId(courseId);
     try {
       await axios.post(

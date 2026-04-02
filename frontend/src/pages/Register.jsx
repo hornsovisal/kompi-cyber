@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { validatePasswordStrength } from "../utils/passwordValidator";
-
-const API_BASE = import.meta.env.VITE_API_URL || "";
+import { API_BASE_URL } from "../config/api";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -88,15 +87,13 @@ export default function Register() {
     try {
       const submittedEmail = formData.email.trim();
       const response = await axios.post(
-        "/api/auth/register",
+        `${API_BASE_URL}/api/auth/register`,
         {
           name: formData.name.trim(),
           email: submittedEmail,
           password: formData.password,
         },
-        {
-          baseURL: API_BASE,
-        },
+        { timeout: 10000 }, // 10 second timeout
       );
 
       setAlert({
@@ -130,13 +127,11 @@ export default function Register() {
 
     try {
       const response = await axios.post(
-        "/api/auth/resend-verification",
+        `${API_BASE_URL}/api/auth/resend-verification`,
         {
           email: registeredEmail,
         },
-        {
-          baseURL: API_BASE,
-        },
+        { timeout: 10000 }, // 10 second timeout
       );
       setVerificationLink(response.data?.verificationLink || "");
       setResendMessage(

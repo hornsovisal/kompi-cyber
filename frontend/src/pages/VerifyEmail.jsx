@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-
-const API_BASE = import.meta.env.VITE_API_URL || "";
+import { API_BASE_URL } from "../config/api";
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
@@ -21,11 +20,9 @@ export default function VerifyEmail() {
     const verifyEmail = async () => {
       try {
         const response = await axios.post(
-          "/api/auth/verify-email",
+          `${API_BASE_URL}/api/auth/verify-email`,
           { token },
-          {
-            baseURL: API_BASE,
-          },
+          { timeout: 10000 }, // 10 second timeout
         );
         setStatus("success");
         setMessage("Email verified successfully! You can now log in.");

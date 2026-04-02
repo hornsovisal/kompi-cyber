@@ -14,8 +14,6 @@
   "type": "commonjs",
   "dependencies": {
     "@supabase/supabase-js": "^2.100.1",
-    "aws-sdk": "^2.1693.0",
-    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "compression": "^1.7.4",
     "cors": "^2.8.6",
@@ -25,10 +23,10 @@
     "express-validator": "^7.0.0",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.2.4",
     "mysql2": "^3.19.0",
     "nodemailer": "^8.0.3",
     "pdfkit": "^0.18.0",
+    "resend": "^6.10.0",
     "sanitize-html": "^2.11.0"
   },
   "devDependencies": {

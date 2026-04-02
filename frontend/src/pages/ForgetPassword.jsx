@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-
-const API_BASE = import.meta.env.VITE_API_URL || "";
+import { API_BASE_URL } from "../config/api";
 
 export default function ForgetPassword() {
   const [email, setEmail] = useState("");
@@ -18,15 +17,26 @@ export default function ForgetPassword() {
 
     try {
       const response = await axios.post(
-        "/api/auth/forgot-password",
+        `${API_BASE_URL}/api/auth/forgot-password`,
         { email },
-        {
-          baseURL: API_BASE,
-        },
+        { timeout: 10000 }, // 10 second timeout
       );
       setMessage(response.data.message);
     } catch (err) {
-      setError(err.response?.data?.message || "An error occurred");
+      if (err.code === "ECONNABORTED") {
+        setError(
+          "Request timed out. Please check your connection and try again.",
+        );
+      } else if (err.response?.status === 404) {
+        setError("Password reset endpoint not found. Please contact support.");
+      } else {
+        setError(
+          err.response?.data?.message ||
+            err.message ||
+            "An error occurred. Please try again.",
+        );
+      }
+      console.error("Forgot password error:", err);
     } finally {
       setLoading(false);
     }
