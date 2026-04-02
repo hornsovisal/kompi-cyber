@@ -9,9 +9,8 @@ const { isConfigured, lessonBucket } = require("../config/supabase");
 router.get("/", courseController.getCourses);
 
 // GET /api/courses/cover/:slug
-// Proxies course cover SVG images from Supabase, adding the
-// Cross-Origin-Resource-Policy header that browsers require for
-// cross-origin image loads (fixes OpaqueResponseBlocking errors).
+// Proxies course cover SVG images from Supabase, adding proper CORS headers
+// to enable cross-origin image loads
 router.get("/cover/:slug", async (req, res) => {
   try {
     const { slug } = req.params;
@@ -30,11 +29,15 @@ router.get("/cover/:slug", async (req, res) => {
       return res.status(404).json({ message: "Image not found" });
     }
 
+    // Set CORS and resource policy headers for cross-origin image access
+    res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
     res.setHeader("Content-Type", "image/svg+xml");
     res.setHeader("Cache-Control", "public, max-age=86400");
 
-    response.body.pipe(res);
+    // Read response body and send with headers
+    const buffer = await response.arrayBuffer();
+    res.send(Buffer.from(buffer));
   } catch (error) {
     console.error("Error fetching cover image:", error);
     res.status(500).json({ message: "Error fetching image" });
