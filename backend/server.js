@@ -26,7 +26,11 @@ const invitationRoutes = require("./routes/invitationRoutes");
 const app = express();
 
 // Security middleware
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false, // Disable CORP header so we can set it manually per route
+  }),
+);
 app.use(compression());
 
 // CORS configuration - supports both local development and production deployment
