@@ -50,14 +50,39 @@ router.get("/cover/:slug", async (req, res) => {
       return res.send(fileContent);
     }
 
-    // Fetch from Supabase: path is upload/lesson/{slug}/cover.svg
+    // Fetch from Supabase: path is lesson/{slug}/cover.svg
     const supabaseFilePath = `lesson/${slug}/cover.svg`;
+    console.log(`[DEBUG] Fetching from Supabase: ${supabaseFilePath}`);
+    
     const { data, error } = await supabaseClient.storage
       .from(lessonBucket)
       .download(supabaseFilePath);
 
-    if (error || !data) {
-      console.error("Error fetching cover from Supabase:", error);
+    if (error) {
+      console.error(`[ERROR] Supabase fetch failed for ${supabaseFilePath}:`, error);
+      // Fallback to local filesystem if Supabase fails
+      const filePath = path.join(
+        __dirname,
+        "../upload/lesson",
+        slug,
+        "cover.svg",
+      );
+
+      if (fs.existsSync(filePath)) {
+        console.log(`[FALLBACK] Using local file: ${filePath}`);
+        const fileContent = fs.readFileSync(filePath);
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+        res.setHeader("Content-Type", "image/svg+xml");
+        res.setHeader("Cache-Control", "public, max-age=86400");
+        return res.send(fileContent);
+      }
+      
+      return res.status(404).json({ message: "Cover image not found" });
+    }
+
+    if (!data) {
+      console.error(`[ERROR] No data returned from Supabase for ${supabaseFilePath}`);
       return res.status(404).json({ message: "Cover image not found" });
     }
 
