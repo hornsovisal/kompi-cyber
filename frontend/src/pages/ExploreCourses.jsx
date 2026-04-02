@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import logo from "../assets/logos/logo-blue.svg";
+import { safeGetLocalStorage, safeSetLocalStorage } from "../utils/safeStorage";
+import { getCourseCoverUrl } from "../utils/courseImage";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const SUPABASE_URL =
   import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co";
-const SUPABASE_BUCKET = "upload-lesson";
+const SUPABASE_BUCKET = "upload";
 const ASSET_BASE = (
   import.meta.env.VITE_API_URL || "http://localhost:3000"
 ).replace(/\/$/, "");
@@ -50,7 +52,7 @@ const COURSE_COVER_FALLBACKS = [
 export default function ExploreCourses() {
   const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem("theme");
+    const saved = safeGetLocalStorage("theme");
     return saved ? saved === "dark" : true;
   });
   const [user, setUser] = useState(null);
@@ -64,32 +66,12 @@ export default function ExploreCourses() {
   const [error, setError] = useState("");
 
   const getCourseCoverSrc = (course) => {
-    const coverImageUrl = course?.cover_image_url;
-    if (coverImageUrl) {
-      if (/^https?:\/\//i.test(coverImageUrl)) {
-        return coverImageUrl;
-      }
-      return `${API_BASE}${coverImageUrl}`;
-    }
-
-    // Build Supabase URL using course slug or fallback
-    const courseSlug = course?.slug;
-    if (courseSlug) {
-      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${courseSlug}/cover.svg`;
-    }
-
-    const fallback = COURSE_COVER_FALLBACKS.find((item) =>
-      item.pattern.test(course?.title || ""),
-    );
-    if (fallback) {
-      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${fallback.slug}/cover.svg`;
-    }
-    return null;
+    return getCourseCoverUrl(course, SUPABASE_URL, SUPABASE_BUCKET);
   };
 
   // Save theme preference to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    safeSetLocalStorage("theme", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 
   useEffect(() => {

@@ -22,7 +22,8 @@ export default function InviteStudents({ courseId, courseName }) {
   const fetchInvitedStudents = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
+      const token =
+        sessionStorage.getItem("token") || localStorage.getItem("token");
       const response = await axios.get(`/api/invitations/course/${courseId}`, {
         baseURL: API_BASE,
         headers: { Authorization: `Bearer ${token}` },
@@ -74,7 +75,8 @@ export default function InviteStudents({ courseId, courseName }) {
 
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
+      const token =
+        sessionStorage.getItem("token") || localStorage.getItem("token");
 
       // Send invitations for all emails
       const results = await Promise.allSettled(
@@ -126,7 +128,8 @@ export default function InviteStudents({ courseId, courseName }) {
   const handleResendInvitation = async (invitationId) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
+      const token =
+        sessionStorage.getItem("token") || localStorage.getItem("token");
       await axios.post(
         `/api/invitations/${invitationId}/resend`,
         {},
@@ -156,7 +159,8 @@ export default function InviteStudents({ courseId, courseName }) {
 
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
+      const token =
+        sessionStorage.getItem("token") || localStorage.getItem("token");
       await axios.delete(`/api/invitations/${invitationId}`, {
         baseURL: API_BASE,
         headers: { Authorization: `Bearer ${token}` },

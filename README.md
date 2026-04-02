@@ -1,105 +1,225 @@
-# Kompi-Cyber
+# KOMPI-CYBER 🛡️
 
-**Kompi-Cyber** is an **online learning platform** designed to support **cybersecurity education** for students at the **CADT**. The platform provides structured **courses, learning materials**, and **practical exercises** to help students develop c**ybersecurity knowledge and technical skills.
-**
+> A modern, scalable cybersecurity learning platform for institutions and enterprises
 
-## Project Purpose
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Status](https://img.shields.io/badge/status-active-brightgreen)
+![License](https://img.shields.io/badge/license-proprietary-red)
 
-The goal of Kompi-Cyber is to create a centralized platform where CADT students can:
+## 📋 Table of Contents
 
-* Access cybersecurity learning materials
-* Follow structured courses
-* Practice cybersecurity concepts
-* Track their learning progress
-
-The platform aims to make cybersecurity education more accessible and organized for students.
-
----
-
-## Features
-
-* User registration and authentication
-* Course-based learning system
-* Cybersecurity course materials
-* Student progress tracking
-* Backend API for course and user management
-* Integration with a frontend learning interface
+- [Overview](#overview)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Quick Start](#quick-start)
+- [Users & Roles](#users--roles)
+- [API Documentation](#api-documentation)
+- [Deployment](#deployment)
 
 ---
 
-## Target Users
+## 🎯 Overview
 
-This platform is primarily designed for:
+**KOMPI-CYBER** is a comprehensive cybersecurity curriculum platform inspired by Cisco NetAcad. It supports multi-role learning: **Students**, **Instructors**, and **Administrators** with collaborative features, progress tracking, and certification systems.
 
-* CADT students who want to learn cybersecurity
-* Instructors who want to share cybersecurity learning materials
-* Beginners who want a structured cybersecurity learning path
-
----
-
-## Inspiration
-
-Kompi-Cyber is inspired by existing learning platforms such as:
-
-* Cisco Networking Academy (NetAcad)
-* Coursera
-* Other online learning management systems
-
-However, it focuses specifically on **cybersecurity education for CADT students**.
+**Cybersecurity Courses:**
+- Introduction to Cybersecurity
+- Networking Fundamentals
+- Linux System Administration
+- Web Application Security
+- Network Security
+- Incident Response & Forensics
 
 ---
 
-## Project Structure (Backend Example)
+## ✨ Features
 
+### For Students
+- 📚 Structured course curriculum (Domains → Courses → Modules → Lessons)
+- 🧪 Interactive quizzes & coding exercises
+- 📊 Progress tracking & performance analytics
+- 🎓 Digital certificates on course completion
+- 💾 Persistent learning state
+
+### For Instructors
+- 📝 Course authoring & content management
+- 👥 Student roster & invitation system
+- 📈 Class analytics & student performance metrics
+- 📤 File storage for lesson resources
+
+### For Administrators
+- 🔧 System configuration & user management
+- 🔐 Role-based access control (RBAC)
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | React 18.2 + Vite 7.1 + Tailwind CSS |
+| **Backend** | Node.js + Express.js 4.18 |
+| **Database** | MySQL 8.0 (Aiven Cloud) |
+| **Storage** | Supabase (file storage) |
+| **Auth** | JWT + bcryptjs |
+| **Frontend Deployment** | Vercel |
+| **Backend Deployment** | Railway |
+
+**Live Links:**
+- Frontend: https://kompi-cyber2323.vercel.app
+- Backend API: https://kompi-cyber.up.railway.app
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+
+- Git
+
+### 1. Setup Backend
+```bash
+cd backend
+npm install
+
+# Create .env file
+cat > .env << 'ENVEOF'
+NODE_ENV=development
+PORT=3000
+DB_HOST=mysql-xxx.e.aivencloud.com
+DB_PORT=19044
+DB_USER=avnadmin
+DB_PASSWORD=***
+DB_NAME=kompiCyber
+JWT_SECRET=your_secret
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_KEY=your_key
+ENVEOF
+
+npm run dev
+```
+
+### 2. Setup Frontend
+```bash
+cd frontend
+npm install
+npm run dev    # dev server
+npm run build  # production build
+```
+
+### 3. Initialize Database
+```bash
+mysql -h $DB_HOST -p$DB_PASSWORD $DB_NAME < database/schema.sql
+```
+
+---
+
+## 👥 Users & Roles
+
+### Test Accounts (Ready to Use)
+
+| Role | Email | Password | Purpose |
+|------|-------|----------|---------|
+| **Admin** | `coordinator@test.com` | `TestPass123!` | Platform management |
+| **Instructor** | `teacher1@test.com` | `TestPass123!` | Course management |
+| **Instructor** | `teacher2@test.com` | `TestPass123!` | Course management |
+| **Instructor** | `teacher3@test.com` | `TestPass123!` | Course management |
+
+### Login Example
+```bash
+curl -X POST https://kompi-cyber.up.railway.app/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"teacher1@test.com","password":"TestPass123!"}'
+```
+
+---
+
+## 📚 API Documentation
+
+### Key Endpoints
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/auth/login` | POST | User login |
+| `/api/courses` | GET | List all courses |
+| `/api/enrollments` | POST | Enroll in course |
+| `/api/quizzes/:lessonId/submit` | POST | Submit quiz |
+| `/api/certificates/:courseId` | GET | Get certificate |
+
+📖 **Full API Documentation:** [docs/API_FRONTEND.md](./docs/API_FRONTEND.md)
+
+---
+
+## 💻 Development
+
+### Project Structure
 ```
 kompi-cyber/
-│
-├── config/        # Database and configuration files
-├── controllers/   # Business logic
-├── middleware/    # Authentication and validation
-├── models/        # Database models
-├── routes/        # API routes
-├── server.js      # Main server entry
-└── package.json
+├── frontend/          # React + Vite (Vercel)
+├── backend/           # Express.js (Railway)
+├── database/          # SQL schemas & migrations
+└── docs/              # API & setup documentation
+```
+
+### Development Workflow
+```bash
+# Terminal 1: Start backend
+cd backend && npm run dev
+
+# Terminal 2: Start frontend
+cd frontend && npm run dev
 ```
 
 ---
 
-## Technologies Used
+## 🌐 Deployment
 
-Possible technologies used in this project:
+### Auto-Deployment Pipeline
+1. **Code Push** → GitHub
+2. Frontend → **Vercel** (www-5yl.vercel.app)
+3. Backend → **Railway** (kompi-cyber.up.railway.app)
+4. Database → **Aiven Cloud** (Managed MySQL)
 
-Backend
-
-* Node.js
-* Express.js
-* MySQL
-
-Frontend
-
-* HTML / Tailwind CSS / JavaScript
-
-Other Tools
-* Git
-* REST API
+All deployments happen automatically on GitHub push to main branch.
 
 ---
 
-## Project Status
+## 🧪 Testing the Instructor Dashboard
 
-This project is currently under development as part of a student project.
-
+1. Login with teacher account: `teacher1@test.com` / `TestPass123!`
+2. Navigate to "Instructor Dashboard"
+3. Create a new course
+4. Add modules and lessons
+5. Invite students via email
+6. View student performance analytics
 
 ---
-## Authors
 
-This project was developed by students at  
-**Cambodia Academy of Digital Technology (CADT)**.
+## 📞 Support
 
-Team Members:
+- **Documentation:** [docs/DOCUMENTATION_INDEX.md](./docs/DOCUMENTATION_INDEX.md)
+- **Issues:** GitHub Issues
+- **API Docs:** [docs/API_FRONTEND.md](./docs/API_FRONTEND.md)
+
+---
+
+## 👥 Team
+
+**Cambodia Academy of Digital Technology (CADT)**
 
 - Horn Sovisal – Backend Developer
-- Kue Chanchessika – Backend Developer
+- Kue Chanchessika – Backend Developer  
 - Chhit Sovathana – Database Developer
 - Khy Gio – Frontend Developer
 - Kuyseng Marakat – Frontend Developer
+
+---
+
+## 📄 License
+
+Proprietary - KOMPI-CYBER Learning Platform
+© 2024-2026 All rights reserved.
+
+---
+
+**Happy Learning! 🛡️🔐**

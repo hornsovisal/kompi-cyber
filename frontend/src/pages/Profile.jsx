@@ -2,11 +2,14 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link, NavLink } from "react-router-dom";
 import axios from "axios";
 import logo from "../kompi-cyber-logo-slide.svg";
+import { safeGetLocalStorage, safeSetLocalStorage } from "../utils/safeStorage";
+import { getCourseCoverUrl } from "../utils/courseImage";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const SUPABASE_URL =
-  import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co";
-const SUPABASE_BUCKET = "upload-lesson";
+  import.meta.env.VITE_SUPABASE_URL ||
+  "https://xmmcotqzfhicafwblsdr.supabase.co";
+const SUPABASE_BUCKET = "upload";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -36,12 +39,12 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("overview");
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem("theme");
+    const saved = safeGetLocalStorage("theme");
     return saved ? saved === "dark" : true;
   });
 
   useEffect(() => {
-    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    safeSetLocalStorage("theme", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 
   useEffect(() => {
@@ -205,9 +208,7 @@ export default function Profile() {
   // Build a course id -> course object lookup for cover images
   const courseById = Object.fromEntries(courses.map((c) => [c.id, c]));
 
-  const ASSET_BASE = (
-    import.meta.env.VITE_API_URL || "http://localhost:3000"
-  ).replace(/\/$/, "");
+  const SUPABASE_BUCKET = "upload";
 
   const COVER_FALLBACKS = [
     {
@@ -238,24 +239,7 @@ export default function Profile() {
 
   const getCourseCoverSrc = (courseId, courseTitle) => {
     const course = courseById[courseId];
-    const coverUrl = course?.cover_image_url;
-    if (coverUrl) {
-      return /^https?:\/\//i.test(coverUrl)
-        ? coverUrl
-        : `${API_BASE}${coverUrl}`;
-    }
-
-    // Build Supabase URL using course slug
-    const courseSlug = course?.slug;
-    if (courseSlug) {
-      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${courseSlug}/cover.svg`;
-    }
-
-    const title = courseTitle || course?.title || "";
-    const fallback = COVER_FALLBACKS.find((f) => f.pattern.test(title));
-    return fallback
-      ? `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/lesson/${fallback.slug}/cover.svg`
-      : null;
+    return getCourseCoverUrl(course, SUPABASE_URL, SUPABASE_BUCKET);
   };
 
   const navItems = [

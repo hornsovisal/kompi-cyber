@@ -84,10 +84,34 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
+// Caching middleware for static assets and API responses
+app.use((req, res, next) => {
+  // Cache static assets for 1 year (they have content hashes)
+  if (req.url.match(/\.(js|css|svg|png|jpg|jpeg|gif|woff|woff2)$/i)) {
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+  }
+  // Cache API responses briefly (5 minutes) for expensive queries
+  else if (req.method === "GET" && req.url.startsWith("/api/")) {
+    res.setHeader("Cache-Control", "private, max-age=300");
+  }
+  next();
+});
+
 // Serve uploaded course assets like /upload/lesson/<slug>/cover.*
-// Note: Primary storage is now Supabase (upload-lesson bucket for lessons, certificates bucket for certs)
+// Note: Primary storage is now Supabase (upload bucket for lessons/courses, certificates bucket for certs)
 // This local path serves as fallback for local development
-app.use("/upload", express.static(path.resolve(__dirname, "../upload")));
+app.use(
+  "/upload",
+  (req, res, next) => {
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    res.setHeader("Cache-Control", "public, max-age=86400"); // Cache for 1 day
+    next();
+  },
+  express.static(path.resolve(__dirname, "../upload"), {
+    maxAge: "1d",
+    etag: true,
+  }),
+);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
