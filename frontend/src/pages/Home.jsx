@@ -771,6 +771,14 @@ export default function Home() {
                 portfolio: "https://portfolio.com",
               },
               {
+                name: "KUE Chanchesika",
+                role: "Backend Developer",
+                image: "/team/kue-chanchesika.png",
+                borderColor: "border-slate-600",
+                github: "https://github.com/ChessiKaizen",
+                portfolio: "https://portfolio.com",
+              },
+              {
                 name: "KHY Gio",
                 role: "Frontend Developer",
                 image: "/team/khy-gio.png",
@@ -793,14 +801,6 @@ export default function Home() {
                 borderColor: "border-blue-500",
                 highlight: true,
                 github: "https://github.com/Vaathanaa",
-                portfolio: "https://portfolio.com",
-              },
-              {
-                name: "KUE Chanchesika",
-                role: "Backend Developer",
-                image: "/team/kue-chanchesika.png",
-                borderColor: "border-slate-600",
-                github: "https://github.com/ChessiKaizen",
                 portfolio: "https://portfolio.com",
               },
             ].map((member, index) => (
