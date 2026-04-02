@@ -9,8 +9,7 @@ const { isConfigured, lessonBucket } = require("../config/supabase");
 router.get("/", courseController.getCourses);
 
 // GET /api/courses/cover/:slug
-// Proxies course cover SVG images from Supabase using signed URLs
-// to enable cross-origin image loads
+// Proxies course cover SVG images from Supabase with proper CORS headers
 router.get("/cover/:slug", async (req, res) => {
   try {
     const { slug } = req.params;
@@ -20,8 +19,9 @@ router.get("/cover/:slug", async (req, res) => {
       return res.status(503).json({ message: "Image storage not configured" });
     }
 
-    const bucket = lessonBucket;
-    const imageUrl = `${supabaseUrl}/storage/v1/object/sign/${bucket}/lesson/${slug}/cover.svg`;
+    const bucket = "upload";
+    // Try public path first
+    const imageUrl = `${supabaseUrl}/storage/v1/object/public/${bucket}/lesson/${slug}/cover.svg`;
 
     const response = await fetch(imageUrl);
 
