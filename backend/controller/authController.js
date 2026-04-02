@@ -82,13 +82,10 @@ class AuthController {
 
       const responsePayload = {
         message:
-          "User registered successfully. Please check your email to verify your account.",
+          "User registered successfully. Please verify your email using the link below.",
         user: { id: userId, name, email },
+        verificationLink: verificationResult?.url || "",
       };
-
-      if (!emailService.smtpConfigured && verificationResult?.url) {
-        responsePayload.verificationLink = verificationResult.url;
-      }
 
       res.status(201).json(responsePayload);
     } catch (error) {
@@ -250,12 +247,10 @@ class AuthController {
       }
 
       const responsePayload = {
-        message: "Verification email sent. Please check your inbox.",
+        message:
+          "Verification email link generated. Click the link below to verify your email.",
+        verificationLink: verificationResult?.url || "",
       };
-
-      if (!emailService.smtpConfigured && verificationResult?.url) {
-        responsePayload.verificationLink = verificationResult.url;
-      }
 
       return res.status(200).json(responsePayload);
     } catch (error) {

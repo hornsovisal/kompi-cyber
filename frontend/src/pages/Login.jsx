@@ -58,13 +58,13 @@ export default function Login() {
       );
       setResendMessage(
         response.data?.message ||
-          "Verification email sent. Please check your inbox.",
+          "Verification link generated. Click the link below to verify your email.",
       );
       setVerificationLink(response.data?.verificationLink || "");
     } catch (error) {
       setResendMessage(
         error.response?.data?.message ||
-          "Could not resend verification email. Please try again.",
+          "Could not generate verification link. Please try again.",
       );
       setVerificationLink("");
     } finally {
@@ -184,6 +184,41 @@ export default function Login() {
             </div>
           )}
 
+          {/* Verification Link Section */}
+          {verificationLink && (
+            <div className="mb-5 rounded-2xl border border-cyan-300/30 bg-cyan-500/10 p-4">
+              <p className="mb-3 text-center text-xs font-semibold text-cyan-300">
+                📧 VERIFY EMAIL LINK:
+              </p>
+              <button
+                onClick={() => window.open(verificationLink, "_blank")}
+                className="w-full rounded-lg bg-cyan-500 px-4 py-2 text-center font-semibold text-white transition hover:bg-cyan-400 mb-2"
+              >
+                Click to Verify Now
+              </button>
+              <input
+                type="text"
+                value={verificationLink}
+                readOnly
+                className="w-full rounded-lg border border-slate-600 bg-slate-800/50 px-3 py-2 text-xs text-slate-300 mb-2"
+              />
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(verificationLink);
+                  setResendMessage("Link copied to clipboard!");
+                }}
+                className="w-full rounded-lg bg-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-600"
+              >
+                Copy Link
+              </button>
+              {resendMessage && (
+                <p className="mt-2 text-center text-xs text-emerald-300">
+                  {resendMessage}
+                </p>
+              )}
+            </div>
+          )}
+
           {needsVerification && (
             <div className="mb-5 rounded-2xl border border-cyan-300/20 bg-cyan-500/5 p-4">
               <p className="text-sm text-slate-300">
@@ -195,19 +230,26 @@ export default function Login() {
                 disabled={resendLoading}
                 className="mt-3 w-full rounded-xl border border-cyan-300/40 px-4 py-2 text-sm font-semibold text-cyan-200 transition hover:bg-cyan-400/10 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {resendLoading ? "Sending..." : "Resend verification email"}
+                {resendLoading
+                  ? "Generating..."
+                  : "Get Verification Link (Dev)"}
               </button>
               {resendMessage && (
                 <p className="mt-3 text-xs text-slate-300">{resendMessage}</p>
               )}
-              {verificationLink && (
-                <a
-                  href={verificationLink}
-                  className="mt-3 block rounded-xl bg-cyan-500/15 px-4 py-2 text-center text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/25"
-                >
-                  Verify now (dev link)
-                </a>
-              )}
+            </div>
+          )}
+
+          {/* Dev verification link button */}
+          {!needsVerification && !verificationLink && (
+            <div className="mb-5 text-center">
+              <button
+                type="button"
+                onClick={() => setNeedsVerification(true)}
+                className="text-xs text-slate-400 transition hover:text-slate-300 underline"
+              >
+                Need to verify email? (Dev)
+              </button>
             </div>
           )}
 

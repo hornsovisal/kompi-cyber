@@ -98,7 +98,9 @@ export default function Register() {
 
       setAlert({
         type: "success",
-        message: response.data.message || "Registration successful!",
+        message:
+          response.data.message ||
+          "Registration successful! Verify your email using the link.",
       });
       setVerificationLink(response.data?.verificationLink || "");
       setRegisteredEmail(submittedEmail);
@@ -136,7 +138,7 @@ export default function Register() {
       setVerificationLink(response.data?.verificationLink || "");
       setResendMessage(
         response.data?.message ||
-          "Verification email sent. Please check your inbox.",
+          "New verification link generated. Click the link above to verify.",
       );
     } catch (error) {
       setResendMessage(
@@ -210,15 +212,49 @@ export default function Register() {
           {registeredEmail && alert?.type === "success" && (
             <div className="rounded-2xl border border-emerald-300/30 bg-emerald-500/5 p-6">
               <p className="mb-4 text-center text-sm text-slate-300">
-                Registration successful! Please check your email to verify your
-                account.
+                ✓ Registration successful! Now verify your email to complete
+                signup.
               </p>
+
+              {/* Verification link section */}
+              {verificationLink && (
+                <div className="mb-4 rounded-2xl border border-cyan-300/30 bg-cyan-500/10 p-4">
+                  <p className="mb-3 text-center text-xs font-semibold text-cyan-300">
+                    📧 CLICK THE LINK BELOW TO VERIFY YOUR EMAIL:
+                  </p>
+                  <a
+                    href={verificationLink}
+                    className="block w-full rounded-lg bg-cyan-500 px-4 py-3 text-center font-semibold text-white transition hover:bg-cyan-400 mb-3"
+                  >
+                    Verify Email Now
+                  </a>
+                  <p className="mb-2 text-xs text-slate-400">
+                    Or copy this link:
+                  </p>
+                  <input
+                    type="text"
+                    value={verificationLink}
+                    readOnly
+                    className="w-full rounded-lg border border-slate-600 bg-slate-800/50 px-3 py-2 text-xs text-slate-300 mb-2"
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(verificationLink);
+                      setResendMessage("Link copied to clipboard!");
+                    }}
+                    className="w-full rounded-lg bg-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-600"
+                  >
+                    Copy Link
+                  </button>
+                </div>
+              )}
 
               {/* Verification email status message */}
               {resendMessage && (
                 <div
                   className={`mb-4 rounded-2xl border px-4 py-3 text-sm font-medium text-center ${
-                    resendMessage.toLowerCase().includes("sent") ||
+                    resendMessage.toLowerCase().includes("copied") ||
+                    resendMessage.toLowerCase().includes("generated") ||
                     resendMessage.toLowerCase().includes("successful")
                       ? "border-emerald-300/30 bg-emerald-500/10 text-emerald-200"
                       : "border-yellow-300/30 bg-yellow-500/10 text-yellow-200"
@@ -228,31 +264,16 @@ export default function Register() {
                 </div>
               )}
 
-              {/* Verification link for development */}
-              {verificationLink && (
-                <div className="mb-4 rounded-2xl border border-blue-300/30 bg-blue-500/10 p-3 text-center">
-                  <p className="mb-2 text-xs text-slate-400">
-                    Development Link:
-                  </p>
-                  <a
-                    href={verificationLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="break-all text-xs text-cyan-300 hover:text-cyan-200 underline"
-                  >
-                    {verificationLink}
-                  </a>
-                </div>
-              )}
-
               <div className="space-y-3">
-                {/* Send Verification Email Now button - sends verification email to the registered email address */}
+                {/* Send Verification Email Now button*/}
                 <button
                   onClick={handleResendVerification}
                   disabled={resendLoading}
                   className="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 px-4 py-3 text-sm font-semibold text-white transition hover:from-emerald-400 hover:to-cyan-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/30 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {resendLoading ? "Sending..." : "Send Verification Email Now"}
+                  {resendLoading
+                    ? "Generating..."
+                    : "Generate New Verification Link"}
                 </button>
 
                 <button

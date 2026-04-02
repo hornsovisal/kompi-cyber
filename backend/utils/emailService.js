@@ -1,155 +1,49 @@
-const nodemailer = require("nodemailer");
+// Email service using direct verification links
+// Note: Railway blocks SMTP, so we use direct link verification instead
+// Users can click the verification link or copy it to their browser
 
-const smtpConfigured = Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
+const emailServiceActive = false; // SMTP is blocked on Railway, use direct links instead
 
-const transporter = smtpConfigured
-  ? nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.mailtrap.io",
-      port: Number(process.env.SMTP_PORT) || 2525,
-      secure: process.env.SMTP_PORT == 465,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-      connectionTimeout: 5000,
-      sendingTimeout: 10000,
-      logger: process.env.NODE_ENV === "development",
-      debug: process.env.NODE_ENV === "development",
-    })
-  : null;
+const generateVerificationLink = (token) => {
+  return `${process.env.FRONTEND_URL || "http://localhost:3000"}/verify-email?token=${token}`;
+};
 
 const sendVerificationEmail = async (email, token) => {
-  const verificationUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/verify-email?token=${token}`;
+  const verificationLink = generateVerificationLink(token);
 
-  const htmlContent = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
-        <h1 style="color: white; margin: 0; font-size: 28px;">Kompi-Cyber</h1>
-        <p style="color: #e8e8e8; margin: 10px 0 0 0; font-size: 16px;">Cybersecurity Learning Platform</p>
-      </div>
+  console.log("\n[EMAIL VERIFICATION]");
+  console.log("Email:", email);
+  console.log("Verification Link:", verificationLink);
+  console.log("User must click the link above to verify their email.\n");
 
-      <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        <h2 style="color: #333; margin-top: 0;">Welcome to Kompi-Cyber!</h2>
-        <p style="color: #666; line-height: 1.6;">Thank you for registering with Kompi-Cyber. To complete your registration and start learning cybersecurity, please verify your email address.</p>
-
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${verificationUrl}" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Verify Email Address</a>
-        </div>
-
-        <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">If the button doesn't work, you can copy and paste this link into your browser:</p>
-        <p style="word-break: break-all; background: #f5f5f5; padding: 10px; border-radius: 5px; color: #333; font-size: 14px;">${verificationUrl}</p>
-
-        <p style="color: #999; font-size: 14px; margin-top: 30px;">This verification link will expire in 24 hours.</p>
-      </div>
-
-      <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
-        <p>If you didn't create an account with Kompi-Cyber, please ignore this email.</p>
-      </div>
-    </div>
-  `;
-
-  if (!resendConfigured) {
-    if (process.env.NODE_ENV !== "production") {
-      console.log("\n[DEV] Resend not configured — verification link:");
-      console.log(verificationUrl + "\n");
-    }
-    return { delivered: false, url: verificationUrl };
-  }
-
-  try {
-    const response = await resend.emails.send({
-      from: process.env.FROM_EMAIL || "onboarding@resend.dev",
-      to: email,
-      subject: "Verify Your Email - Kompi-Cyber",
-      html: htmlContent,
-    });
-
-    if (response.error) {
-      console.error("Resend error sending verification email:", response.error);
-      throw new Error(
-        response.error.message || "Failed to send verification email",
-      );
-    }
-
-    if (process.env.NODE_ENV !== "production") {
-      console.log("Verification email sent to:", email);
-    }
-    return { delivered: true, url: verificationUrl };
-  } catch (error) {
-    console.error("Error sending verification email:", error);
-    throw new Error("Failed to send verification email");
-  }
+  // Return the link so frontend can display it
+  return {
+    delivered: false,
+    url: verificationLink,
+    message:
+      "Verification link generated. Click the link below to verify your email.",
+  };
 };
 
 const sendPasswordResetEmail = async (email, token) => {
-  const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/reset-password?token=${token}`;
+  const resetLink = `${process.env.FRONTEND_URL || "http://localhost:3000"}/reset-password?token=${token}`;
 
-  const htmlContent = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
-        <h1 style="color: white; margin: 0; font-size: 28px;">Kompi-Cyber</h1>
-        <p style="color: #e8e8e8; margin: 10px 0 0 0; font-size: 16px;">Cybersecurity Learning Platform</p>
-      </div>
+  console.log("\n[PASSWORD RESET]");
+  console.log("Email:", email);
+  console.log("Reset Link:", resetLink);
+  console.log("User must click the link above to reset their password.\n");
 
-      <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        <h2 style="color: #333; margin-top: 0;">Password Reset Request</h2>
-        <p style="color: #666; line-height: 1.6;">We received a request to reset your password for your Kompi-Cyber account. Click the button below to create a new password.</p>
-
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${resetUrl}" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Reset Password</a>
-        </div>
-
-        <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">If the button doesn't work, you can copy and paste this link into your browser:</p>
-        <p style="word-break: break-all; background: #f5f5f5; padding: 10px; border-radius: 5px; color: #333; font-size: 14px;">${resetUrl}</p>
-
-        <p style="color: #999; font-size: 14px; margin-top: 30px;">This password reset link will expire in 1 hour for security reasons.</p>
-        <p style="color: #999; font-size: 14px;">If you didn't request a password reset, please ignore this email.</p>
-      </div>
-
-      <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
-        <p>For security reasons, this link can only be used once.</p>
-      </div>
-    </div>
-  `;
-
-  if (!resendConfigured) {
-    if (process.env.NODE_ENV !== "production") {
-      console.log("\n[DEV] Resend not configured — password reset link:");
-      console.log(resetUrl + "\n");
-    }
-    return { delivered: false, url: resetUrl };
-  }
-
-  try {
-    const response = await resend.emails.send({
-      from: process.env.FROM_EMAIL || "onboarding@resend.dev",
-      to: email,
-      subject: "Reset Your Password - Kompi-Cyber",
-      html: htmlContent,
-    });
-
-    if (response.error) {
-      console.error(
-        "Resend error sending password reset email:",
-        response.error,
-      );
-      throw new Error(
-        response.error.message || "Failed to send password reset email",
-      );
-    }
-
-    if (process.env.NODE_ENV !== "production") {
-      console.log("Password reset email sent to:", email);
-    }
-    return { delivered: true, url: resetUrl };
-  } catch (error) {
-    console.error("Error sending password reset email:", error);
-    throw new Error("Failed to send password reset email");
-  }
+  // Return the link so frontend can display it
+  return {
+    delivered: false,
+    url: resetLink,
+    message:
+      "Password reset link generated. Click the link below to reset your password.",
+  };
 };
 
 module.exports = {
-  smtpConfigured,
+  emailServiceActive,
   sendVerificationEmail,
   sendPasswordResetEmail,
 };
