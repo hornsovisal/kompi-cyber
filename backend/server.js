@@ -107,7 +107,7 @@ app.use(
     res.setHeader("Cache-Control", "public, max-age=86400"); // Cache for 1 day
     next();
   },
-  express.static(path.resolve(__dirname, "../upload"), {
+  express.static(path.resolve(__dirname, "./upload"), {
     maxAge: "1d",
     etag: true,
   }),
