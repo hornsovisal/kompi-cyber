@@ -11,34 +11,39 @@ const generateVerificationLink = (token) => {
 const sendVerificationEmail = async (email, token) => {
   const verificationLink = generateVerificationLink(token);
 
-  console.log("\n[EMAIL VERIFICATION]");
+  // NOTE: Email sending is disabled because Railway blocks SMTP.
+  // Instead, we return the verification link directly to the frontend.
+  // The frontend will automatically redirect users to this link.
+
+  console.log("\n[VERIFICATION LINK GENERATED]");
   console.log("Email:", email);
   console.log("Verification Link:", verificationLink);
-  console.log("User must click the link above to verify their email.\n");
+  console.log("User will be redirected to this link to verify their email.\n");
 
-  // Return the link so frontend can display it
+  // Return the link for frontend to redirect user to it
   return {
     delivered: false,
     url: verificationLink,
-    message:
-      "Verification link generated. Click the link below to verify your email.",
+    message: "Verification link ready. Redirecting you now...",
   };
 };
 
 const sendPasswordResetEmail = async (email, token) => {
   const resetLink = `${process.env.FRONTEND_URL || "http://localhost:3000"}/reset-password?token=${token}`;
 
-  console.log("\n[PASSWORD RESET]");
+  // NOTE: Email sending is disabled because Railway blocks SMTP.
+  // Instead, we return the reset link directly to the frontend.
+
+  console.log("\n[PASSWORD RESET LINK GENERATED]");
   console.log("Email:", email);
   console.log("Reset Link:", resetLink);
   console.log("User must click the link above to reset their password.\n");
 
-  // Return the link so frontend can display it
+  // Return the link for frontend to redirect user to it
   return {
     delivered: false,
     url: resetLink,
-    message:
-      "Password reset link generated. Click the link below to reset your password.",
+    message: "Password reset link ready.",
   };
 };
 

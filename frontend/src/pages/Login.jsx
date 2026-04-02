@@ -57,10 +57,17 @@ export default function Login() {
         },
       );
       setResendMessage(
-        response.data?.message ||
-          "Verification link generated. Click the link below to verify your email.",
+        response.data?.message || "Verification link generated. Redirecting...",
       );
-      setVerificationLink(response.data?.verificationLink || "");
+      const link = response.data?.verificationLink || "";
+      setVerificationLink(link);
+
+      // Automatically redirect to verification link after 1 second
+      if (link) {
+        setTimeout(() => {
+          window.open(link, "_blank");
+        }, 1000);
+      }
     } catch (error) {
       setResendMessage(
         error.response?.data?.message ||
