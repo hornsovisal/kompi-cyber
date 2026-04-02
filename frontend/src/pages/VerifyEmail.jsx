@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
@@ -9,32 +9,50 @@ export default function VerifyEmail() {
   const [status, setStatus] = useState("verifying");
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    const token = searchParams.get("token");
+  const token = searchParams.get("token");
+
+  const verifyEmail = useCallback(async () => {
     if (!token) {
       setStatus("error");
       setMessage("Invalid verification link");
       return;
     }
 
-    const verifyEmail = async () => {
-      try {
-        const response = await axios.post(
-          `${API_BASE_URL}/api/auth/verify-email`,
-          { token },
-          { timeout: 10000 }, // 10 second timeout
-        );
-        setStatus("success");
-        setMessage("Email verified successfully! You can now log in.");
-        setTimeout(() => navigate("/login"), 3000);
-      } catch (error) {
-        setStatus("error");
-        setMessage(error.response?.data?.message || "Verification failed");
-      }
-    };
+    setStatus("verifying");
+    setMessage("");
 
+    console.log("VerifyEmail mounted — token:", token);
+    console.log("API_BASE_URL:", API_BASE_URL);
+
+    try {
+      console.log("Posting to:", `${API_BASE_URL}/api/auth/verify-email`);
+      const response = await axios.post(
+        `${API_BASE_URL}/api/auth/verify-email`,
+        { token },
+        { timeout: 10000 },
+      );
+      console.log("Verification successful:", response.data);
+      setStatus("success");
+      setMessage("Email verified successfully! You can now log in.");
+      setTimeout(() => navigate("/login"), 3000);
+    } catch (error) {
+      console.error("Verification error:", error);
+      console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+      setStatus("error");
+      const serverMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        (typeof error.response?.data === "string"
+          ? error.response.data
+          : null);
+      setMessage(serverMessage || error.message || "Verification failed");
+    }
+  }, [token, navigate]);
+
+  useEffect(() => {
     verifyEmail();
-  }, [searchParams, navigate]);
+  }, [verifyEmail]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cadtSky via-white to-slate-100 px-4 py-10">
@@ -104,12 +122,20 @@ export default function VerifyEmail() {
                   </svg>
                 </div>
                 <p className="mb-4 text-red-600 font-medium">{message}</p>
-                <button
-                  onClick={() => navigate("/login")}
-                  className="w-full rounded-2xl bg-cadtBlue px-4 py-3 text-sm font-semibold text-white transition hover:bg-cadtNavy focus:outline-none focus:ring-4 focus:ring-blue-200"
-                >
-                  Go to Login
-                </button>
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={verifyEmail}
+                    className="w-full rounded-2xl bg-cadtBlue px-4 py-3 text-sm font-semibold text-white transition hover:bg-cadtNavy focus:outline-none focus:ring-4 focus:ring-blue-200"
+                  >
+                    Retry
+                  </button>
+                  <button
+                    onClick={() => navigate("/login")}
+                    className="w-full rounded-2xl border border-cadtLine bg-white px-4 py-3 text-sm font-semibold text-cadtNavy transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-blue-200"
+                  >
+                    Go to Login
+                  </button>
+                </div>
               </div>
             )}
           </div>
