@@ -208,17 +208,60 @@ export default function Register() {
           )}
 
           {registeredEmail && alert?.type === "success" && (
-            <div className="rounded-2xl border border-emerald-300/30 bg-emerald-500/5 p-6 text-center">
-              <p className="mb-4 text-sm text-slate-300">
-                Registration successful! Please log in with your credentials to
-                continue.
+            <div className="rounded-2xl border border-emerald-300/30 bg-emerald-500/5 p-6">
+              <p className="mb-4 text-center text-sm text-slate-300">
+                Registration successful! Please check your email to verify your
+                account.
               </p>
-              <button
-                onClick={() => navigate("/login")}
-                className="w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-3 text-sm font-semibold text-white transition hover:from-cyan-400 hover:to-blue-400 focus:outline-none focus:ring-4 focus:ring-cyan-400/30"
-              >
-                Go to Login
-              </button>
+
+              {/* Verification email status message */}
+              {resendMessage && (
+                <div
+                  className={`mb-4 rounded-2xl border px-4 py-3 text-sm font-medium text-center ${
+                    resendMessage.toLowerCase().includes("sent") ||
+                    resendMessage.toLowerCase().includes("successful")
+                      ? "border-emerald-300/30 bg-emerald-500/10 text-emerald-200"
+                      : "border-yellow-300/30 bg-yellow-500/10 text-yellow-200"
+                  }`}
+                >
+                  {resendMessage}
+                </div>
+              )}
+
+              {/* Verification link for development */}
+              {verificationLink && (
+                <div className="mb-4 rounded-2xl border border-blue-300/30 bg-blue-500/10 p-3 text-center">
+                  <p className="mb-2 text-xs text-slate-400">
+                    Development Link:
+                  </p>
+                  <a
+                    href={verificationLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="break-all text-xs text-cyan-300 hover:text-cyan-200 underline"
+                  >
+                    {verificationLink}
+                  </a>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                {/* Send Verification Email Now button - sends verification email to the registered email address */}
+                <button
+                  onClick={handleResendVerification}
+                  disabled={resendLoading}
+                  className="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 px-4 py-3 text-sm font-semibold text-white transition hover:from-emerald-400 hover:to-cyan-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/30 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {resendLoading ? "Sending..." : "Send Verification Email Now"}
+                </button>
+
+                <button
+                  onClick={() => navigate("/login")}
+                  className="w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-3 text-sm font-semibold text-white transition hover:from-cyan-400 hover:to-blue-400 focus:outline-none focus:ring-4 focus:ring-cyan-400/30"
+                >
+                  Go to Login
+                </button>
+              </div>
             </div>
           )}
 
