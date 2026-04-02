@@ -2,6 +2,8 @@
  * Utility functions for course cover image handling
  */
 
+import { API_BASE_URL } from "../config/api";
+
 /**
  * Convert course title to slug format for Supabase folder lookup
  * Examples:
@@ -22,31 +24,30 @@ export function titleToSlug(title) {
 }
 
 /**
- * Get course cover image URL from Supabase
+ * Get course cover image URL via the backend proxy endpoint.
+ *
+ * Images are served through /api/courses/cover/:slug on the Railway backend
+ * rather than directly from Supabase. This ensures the backend can attach the
+ * `Cross-Origin-Resource-Policy: cross-origin` header that browsers require
+ * for cross-origin image loads, preventing OpaqueResponseBlocking errors.
+ *
  * Priority:
  * 1. Use course.title converted to slug (PRIMARY - matches Supabase folder names)
  * 2. Use course.slug if available
- * 3. Use pattern-based fallback mapping
  */
-export function getCourseCoverUrl(course, supabaseUrl, bucket) {
+export function getCourseCoverUrl(course) {
   if (!course) return null;
 
-  // PRIORITY 1: Use database cover_image_url if it's a FULL Supabase URL
-  const coverImageUrl = course.cover_image_url;
-  if (coverImageUrl && /^https:\/\/.*supabase\.co/i.test(coverImageUrl)) {
-    return coverImageUrl;
-  }
-
-  // PRIORITY 2: Build Supabase URL using course TITLE converted to slug
+  // PRIORITY 1: Build proxy URL using course TITLE converted to slug
   // This matches the Supabase folder naming convention
   const titleSlug = titleToSlug(course.title);
   if (titleSlug) {
-    return `${supabaseUrl}/storage/v1/object/public/${bucket}/lesson/${titleSlug}/cover.svg`;
+    return `${API_BASE_URL}/api/courses/cover/${titleSlug}`;
   }
 
-  // PRIORITY 3: Fallback to course.slug if available
+  // PRIORITY 2: Fallback to course.slug if available
   if (course.slug) {
-    return `${supabaseUrl}/storage/v1/object/public/${bucket}/lesson/${course.slug}/cover.svg`;
+    return `${API_BASE_URL}/api/courses/cover/${course.slug}`;
   }
 
   return null;
