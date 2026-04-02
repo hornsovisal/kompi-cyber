@@ -38,18 +38,18 @@ export function getCourseCoverUrl(course) {
   const SUPABASE_URL =
     import.meta.env.VITE_SUPABASE_URL ||
     "https://xmmcotqzfhicafwblsdr.supabase.co";
-  const LESSON_BUCKET = "upload-lesson";
+  const BUCKET = "upload";
 
   // PRIORITY 1: Build Supabase URL using course TITLE converted to slug
   // This matches the Supabase folder naming convention
   const titleSlug = titleToSlug(course.title);
   if (titleSlug) {
-    return `${SUPABASE_URL}/storage/v1/object/public/${LESSON_BUCKET}/lesson/${titleSlug}/cover.svg`;
+    return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/lesson/${titleSlug}/cover.svg`;
   }
 
   // PRIORITY 2: Fallback to course.slug if available
   if (course.slug) {
-    return `${SUPABASE_URL}/storage/v1/object/public/${LESSON_BUCKET}/lesson/${course.slug}/cover.svg`;
+    return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/lesson/${course.slug}/cover.svg`;
   }
 
   return null;
