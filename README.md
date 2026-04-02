@@ -2,7 +2,7 @@
 
 > A modern cybersecurity learning platform for cyber security student
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
