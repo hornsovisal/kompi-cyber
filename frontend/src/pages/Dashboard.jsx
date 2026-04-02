@@ -224,7 +224,8 @@ export default function Dashboard() {
   }, [navigate]);
 
   const handleEnroll = async (courseId) => {
-    const token = localStorage.getItem("token");
+    const token =
+      sessionStorage.getItem("token") || localStorage.getItem("token");
     setEnrollingId(courseId);
     try {
       await axios.post(

@@ -8,7 +8,8 @@ export const useInstructorAPI = () => {
   const [error, setError] = useState(null);
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem("token");
+    const token =
+      sessionStorage.getItem("token") || localStorage.getItem("token");
     return {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
@@ -55,9 +56,12 @@ export const useInstructorAPI = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`${API_BASE}/api/instructor/quizzes/${quizId}`, {
-        headers: getAuthHeaders(),
-      });
+      const response = await axios.get(
+        `${API_BASE}/api/instructor/quizzes/${quizId}`,
+        {
+          headers: getAuthHeaders(),
+        },
+      );
       return response.data.data || null;
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Failed to fetch quiz";
@@ -110,9 +114,12 @@ export const useInstructorAPI = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.delete(`${API_BASE}/api/instructor/quizzes/${quizId}`, {
-        headers: getAuthHeaders(),
-      });
+      const response = await axios.delete(
+        `${API_BASE}/api/instructor/quizzes/${quizId}`,
+        {
+          headers: getAuthHeaders(),
+        },
+      );
       return response.data;
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Failed to delete quiz";
@@ -127,10 +134,13 @@ export const useInstructorAPI = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`${API_BASE}/api/instructor/performance`, {
-        params: course ? { course } : undefined,
-        headers: getAuthHeaders(),
-      });
+      const response = await axios.get(
+        `${API_BASE}/api/instructor/performance`,
+        {
+          params: course ? { course } : undefined,
+          headers: getAuthHeaders(),
+        },
+      );
       return response.data.data || {};
     } catch (err) {
       const errorMsg =
