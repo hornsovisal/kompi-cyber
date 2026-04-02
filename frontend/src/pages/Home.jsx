@@ -15,6 +15,8 @@ import {
   Star,
   Menu,
   X,
+  Github,
+  ExternalLink,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { isAuthenticated } from "../utils/auth";
@@ -726,23 +728,33 @@ export default function Home() {
         </motion.div>
       </section>
 
-      <section id="founders" className="px-4 py-12 sm:px-6 md:px-20 md:py-16">
+      <section
+        id="founders"
+        className="px-4 py-16 sm:px-6 md:px-20 md:py-24 relative"
+      >
+        {/* Background elements */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute left-0 top-0 h-64 w-64 rounded-full bg-blue-600/5 blur-3xl" />
+          <div className="absolute right-0 bottom-0 h-64 w-64 rounded-full bg-[#FFA500]/5 blur-3xl" />
+        </div>
+
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mb-12 text-center md:mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-16 text-center md:mb-20"
         >
-          <h2 className="mb-3 text-3xl font-black sm:text-4xl md:mb-4 md:text-5xl">
+          <h2 className="mb-4 text-4xl font-black sm:text-5xl md:text-6xl">
             <span className="text-[#FFA500]">MEET OUR TEAM</span>
           </h2>
-          <p className="text-center text-2xl font-bold mt-4 text-white">
+          <p className="text-xl font-bold md:text-2xl text-white/80">
             Thank You
           </p>
+          <div className="mt-2 h-1 w-16 bg-gradient-to-r from-[#FFA500] to-blue-500 mx-auto rounded-full" />
         </motion.div>
 
         {/* Horizontal scrollable carousel */}
-        <div className="overflow-x-auto pb-4 md:overflow-x-visible">
+        <div className="overflow-x-auto pb-6 md:overflow-x-visible">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -753,71 +765,137 @@ export default function Home() {
               {
                 name: "HORN Sovisai",
                 role: "Backend Developer",
-                image: "/upload/team/horn-sovisai.png",
+                image: "/team/horn-sovisai.png",
                 borderColor: "border-slate-600",
+                github: "https://github.com",
+                portfolio: "https://portfolio.com",
               },
               {
                 name: "KHY Gio",
                 role: "Frontend Developer",
-                image: "/upload/team/khy-gio.png",
+                image: "/team/khy-gio.png",
                 borderColor: "border-slate-600",
+                github: "https://github.com",
+                portfolio: "https://portfolio.com",
               },
               {
                 name: "KUYSENG Marakot",
                 role: "Frontend Developer",
-                image: "/upload/team/kuyseng-marakot.png",
+                image: "/team/kuyseng-marakot.png",
                 borderColor: "border-slate-600",
+                github: "https://github.com",
+                portfolio: "https://portfolio.com",
               },
               {
                 name: "CHHIT Sovathana",
                 role: "DB & Frontend Developer",
-                image: "/upload/team/chhit-sovathana.png",
+                image: "/team/chhit-sovathana.png",
                 borderColor: "border-blue-500",
                 highlight: true,
+                github: "https://github.com",
+                portfolio: "https://portfolio.com",
               },
               {
                 name: "KUE Chanchesika",
                 role: "Backend Developer",
-                image: "/upload/team/kue-chanchesika.png",
+                image: "/team/kue-chanchesika.png",
                 borderColor: "border-slate-600",
+                github: "https://github.com",
+                portfolio: "https://portfolio.com",
               },
             ].map((member, index) => (
               <motion.div
                 key={member.name}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * index }}
-                className={`group flex-shrink-0 w-40 sm:w-48 md:w-56 rounded-2xl border-2 ${member.borderColor} overflow-hidden backdrop-blur transition hover:shadow-2xl ${
+                className={`group flex-shrink-0 w-44 sm:w-52 md:w-64 rounded-3xl overflow-hidden backdrop-blur transition duration-300 hover:shadow-2xl ${
                   member.highlight
-                    ? "ring-2 ring-blue-400 ring-offset-2 ring-offset-[#192841]"
-                    : ""
+                    ? "ring-2 ring-blue-400 ring-offset-2 ring-offset-[#192841] border-2 border-blue-500"
+                    : "border-2 " + member.borderColor
                 }`}
               >
-                {/* Image Container */}
-                <div className="relative h-48 sm:h-56 md:h-64 overflow-hidden bg-gradient-to-b from-slate-700 to-slate-900">
+                {/* Image Container with overlay */}
+                <div className="relative h-52 sm:h-60 md:h-72 overflow-hidden bg-gradient-to-b from-slate-700 to-slate-900">
                   <img
                     src={member.image}
                     alt={member.name}
-                    className="w-full h-full object-cover transition group-hover:scale-105"
+                    className="w-full h-full object-cover transition duration-500 group-hover:scale-110"
                     onError={(e) => {
                       e.target.src =
-                        "https://via.placeholder.com/300x400/1a3a52/ffffff?text=" +
+                        "https://via.placeholder.com/400x500/1a3a52/ffffff?text=" +
                         member.name;
                     }}
                   />
+
+                  {/* Overlay on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end justify-center pb-4">
+                    <div className="flex gap-3">
+                      <motion.a
+                        href={member.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        whileHover={{ scale: 1.2, rotate: 10 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="flex items-center justify-center h-10 w-10 rounded-full bg-[#FFA500] text-white hover:bg-orange-600 transition"
+                        title="GitHub"
+                      >
+                        <Github size={20} />
+                      </motion.a>
+                      <motion.a
+                        href={member.portfolio}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        whileHover={{ scale: 1.2, rotate: -10 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition"
+                        title="Portfolio"
+                      >
+                        <ExternalLink size={20} />
+                      </motion.a>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Info Container */}
-                <div className="bg-gradient-to-b from-slate-800 to-slate-900 p-3 sm:p-4 text-center">
+                <div className="bg-gradient-to-br from-slate-800 via-slate-900 to-black p-4 sm:p-5 text-center border-t border-slate-700">
                   {/* Role Badge */}
-                  <div className="mb-2 inline-block rounded-full bg-red-600/80 px-3 py-1 text-xs font-bold text-white sm:text-sm">
+                  <div
+                    className={`mb-3 inline-block rounded-full px-3 py-1 text-xs font-bold text-white sm:text-sm ${
+                      member.highlight
+                        ? "bg-gradient-to-r from-blue-600 to-blue-500"
+                        : "bg-gradient-to-r from-red-600 to-red-500"
+                    }`}
+                  >
                     {member.role}
                   </div>
 
                   {/* Name */}
-                  <p className="text-sm font-bold text-white sm:text-base">
+                  <p className="text-sm font-bold text-white sm:text-base md:text-lg group-hover:text-[#FFA500] transition">
                     {member.name}
                   </p>
+
+                  {/* Social Links (always visible on mobile, hover on desktop) */}
+                  <div className="mt-3 flex justify-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-300">
+                    <motion.a
+                      href={member.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ scale: 1.15 }}
+                      className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-slate-700 text-[#FFA500] hover:bg-[#FFA500] hover:text-white transition"
+                    >
+                      <Github size={16} />
+                    </motion.a>
+                    <motion.a
+                      href={member.portfolio}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ scale: 1.15 }}
+                      className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-slate-700 text-blue-400 hover:bg-blue-500 hover:text-white transition"
+                    >
+                      <ExternalLink size={16} />
+                    </motion.a>
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -944,7 +1022,7 @@ export default function Home() {
           >
             <h3 className="mb-3 font-bold text-[#FFA500] sm:mb-4">Contact</h3>
             <p className="mb-2 text-sm text-gray-400 sm:text-base">
-              Email: info@cadt.edu.kh
+              Email: kompicyber11@gmail.com
             </p>
             <p className="mb-3 text-sm text-gray-400 sm:mb-4 sm:text-base">
               Phone: +855 (0) XXX XXX XXX
