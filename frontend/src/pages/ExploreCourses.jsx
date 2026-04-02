@@ -6,9 +6,6 @@ import { safeGetLocalStorage, safeSetLocalStorage } from "../utils/safeStorage";
 import { getCourseCoverUrl } from "../utils/courseImage";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
-const SUPABASE_URL =
-  import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co";
-const SUPABASE_BUCKET = "upload";
 const ASSET_BASE = (
   import.meta.env.VITE_API_URL || "http://localhost:3000"
 ).replace(/\/$/, "");
@@ -66,7 +63,7 @@ export default function ExploreCourses() {
   const [error, setError] = useState("");
 
   const getCourseCoverSrc = (course) => {
-    return getCourseCoverUrl(course, SUPABASE_URL, SUPABASE_BUCKET);
+    return getCourseCoverUrl(course);
   };
 
   // Save theme preference to localStorage whenever it changes
