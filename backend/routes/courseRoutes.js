@@ -22,6 +22,13 @@ router.get("/:identifier/lessons", (req, res, next) => {
   return res.status(400).json({ message: "Invalid course identifier" });
 });
 
+// POST /api/courses/:id/clone (instructor only)
+router.post(
+  "/:id/clone",
+  authMiddleware.requireInstructor,
+  courseController.cloneCourse,
+);
+
 // GET /api/courses/:identifier - handles both numeric IDs and slugs
 router.get("/:identifier", (req, res, next) => {
   const identifier = req.params.identifier;

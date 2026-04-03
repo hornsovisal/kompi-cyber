@@ -27,7 +27,8 @@
     "nodemailer": "^8.0.3",
     "pdfkit": "^0.18.0",
     "resend": "^6.10.0",
-    "sanitize-html": "^2.11.0"
+    "sanitize-html": "^2.11.0",
+    "validator": "^13.11.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

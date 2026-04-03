@@ -10,6 +10,7 @@ require("dotenv").config({
 });
 
 const db = require("./config/db");
+const ValidationMiddleware = require("./middleware/validationMiddleware");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const courseRoutes = require("./routes/courseroutes");
@@ -22,6 +23,7 @@ const submissionRoutes = require("./routes/submissionRoutes");
 const instructorRoutes = require("./routes/instructorRoutes");
 const certificateRoutes = require("./routes/certificateRoutes");
 const invitationRoutes = require("./routes/invitationRoutes");
+const progressRoutes = require("./routes/progressRoutes");
 
 const app = express();
 
@@ -88,6 +90,12 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
+// Input validation and sanitization middleware
+app.use(ValidationMiddleware.sanitizeRequestData);
+
+// Apply rate limiting to all API routes
+app.use("/api/", ValidationMiddleware.apiLimiter);
+
 // Caching middleware for static assets and API responses
 app.use((req, res, next) => {
   // Cache static assets for 1 year (they have content hashes)
@@ -129,6 +137,7 @@ app.use("/api/submissions", submissionRoutes);
 app.use("/api/instructor", instructorRoutes);
 app.use("/api/certificates", certificateRoutes);
 app.use("/api/invitations", invitationRoutes);
+app.use("/api/progress", progressRoutes);
 
 // Global error handler - prevent sensitive info exposure
 app.use((err, req, res, next) => {

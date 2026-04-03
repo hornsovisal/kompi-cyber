@@ -1,11 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, Layers3, Search, Users } from "lucide-react";
+import { BookOpen, Layers3, Search, Users, Mail } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useInstructorAPI } from "../../hooks/useInstructorAPI";
+import ManageStudentInvitations from "./ManageStudentInvitations";
 
 export default function ManageCourses() {
-  const { fetchInstructorCourses, loading, error, clearError } = useInstructorAPI();
+  const navigate = useNavigate();
+  const { fetchInstructorCourses, loading, error, clearError } =
+    useInstructorAPI();
   const [courses, setCourses] = useState([]);
   const [query, setQuery] = useState("");
+  const [invitationModal, setInvitationModal] = useState({
+    isOpen: false,
+    courseId: null,
+    courseTitle: "",
+  });
 
   useEffect(() => {
     const loadCourses = async () => {
@@ -25,18 +34,26 @@ export default function ManageCourses() {
     if (!keyword) return courses;
 
     return courses.filter((course) =>
-      [course.title, course.description, course.category]
-        .some((value) => String(value || "").toLowerCase().includes(keyword)),
+      [course.title, course.description, course.category].some((value) =>
+        String(value || "")
+          .toLowerCase()
+          .includes(keyword),
+      ),
     );
   }, [courses, query]);
 
   const totalLessons = useMemo(
-    () => courses.reduce((sum, course) => sum + Number(course.lessonCount || 0), 0),
+    () =>
+      courses.reduce((sum, course) => sum + Number(course.lessonCount || 0), 0),
     [courses],
   );
 
   const totalStudents = useMemo(
-    () => courses.reduce((sum, course) => sum + Number(course.enrollmentCount || 0), 0),
+    () =>
+      courses.reduce(
+        (sum, course) => sum + Number(course.enrollmentCount || 0),
+        0,
+      ),
     [courses],
   );
 
@@ -44,21 +61,36 @@ export default function ManageCourses() {
     <div className="min-h-screen bg-slate-50">
       <div className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-slate-900">Course Management</h1>
-          <p className="mt-1 text-sm text-slate-500">View the courses assigned to your instructor account.</p>
+          <h1 className="text-3xl font-bold text-slate-900">
+            Course Management
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
+            View the courses assigned to your instructor account.
+          </p>
         </div>
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <StatCard title="Assigned Courses" value={courses.length} icon={BookOpen} />
+          <StatCard
+            title="Assigned Courses"
+            value={courses.length}
+            icon={BookOpen}
+          />
           <StatCard title="Total Lessons" value={totalLessons} icon={Layers3} />
-          <StatCard title="Students Enrolled" value={totalStudents} icon={Users} />
+          <StatCard
+            title="Students Enrolled"
+            value={totalStudents}
+            icon={Users}
+          />
         </div>
 
         <div className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              size={18}
+            />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -72,7 +104,12 @@ export default function ManageCourses() {
           <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             <div className="flex items-center justify-between gap-4">
               <span>{error}</span>
-              <button onClick={clearError} className="font-semibold text-red-800">Dismiss</button>
+              <button
+                onClick={clearError}
+                className="font-semibold text-red-800"
+              >
+                Dismiss
+              </button>
             </div>
           </div>
         )}
@@ -84,11 +121,19 @@ export default function ManageCourses() {
             </div>
           ) : (
             filteredCourses.map((course) => (
-              <div key={course.id} className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div
+                key={course.id}
+                className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition cursor-pointer"
+                onClick={() => navigate(`/instructor/courses/${course.id}`)}
+              >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h2 className="text-xl font-semibold text-slate-900">{course.title}</h2>
-                    <p className="mt-2 text-sm text-slate-500">{course.description || "No description available."}</p>
+                    <h2 className="text-xl font-semibold text-slate-900">
+                      {course.title}
+                    </h2>
+                    <p className="mt-2 text-sm text-slate-500">
+                      {course.description || "No description available."}
+                    </p>
                   </div>
                   <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
                     {course.category || "Course"}
@@ -97,14 +142,55 @@ export default function ManageCourses() {
 
                 <div className="mt-5 grid grid-cols-2 gap-4 text-sm">
                   <InfoItem label="Lessons" value={course.lessonCount || 0} />
-                  <InfoItem label="Students" value={course.enrollmentCount || 0} />
+                  <InfoItem
+                    label="Students"
+                    value={course.enrollmentCount || 0}
+                  />
                   <InfoItem label="Level" value={course.level || "-"} />
-                  <InfoItem label="Status" value={course.status || "Published"} />
+                  <InfoItem
+                    label="Status"
+                    value={course.status || "Published"}
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-5 flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setInvitationModal({
+                        isOpen: true,
+                        courseId: course.id,
+                        courseTitle: course.title,
+                      });
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-50 text-blue-600 font-medium hover:bg-blue-100 transition"
+                  >
+                    <Mail size={16} />
+                    Invite Students
+                  </button>
                 </div>
               </div>
             ))
           )}
         </div>
+
+        {/* Invitation Modal */}
+        <ManageStudentInvitations
+          isOpen={invitationModal.isOpen}
+          courseId={invitationModal.courseId}
+          courseTitle={invitationModal.courseTitle}
+          onClose={() =>
+            setInvitationModal({
+              isOpen: false,
+              courseId: null,
+              courseTitle: "",
+            })
+          }
+          onSuccess={() => {
+            // Optionally reload courses here
+          }}
+        />
       </div>
     </div>
   );
@@ -129,7 +215,9 @@ function StatCard({ title, value, icon: Icon }) {
 function InfoItem({ label, value }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        {label}
+      </p>
       <p className="mt-2 font-semibold text-slate-900">{value}</p>
     </div>
   );

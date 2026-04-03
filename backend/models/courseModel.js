@@ -329,6 +329,93 @@ class CourseModel {
 
     return { seeded: true, courseId };
   }
+
+  // Clone a course with all its modules, lessons, quizzes, and exercises
+  async cloneCourse(sourceCourseId, newCreatorId, titleSuffix = "(Cloned)") {
+    try {
+      // Get source course
+      const source = await this.findById(sourceCourseId);
+      if (!source) {
+        throw new Error("Source course not found");
+      }
+
+      // Create new course
+      const newTitle = `${source.title} ${titleSuffix}`;
+      const newCourseId = await this.createCourse({
+        domain_id: source.domain_id,
+        title: newTitle,
+        description: source.description,
+        cover_image_url: source.cover_image_url,
+        level: source.level,
+        duration_hrs: source.duration_hrs,
+        is_published: 0, // New cloned courses start unpublished
+        course_type: source.course_type,
+        created_by: newCreatorId,
+      });
+
+      // Get all modules from source course
+      const [sourceModules] = await this.db.execute(
+        `SELECT id, title, module_order FROM modules WHERE course_id = ? ORDER BY module_order`,
+        [sourceCourseId],
+      );
+
+      // Map old module IDs to new module IDs
+      const moduleIdMap = {};
+
+      for (const sourceModule of sourceModules) {
+        // Create new module
+        const [newModule] = await this.db.execute(
+          `INSERT INTO modules (course_id, title, module_order) VALUES (?, ?, ?)`,
+          [newCourseId, sourceModule.title, sourceModule.module_order],
+        );
+        moduleIdMap[sourceModule.id] = newModule.insertId;
+
+        // Get all lessons from source module
+        const [sourceLessons] = await this.db.execute(
+          `SELECT id, title, content_md, lesson_order FROM lessons WHERE module_id = ? ORDER BY lesson_order`,
+          [sourceModule.id],
+        );
+
+        // Clone each lesson
+        for (const sourceLesson of sourceLessons) {
+          await this.db.execute(
+            `INSERT INTO lessons (module_id, title, content_md, lesson_order) VALUES (?, ?, ?, ?)`,
+            [
+              newModule.insertId,
+              sourceLesson.title,
+              sourceLesson.content_md,
+              sourceLesson.lesson_order,
+            ],
+          );
+        }
+      }
+
+      // Clone quizzes (if they exist)
+      const [sourceQuizzes] = await this.db.execute(
+        `SELECT * FROM quizzes WHERE course_id = ? OR id IN (
+          SELECT quiz_id FROM lesson_quizzes WHERE lesson_id IN (
+            SELECT id FROM lessons WHERE module_id IN (
+              SELECT id FROM modules WHERE course_id = ?
+            )
+          )
+        )`,
+        [sourceCourseId, sourceCourseId],
+      );
+
+      const quizIdMap = {};
+      for (const sourceQuiz of sourceQuizzes) {
+        const [newQuiz] = await this.db.execute(
+          `INSERT INTO quizzes (course_id, title, description) VALUES (?, ?, ?)`,
+          [newCourseId, sourceQuiz.title, sourceQuiz.description],
+        );
+        quizIdMap[sourceQuiz.id] = newQuiz.insertId;
+      }
+
+      return newCourseId;
+    } catch (error) {
+      throw new Error(`Failed to clone course: ${error.message}`);
+    }
+  }
 }
 
 module.exports = new CourseModel(db);

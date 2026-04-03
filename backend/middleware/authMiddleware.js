@@ -79,19 +79,34 @@ class AuthMiddleware {
   };
 
   // Require coordinator/curriculum designer role
+  // Coordinators (roleId 4) can design and manage courses
+  // Instructors (roleId 2) and admins (roleId 3) are also allowed
   requireCoordinator = (req, res, next) => {
     const roleId = Number(req.user?.roleId);
     const userId = req.user?.sub || req.user?.id;
 
-    // This could be roleId 2 (instructor can also coordinate) or a specific coordinator role
-    if (roleId !== 2 && roleId !== 3) {
+    // Allow role 2 (instructor), 3 (admin), or 4 (coordinator)
+    if (roleId !== 2 && roleId !== 3 && roleId !== 4) {
       return res.status(403).json({
-        message: "Coordinator or admin access required",
+        message: "Coordinator, instructor, or admin access required",
         roleId,
       });
     }
 
     req.coordinatorId = userId;
+    next();
+  };
+
+  // Require student role
+  requireStudent = (req, res, next) => {
+    const roleId = Number(req.user?.roleId);
+
+    if (roleId !== 1) {
+      return res.status(403).json({
+        message: "Student access required",
+      });
+    }
+
     next();
   };
 }

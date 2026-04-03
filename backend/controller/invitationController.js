@@ -3,17 +3,34 @@ const enrollmentModel = require("../models/enrollmentModel");
 const courseModel = require("../models/courseModel");
 
 class InvitationController {
-  // POST /api/invitations/send - Teacher sends invitation
+  // Helper: Validate email format
+  static isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  // POST /api/invitations/send - Teacher sends invitation (single or bulk)
   static async sendInvitation(req, res) {
     try {
-      const { courseId, studentEmail } = req.body;
+      const { courseId, studentEmail, studentEmails } = req.body;
       const teacherId = req.user.id;
 
       // Validation
-      if (!courseId || !studentEmail) {
+      if (!courseId) {
         return res.status(400).json({
           success: false,
-          message: "Course ID and student email are required",
+          message: "Course ID is required",
+        });
+      }
+
+      // Support both single email and bulk emails
+      const emailsToInvite =
+        studentEmails || (studentEmail ? [studentEmail] : []);
+
+      if (!emailsToInvite || emailsToInvite.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "At least one student email is required",
         });
       }
 
@@ -27,25 +44,59 @@ class InvitationController {
         });
       }
 
-      // Check if invitation already exists
-      const existingInvitation =
-        await InvitationModel.getPendingByEmailAndCourse(
-          studentEmail,
-          courseId,
-        );
-      if (existingInvitation) {
-        return res.status(400).json({
-          success: false,
-          message: "An invitation for this email already exists",
-        });
-      }
+      // Process invitations
+      const results = [];
+      const errors = [];
 
-      // Send invitation
-      await InvitationModel.sendInvitation(courseId, teacherId, studentEmail);
+      for (const email of emailsToInvite) {
+        const trimmedEmail = email.trim().toLowerCase();
+
+        // Validate email format
+        if (!this.isValidEmail(trimmedEmail)) {
+          errors.push({
+            email: trimmedEmail,
+            reason: "Invalid email format",
+          });
+          continue;
+        }
+
+        // Check if invitation already exists
+        try {
+          const existingInvitation =
+            await InvitationModel.getPendingByEmailAndCourse(
+              trimmedEmail,
+              courseId,
+            );
+          if (existingInvitation) {
+            errors.push({
+              email: trimmedEmail,
+              reason: "Invitation already exists for this course",
+            });
+            continue;
+          }
+
+          // Send invitation
+          const result = await InvitationModel.sendInvitation(
+            courseId,
+            teacherId,
+            trimmedEmail,
+          );
+          results.push({ email: trimmedEmail, status: "success" });
+        } catch (emailError) {
+          errors.push({
+            email: trimmedEmail,
+            reason: emailError.message,
+          });
+        }
+      }
 
       return res.status(201).json({
         success: true,
-        message: `Invitation sent to ${studentEmail}`,
+        message: `Invitations sent successfully. ${results.length} sent, ${errors.length} failed.`,
+        data: {
+          successful: results,
+          failed: errors,
+        },
       });
     } catch (error) {
       console.error("Send invitation error:", error);

@@ -26,6 +26,7 @@ import ManageQuizzes from "./pages/instructor/ManageQuizzes";
 import StudentPerformance from "./pages/instructor/StudentPerformance";
 import Analytics from "./pages/instructor/Analytics";
 import InstructorSettings from "./pages/instructor/InstructorSettings";
+import CourseDetail from "./pages/instructor/CourseDetail";
 
 export default function App() {
   return (
@@ -50,10 +51,22 @@ export default function App() {
         <Route path="/profile" element={<Profile />} />
 
         {/* Instructor Routes */}
-        <Route path="/instructor" element={<Navigate to="/instructor/login" replace />} />
-        <Route path="/teacher" element={<Navigate to="/teacher/login" replace />} />
-        <Route path="/instructor-login" element={<Navigate to="/instructor/login" replace />} />
-        <Route path="/teacher-login" element={<Navigate to="/teacher/login" replace />} />
+        <Route
+          path="/instructor"
+          element={<Navigate to="/instructor/login" replace />}
+        />
+        <Route
+          path="/teacher"
+          element={<Navigate to="/teacher/login" replace />}
+        />
+        <Route
+          path="/instructor-login"
+          element={<Navigate to="/instructor/login" replace />}
+        />
+        <Route
+          path="/teacher-login"
+          element={<Navigate to="/teacher/login" replace />}
+        />
         <Route
           path="/instructor"
           element={<Navigate to="/instructor/login" replace />}
@@ -81,6 +94,14 @@ export default function App() {
           element={
             <InstructorLayout>
               <ManageCourses />
+            </InstructorLayout>
+          }
+        />
+        <Route
+          path="/instructor/courses/:courseId"
+          element={
+            <InstructorLayout>
+              <CourseDetail />
             </InstructorLayout>
           }
         />

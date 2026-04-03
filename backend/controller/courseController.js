@@ -9,8 +9,30 @@ class CourseController {
   getCourses = async (_req, res) => {
     try {
       await this.courseModel.ensureSeedFromUploadIfEmpty();
-      const courses = await this.courseModel.findAll();
-      return res.status(200).json({ courses });
+
+      // Get pagination parameters with defaults
+      const page = Number(_req.query.page) || 1;
+      const limit = Math.min(Number(_req.query.limit) || 20, 100); // Cap at 100
+      const offset = (page - 1) * limit;
+
+      // Get all courses and paginate client-side
+      // TODO: Optimize by adding pagination to model layer
+      const allCourses = await this.courseModel.findAll();
+      const total = allCourses.length;
+      const courses = allCourses.slice(offset, offset + limit);
+      const totalPages = Math.ceil(total / limit);
+
+      return res.status(200).json({
+        courses,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        },
+      });
     } catch (error) {
       console.error("getCourses error:", error);
       return res.status(500).json({ message: "Server error" });
@@ -199,6 +221,56 @@ class CourseController {
     } catch (error) {
       console.error("getCourseBySlug error:", error);
       return res.status(500).json({ message: "Server error" });
+    }
+  };
+
+  // Clone a course - Teacher can create a copy of an existing course
+  cloneCourse = async (req, res) => {
+    try {
+      const sourceId = Number(req.params.id);
+      if (!Number.isInteger(sourceId) || sourceId <= 0) {
+        return res.status(400).json({ message: "Invalid course id" });
+      }
+
+      const sourceCourse = await this.courseModel.findById(sourceId);
+      if (!sourceCourse) {
+        return res.status(404).json({ message: "Source course not found" });
+      }
+
+      // Instructors can clone their own courses or any course in the system
+      const userId = req.user?.sub;
+      const roleId = Number(req.user?.roleId);
+
+      // Only instructors and admins can clone courses
+      if (roleId !== 2 && roleId !== 3) {
+        return res
+          .status(403)
+          .json({ message: "Only instructors can clone courses" });
+      }
+
+      const { titleSuffix = `(Cloned by ${req.user?.email || "instructor"})` } =
+        req.body;
+
+      // Clone the course
+      const newCourseId = await this.courseModel.cloneCourse(
+        sourceId,
+        userId,
+        titleSuffix,
+      );
+
+      const clonedCourse = await this.courseModel.findById(newCourseId);
+      return res.status(201).json({
+        message: "Course cloned successfully",
+        course: clonedCourse,
+        sourceId,
+        newCourseId,
+      });
+    } catch (error) {
+      console.error("cloneCourse error:", error);
+      return res.status(500).json({
+        message: "Error cloning course",
+        error: error.message,
+      });
     }
   };
 }
