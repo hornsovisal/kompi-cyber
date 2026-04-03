@@ -71,19 +71,19 @@ const getInstructorCourses = async (req, res) => {
         c.level,
         c.duration_hrs AS duration,
         c.is_published AS status,
-        COUNT(DISTINCT e.id) as enrollmentCount,
-        COUNT(DISTINCT m.id) as moduleCount,
+        c.created_at,
+        c.created_by,
+        (SELECT COUNT(*) FROM enrollments WHERE course_id = c.id) as enrollmentCount,
+        (SELECT COUNT(*) FROM modules WHERE course_id = c.id) as moduleCount,
         (SELECT COUNT(*) FROM quiz_questions qq 
          INNER JOIN lessons l ON qq.lesson_id = l.id
          INNER JOIN modules m2 ON l.module_id = m2.id
          WHERE m2.course_id = c.id) as quizCount,
-        COUNT(DISTINCT l.id) as lessonCount
+        (SELECT COUNT(*) FROM lessons l 
+         INNER JOIN modules m ON l.module_id = m.id 
+         WHERE m.course_id = c.id) as lessonCount
       FROM courses c
-      LEFT JOIN enrollments e ON c.id = e.course_id
-      LEFT JOIN modules m ON c.id = m.course_id
-      LEFT JOIN lessons l ON m.id = l.module_id
       WHERE c.created_by = ?
-      GROUP BY c.id
       ORDER BY c.created_at DESC
     `;
 
@@ -98,6 +98,7 @@ const getInstructorCourses = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch courses",
+      error: process.env.NODE_ENV !== "production" ? error.message : undefined,
     });
   }
 };
@@ -132,19 +133,19 @@ const getCourseDetail = async (req, res) => {
         c.level,
         c.duration_hrs AS duration,
         c.is_published AS status,
-        COUNT(DISTINCT e.id) as enrollmentCount,
-        COUNT(DISTINCT m.id) as moduleCount,
+        c.created_at,
+        c.created_by,
+        (SELECT COUNT(*) FROM enrollments WHERE course_id = c.id) as enrollmentCount,
+        (SELECT COUNT(*) FROM modules WHERE course_id = c.id) as moduleCount,
         (SELECT COUNT(*) FROM quiz_questions qq 
          INNER JOIN lessons l ON qq.lesson_id = l.id
          INNER JOIN modules m2 ON l.module_id = m2.id
          WHERE m2.course_id = c.id) as quizCount,
-        COUNT(DISTINCT l.id) as lessonCount
+        (SELECT COUNT(*) FROM lessons l 
+         INNER JOIN modules m ON l.module_id = m.id 
+         WHERE m.course_id = c.id) as lessonCount
       FROM courses c
-      LEFT JOIN enrollments e ON c.id = e.course_id
-      LEFT JOIN modules m ON c.id = m.course_id
-      LEFT JOIN lessons l ON m.id = l.module_id
       WHERE c.id = ? AND c.created_by = ?
-      GROUP BY c.id
     `;
 
     const [courses] = await db.execute(query, [courseId, instructorId]);
