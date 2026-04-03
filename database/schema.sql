@@ -134,9 +134,13 @@ CREATE TABLE `modules` (
   `id`           INT          NOT NULL AUTO_INCREMENT,
   `course_id`    INT          NOT NULL,
   `title`        VARCHAR(200) NOT NULL,
+  `description`  TEXT,
   `module_order` TINYINT      NOT NULL,
+  `created_at`   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_modules_course_order` (`course_id`, `module_order`),
+  KEY `idx_modules_created_at` (`created_at`),
   CONSTRAINT `fk_modules_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
