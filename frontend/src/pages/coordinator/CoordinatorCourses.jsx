@@ -341,7 +341,10 @@ export default function CoordinatorCourses() {
               <div
                 key={course.id}
                 className="border border-slate-200 rounded-lg p-5 hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => navigate(`/coordinator/courses/${course.id}`)}
+                onClick={() => {
+                  console.log("Course card clicked:", course.id, course.title);
+                  navigate(`/coordinator/courses/${course.id}`);
+                }}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
