@@ -727,54 +727,61 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const emailService = require("../utils/emailService");
 
-// Instructor login
+// Unified login for instructor/admin/coordinator (all use users table)
 const loginInstructor = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find lecturer by email
-    const lecturers = await LecturerModel.findLecturerByEmail(email);
-    if (lecturers.length === 0) {
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password are required",
+      });
+    }
+
+    // Find user by email (admin, teacher/instructor, or coordinator)
+    const [rows] = await db.execute(
+      `SELECT u.*, r.name as role_name 
+       FROM users u
+       LEFT JOIN roles r ON r.id = u.role_id
+       WHERE u.email = ? AND u.role_id IN (2, 3, 4) LIMIT 1`,
+      [email],
+    );
+
+    if (rows.length === 0) {
       return res.status(401).json({
         message: "Invalid email or password",
       });
     }
 
-    const lecturer = lecturers[0];
+    const user = rows[0];
+
+    // Check if account is active
+    if (!user.is_active) {
+      return res.status(403).json({
+        message: "Account is inactive. Please contact administrator.",
+      });
+    }
 
     // Check password
-    const isPasswordMatch = await bcrypt.compare(password, lecturer.password);
+    const isPasswordMatch = await bcrypt.compare(password, user.password_hash);
     if (!isPasswordMatch) {
       return res.status(401).json({
         message: "Invalid email or password",
       });
     }
 
-    // Check if verified
-    // TEMP: Bypass verification for testing
-    // if (!lecturer.isVerified) {
-    //   return res.status(403).json({
-    //     message: 'Account not verified. Please check your email.',
-    //     requiresVerification: true,
-    //     instructor: {
-    //       id: lecturer.id,
-    //       name: lecturer.name,
-    //       email: lecturer.email,
-    //       department: lecturer.department,
-    //       employeeId: lecturer.employeeId,
-    //     }
-    //   });
-    // }
+    // Map role_id to role name
+    const roleMap = { 2: "instructor", 3: "admin", 4: "coordinator" };
+    const roleName = roleMap[user.role_id] || "user";
 
     // Generate JWT token
     const token = jwt.sign(
       {
-        sub: lecturer.id,
-        id: lecturer.id,
-        email: lecturer.email,
-        role: "instructor",
-        department: lecturer.department,
-        employeeId: lecturer.employeeId,
+        sub: user.id,
+        id: user.id,
+        email: user.email,
+        roleId: user.role_id,
+        role: roleName,
       },
       process.env.JWT_SECRET || "dev_jwt_secret_change_me",
       { expiresIn: "24h" },
@@ -783,14 +790,13 @@ const loginInstructor = async (req, res) => {
     res.json({
       success: true,
       token,
-      instructor: {
-        id: lecturer.id,
-        name: lecturer.name,
-        email: lecturer.email,
-        department: lecturer.department,
-        courses: lecturer.courses,
-        employeeId: lecturer.employeeId,
-        isVerified: lecturer.isVerified,
+      user: {
+        id: user.id,
+        fullName: user.full_name,
+        email: user.email,
+        role: roleName,
+        roleId: user.role_id,
+        isActive: user.is_active,
       },
     });
   } catch (error) {
