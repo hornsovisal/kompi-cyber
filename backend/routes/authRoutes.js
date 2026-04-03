@@ -1,9 +1,32 @@
 const express = require("express");
 const router = express.Router();
+const db = require("../config/db");
 
 const authController = require("../controller/authController");
 const authMiddleware = require("../middleware/authMiddleware");
 const ValidationMiddleware = require("../middleware/validationMiddleware");
+
+// Database health check endpoint (for debugging)
+router.get("/health", async (req, res) => {
+  try {
+    const [result] = await db.execute("SELECT 1 as ping");
+    res.json({
+      success: true,
+      message: "Database connection OK",
+      db_host: process.env.DB_HOST,
+      db_name: process.env.DB_NAME,
+      query_result: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Database connection failed",
+      error: error.message,
+      db_host: process.env.DB_HOST,
+      db_name: process.env.DB_NAME,
+    });
+  }
+});
 
 // Registration with strong password validation
 router.post(
