@@ -67,7 +67,6 @@ const getInstructorCourses = async (req, res) => {
         c.domain_id,
         c.title,
         c.description,
-        c.cover_image_url,
         c.level,
         c.duration_hrs AS duration,
         c.is_published AS status,
@@ -129,7 +128,6 @@ const getCourseDetail = async (req, res) => {
         c.domain_id,
         c.title,
         c.description,
-        c.cover_image_url,
         c.level,
         c.duration_hrs AS duration,
         c.is_published AS status,
@@ -250,15 +248,8 @@ const createCourse = async (req, res) => {
 const updateCourse = async (req, res) => {
   try {
     const courseId = Number(req.params.id);
-    const {
-      title,
-      description,
-      level,
-      duration,
-      is_published,
-      cover_image_url,
-      domain_id,
-    } = req.body;
+    const { title, description, level, duration, is_published, domain_id } =
+      req.body;
     const instructorId = req.user?.sub || req.user?.id;
 
     if (!instructorId) {
@@ -322,10 +313,6 @@ const updateCourse = async (req, res) => {
     if (is_published !== undefined) {
       updateFields.push("is_published = ?");
       updateValues.push(is_published ? 1 : 0);
-    }
-    if (cover_image_url !== undefined) {
-      updateFields.push("cover_image_url = ?");
-      updateValues.push(cover_image_url);
     }
 
     if (updateFields.length === 0) {
