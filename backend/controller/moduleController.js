@@ -7,7 +7,7 @@ class ModuleController {
       const courseId = Number(req.params.courseId);
       console.log("getModulesByCourse called with courseId:", courseId);
       console.log("req.params:", req.params);
-      
+
       if (!Number.isInteger(courseId) || courseId <= 0) {
         return res.status(400).json({ message: "Invalid course id" });
       }
@@ -142,16 +142,23 @@ class ModuleController {
       );
       const nextOrder = (maxOrder[0]?.max_order || 0) + 1;
 
+      // Generate slug from title
+      const slug = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
       const query = `
-        INSERT INTO modules (course_id, title, description, module_order, created_at, updated_at)
-        VALUES (?, ?, ?, ?, NOW(), NOW())
+        INSERT INTO modules (course_id, title, description, slug, module_order, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, NOW(), NOW())
       `;
 
       const [result] = await db.execute(query, [
         courseId,
         title.trim(),
-        description?.trim() || "",
-        module_order || nextOrder,
+        description?.trim() || null,
+        slug,
+        nextOrder,
       ]);
 
       if (!result.insertId) {
