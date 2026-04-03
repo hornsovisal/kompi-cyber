@@ -4,16 +4,6 @@
 
 ---
 
-## 🔑 Test Accounts
-
-Use these credentials to test different user roles:
-
-| Role            | Email                  | Password          | Portal                                                                             |
-| --------------- | ---------------------- | ----------------- | ---------------------------------------------------------------------------------- |
-| **Admin**       | `admin@kompi.com`      | `Admin@2026`      | [/admin/dashboard](https://kompi-cyber2323.vercel.app/admin/dashboard)             |
-| **Teacher**     | `teacher@test.com`     | `Teacher@123`     | [/instructor/dashboard](https://kompi-cyber2323.vercel.app/instructor/dashboard)   |
-| **Coordinator** | `coordinator@test.com` | `Coordinator@789` | [/coordinator/dashboard](https://kompi-cyber2323.vercel.app/coordinator/dashboard) |
-
 > **Admin Portal Features:**
 >
 > - Manage all users (create, edit, delete)
