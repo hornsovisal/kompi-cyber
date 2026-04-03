@@ -40,6 +40,7 @@ export default function CoordinatorCourseDetail() {
   const [editingCourse, setEditingCourse] = useState(false);
 
   useEffect(() => {
+    console.log("CoordinatorCourseDetail mounted with courseId:", courseId);
     fetchCourseAndModules();
   }, [courseId]);
 
@@ -49,12 +50,19 @@ export default function CoordinatorCourseDetail() {
       const token = sessionStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
 
+      console.log("Fetching course detail for:", courseId);
+      console.log("API_BASE:", API_BASE);
+      console.log("Full URL:", `${API_BASE}/api/instructor/courses/${courseId}`);
+
       const [courseRes, modulesRes] = await Promise.all([
         axios.get(`${API_BASE}/api/instructor/courses/${courseId}`, {
           headers,
         }),
         axios.get(`${API_BASE}/api/courses/${courseId}/modules`, { headers }),
       ]);
+
+      console.log("Course response:", courseRes.data);
+      console.log("Modules response:", modulesRes.data);
 
       const courseData = courseRes.data.data;
       setCourse(courseData);
@@ -68,6 +76,8 @@ export default function CoordinatorCourseDetail() {
       setModules(modulesRes.data.data || []);
       setError("");
     } catch (err) {
+      console.error("Error fetching course details:", err);
+      console.error("Error response:", err.response?.data);
       setError(err.response?.data?.message || "Failed to load course details");
     } finally {
       setLoading(false);
