@@ -20,8 +20,7 @@ class ModuleController {
           description,
           module_order,
           created_at,
-          updated_at,
-          (SELECT COUNT(*) FROM lessons WHERE module_id = modules.id) as lessonCount
+          updated_at
         FROM modules
         WHERE course_id = ?
         ORDER BY module_order ASC, id ASC
@@ -64,8 +63,7 @@ class ModuleController {
           description,
           module_order,
           created_at,
-          updated_at,
-          (SELECT COUNT(*) FROM lessons WHERE module_id = modules.id) as lessonCount
+          updated_at
         FROM modules
         WHERE id = ?
       `;
