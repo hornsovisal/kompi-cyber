@@ -110,12 +110,33 @@ class ValidationMiddleware {
    */
   static sanitizeRequestData = (req, res, next) => {
     try {
+      // Sanitize request body
       if (req.body && typeof req.body === "object") {
         req.body = ValidationMiddleware.sanitizeObject(req.body);
       }
 
-      if (req.query && typeof req.query === "object") {
-        req.query = ValidationMiddleware.sanitizeObject(req.query);
+      // For query parameters, we need to be careful since req.query is read-only
+      // Only perform sanitization if there are query params to sanitize
+      if (
+        req.query &&
+        typeof req.query === "object" &&
+        Object.keys(req.query).length > 0
+      ) {
+        try {
+          const sanitizedQuery = ValidationMiddleware.sanitizeObject(req.query);
+          // Try to update properties in-place
+          for (const [key, value] of Object.entries(sanitizedQuery)) {
+            try {
+              req.query[key] = value;
+            } catch (e) {
+              // If property can't be set, skip it (req.query is immutable in some versions)
+              console.debug(`Could not set property ${key} on req.query`);
+            }
+          }
+        } catch (e) {
+          // If sanitization of query fails, log but continue (query params are less critical than body)
+          console.debug("Query sanitization warning:", e.message);
+        }
       }
 
       next();
