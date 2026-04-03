@@ -556,6 +556,8 @@ git push origin feature/your-feature-name
 
 **Institution:** Cambodia Academy of Digital Technology (CADT)
 
+**Academic Year:** Year 2 Term 2  
+
 **Key Contributors:**
 
 - Horn Sovisal – Backend Developer
@@ -576,19 +578,17 @@ This project is licensed under the ISC License - see [LICENSE](LICENSE) file for
 
 ### V1.0 (Current)
 
-✅ Basic course management
-✅ Student enrollment
-✅ Quiz and exercise system
-✅ Instructor dashboard
-✅ Certificate generation
+- ✅ Basic course management
+- ✅ Student enrollment
+- ✅ Quiz and exercise system
+- ✅ Instructor dashboard
+- ✅ Certificate generation
 
 ### V2.0 (Planned)
 
-🚧 AI-powered adaptive learning
-🚧 Virtual lab sandbox environment
-🚧 Real-time code execution
-🚧 Peer review system
-🚧 Advanced analytics
+- 🚧 AI-powered adaptive learning
+- 🚧 Virtual lab sandbox environment
+- 🚧 Real-time code execution
 
 ## 🎓 Getting Started Resources
 
