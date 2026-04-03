@@ -55,8 +55,12 @@ export default function CoordinatorDashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Coordinator Dashboard</h1>
-        <p className="text-slate-600 mt-2">Manage programs and oversee student progress</p>
+        <h1 className="text-3xl font-bold text-slate-900">
+          Coordinator Dashboard
+        </h1>
+        <p className="text-slate-600 mt-2">
+          Manage programs and oversee student progress
+        </p>
       </div>
 
       {/* Loading State */}
@@ -91,9 +95,13 @@ export default function CoordinatorDashboard() {
 
           {/* Welcome Message */}
           <div className="bg-white rounded-lg border border-slate-200 p-6">
-            <h2 className="text-lg font-bold text-slate-900 mb-4">Welcome to Your Dashboard</h2>
+            <h2 className="text-lg font-bold text-slate-900 mb-4">
+              Welcome to Your Dashboard
+            </h2>
             <p className="text-slate-600">
-              As a coordinator, you can manage programs, track student progress, and oversee course delivery. Use the navigation menu on the left to access different sections.
+              As a coordinator, you can manage programs, track student progress,
+              and oversee course delivery. Use the navigation menu on the left
+              to access different sections.
             </p>
           </div>
         </>

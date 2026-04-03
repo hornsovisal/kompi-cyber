@@ -12,7 +12,9 @@ export default function AdminUsers() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedRole, setSelectedRole] = useState(searchParams.get("role") || "");
+  const [selectedRole, setSelectedRole] = useState(
+    searchParams.get("role") || "",
+  );
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -71,7 +73,7 @@ export default function AdminUsers() {
           password: formData.password,
           role_id: Number(formData.role_id),
         },
-        { headers }
+        { headers },
       );
 
       setSuccess(`User "${formData.full_name}" created successfully!`);
@@ -91,7 +93,9 @@ export default function AdminUsers() {
         "Content-Type": "application/json",
       };
 
-      await axios.put(`${API_BASE}/api/users/admin/${userId}`, updates, { headers });
+      await axios.put(`${API_BASE}/api/users/admin/${userId}`, updates, {
+        headers,
+      });
       setSuccess("User updated successfully!");
       setTimeout(() => setSuccess(""), 3000);
       fetchUsers();
@@ -125,7 +129,9 @@ export default function AdminUsers() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Manage Users</h1>
-          <p className="text-slate-600 mt-2">Create, edit, and manage user accounts</p>
+          <p className="text-slate-600 mt-2">
+            Create, edit, and manage user accounts
+          </p>
         </div>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
@@ -139,7 +145,10 @@ export default function AdminUsers() {
       {/* Success Message */}
       {success && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
-          <CheckCircle size={20} className="text-green-600 flex-shrink-0 mt-0.5" />
+          <CheckCircle
+            size={20}
+            className="text-green-600 flex-shrink-0 mt-0.5"
+          />
           <p className="text-green-800">{success}</p>
         </div>
       )}
@@ -147,7 +156,10 @@ export default function AdminUsers() {
       {/* Error Message */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-          <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle
+            size={20}
+            className="text-red-600 flex-shrink-0 mt-0.5"
+          />
           <p className="text-red-800">{error}</p>
         </div>
       )}
@@ -155,13 +167,20 @@ export default function AdminUsers() {
       {/* Create Form */}
       {showCreateForm && (
         <div className="bg-white rounded-lg border border-slate-200 p-6">
-          <h2 className="text-lg font-bold text-slate-900 mb-4">Create New User</h2>
-          <form onSubmit={handleCreateUser} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <h2 className="text-lg font-bold text-slate-900 mb-4">
+            Create New User
+          </h2>
+          <form
+            onSubmit={handleCreateUser}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
             <input
               type="text"
               placeholder="Full Name"
               value={formData.full_name}
-              onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, full_name: e.target.value })
+              }
               className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600"
               required
             />
@@ -169,7 +188,9 @@ export default function AdminUsers() {
               type="email"
               placeholder="Email Address"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600"
               required
             />
@@ -177,13 +198,17 @@ export default function AdminUsers() {
               type="password"
               placeholder="Password"
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
               className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600"
               required
             />
             <select
               value={formData.role_id}
-              onChange={(e) => setFormData({ ...formData, role_id: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, role_id: e.target.value })
+              }
               className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600"
               required
             >
@@ -291,19 +316,28 @@ export default function AdminUsers() {
             </thead>
             <tbody>
               {users.map((user) => (
-                <tr key={user.id} className="border-b border-slate-200 hover:bg-slate-50">
-                  <td className="px-6 py-4 text-sm text-slate-900">{user.full_name}</td>
-                  <td className="px-6 py-4 text-sm text-slate-600">{user.email}</td>
+                <tr
+                  key={user.id}
+                  className="border-b border-slate-200 hover:bg-slate-50"
+                >
+                  <td className="px-6 py-4 text-sm text-slate-900">
+                    {user.full_name}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-slate-600">
+                    {user.email}
+                  </td>
                   <td className="px-6 py-4 text-sm">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      user.role_id === 2
-                        ? "bg-yellow-100 text-yellow-800"
-                        : user.role_id === 3
-                        ? "bg-red-100 text-red-800"
-                        : user.role_id === 4
-                        ? "bg-purple-100 text-purple-800"
-                        : "bg-green-100 text-green-800"
-                    }`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        user.role_id === 2
+                          ? "bg-yellow-100 text-yellow-800"
+                          : user.role_id === 3
+                            ? "bg-red-100 text-red-800"
+                            : user.role_id === 4
+                              ? "bg-purple-100 text-purple-800"
+                              : "bg-green-100 text-green-800"
+                      }`}
+                    >
                       {roleMap[user.role_id] || "Unknown"}
                     </span>
                   </td>

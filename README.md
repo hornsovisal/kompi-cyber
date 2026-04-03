@@ -8,23 +8,26 @@
 
 Use these credentials to test different user roles:
 
-| Role | Email | Password | Portal |
-|------|-------|----------|--------|
-| **Admin** | `admin@kompi.com` | `Admin@2026` | [/admin/dashboard](https://kompi-cyber2323.vercel.app/admin/dashboard) |
-| **Teacher** | `teacher@test.com` | `Teacher@123` | [/instructor/dashboard](https://kompi-cyber2323.vercel.app/instructor/dashboard) |
+| Role            | Email                  | Password          | Portal                                                                             |
+| --------------- | ---------------------- | ----------------- | ---------------------------------------------------------------------------------- |
+| **Admin**       | `admin@kompi.com`      | `Admin@2026`      | [/admin/dashboard](https://kompi-cyber2323.vercel.app/admin/dashboard)             |
+| **Teacher**     | `teacher@test.com`     | `Teacher@123`     | [/instructor/dashboard](https://kompi-cyber2323.vercel.app/instructor/dashboard)   |
 | **Coordinator** | `coordinator@test.com` | `Coordinator@789` | [/coordinator/dashboard](https://kompi-cyber2323.vercel.app/coordinator/dashboard) |
 
 > **Admin Portal Features:**
+>
 > - Manage all users (create, edit, delete)
 > - Add/remove teachers and coordinators
 > - View system analytics
 
 > **Teacher Portal Features:**
+>
 > - Create and manage courses
 > - Create quizzes and exercises
 > - Track student performance
 
 > **Coordinator Portal Features:**
+>
 > - Oversee programs and courses
 > - Monitor student progress
 > - Generate reports
@@ -274,23 +277,22 @@ Visit `http://localhost:5173` in your browser:
 ### For Students
 
 1. **Register Account**
-
    - Visit `http://localhost:5173`
    - Click "Sign Up"
    - Verify email
-2. **Enroll in Courses**
 
+2. **Enroll in Courses**
    - Browse course catalog
    - Join self-paced courses directly
    - Accept instructor invitations via email
-3. **Complete Lessons**
 
+3. **Complete Lessons**
    - Read lesson content
    - Take quizzes
    - Submit exercises
    - Track progress
-4. **Earn Certificates**
 
+4. **Earn Certificates**
    - Complete all modules
    - Pass final assessment
    - Download certificate
@@ -298,21 +300,20 @@ Visit `http://localhost:5173` in your browser:
 ### For Instructors
 
 1. **Login as Instructor**
-
    - Use instructor account (admin creates these)
    - Access instructor dashboard
-2. **Create a Course**
 
+2. **Create a Course**
    - Click "Create New Course"
    - Select course type (Online-Led or Instructor-Led)
    - Add title, description, syllabus
-3. **Add Content**
 
+3. **Add Content**
    - Create modules (weeks)
    - Add lessons with markdown content
    - Create quizzes and exercises
-4. **Manage Students**
 
+4. **Manage Students**
    - Copy invitation link or send via email
    - View enrolled students
    - Monitor progress and performance
@@ -523,15 +524,15 @@ node scripts/add-network-security-modules.js
 
 ## 🛡️ Security Features
 
-* **JWT Authentication** - Secure token-based user sessions
-* **Password Hashing** - bcryptjs (salted & hashed)
-* **Input Validation** - express-validator prevents XSS
-* **HTML Sanitization** - Prevent script injection
-* **CORS Protection** - Whitelist allowed origins
-* **Rate Limiting** - Prevent brute force attacks
-* **Security Headers** - Helmet.js for HTTP hardening
-* **SQL Injection Prevention** - Parameterized querier
-* Email Verification - Confirm user identity
+- **JWT Authentication** - Secure token-based user sessions
+- **Password Hashing** - bcryptjs (salted & hashed)
+- **Input Validation** - express-validator prevents XSS
+- **HTML Sanitization** - Prevent script injection
+- **CORS Protection** - Whitelist allowed origins
+- **Rate Limiting** - Prevent brute force attacks
+- **Security Headers** - Helmet.js for HTTP hardening
+- **SQL Injection Prevention** - Parameterized querier
+- Email Verification - Confirm user identity
 
 ---
 

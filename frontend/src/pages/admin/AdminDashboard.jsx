@@ -77,7 +77,9 @@ export default function AdminDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Admin Dashboard</h1>
-          <p className="text-slate-600 mt-2">Welcome back! Manage your platform here.</p>
+          <p className="text-slate-600 mt-2">
+            Welcome back! Manage your platform here.
+          </p>
         </div>
         <button
           onClick={() => navigate("/admin/users")}
@@ -91,7 +93,10 @@ export default function AdminDashboard() {
       {/* Error Message */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-          <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle
+            size={20}
+            className="text-red-600 flex-shrink-0 mt-0.5"
+          />
           <div>
             <p className="text-red-800 font-medium">Error</p>
             <p className="text-red-700 text-sm">{error}</p>
@@ -143,7 +148,9 @@ export default function AdminDashboard() {
 
           {/* Quick Actions */}
           <div className="bg-white rounded-lg border border-slate-200 p-6">
-            <h2 className="text-lg font-bold text-slate-900 mb-4">Quick Actions</h2>
+            <h2 className="text-lg font-bold text-slate-900 mb-4">
+              Quick Actions
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <button
                 onClick={() => navigate("/admin/users")}
@@ -151,7 +158,9 @@ export default function AdminDashboard() {
               >
                 <Users size={24} className="text-blue-600 mb-2" />
                 <p className="font-medium text-slate-900">Manage Users</p>
-                <p className="text-sm text-slate-600">View and edit user accounts</p>
+                <p className="text-sm text-slate-600">
+                  View and edit user accounts
+                </p>
               </button>
 
               <button
@@ -160,7 +169,9 @@ export default function AdminDashboard() {
               >
                 <Users size={24} className="text-yellow-600 mb-2" />
                 <p className="font-medium text-slate-900">Create Teacher</p>
-                <p className="text-sm text-slate-600">Add new teacher accounts</p>
+                <p className="text-sm text-slate-600">
+                  Add new teacher accounts
+                </p>
               </button>
 
               <button
@@ -169,7 +180,9 @@ export default function AdminDashboard() {
               >
                 <Users size={24} className="text-purple-600 mb-2" />
                 <p className="font-medium text-slate-900">Create Coordinator</p>
-                <p className="text-sm text-slate-600">Add new coordinator accounts</p>
+                <p className="text-sm text-slate-600">
+                  Add new coordinator accounts
+                </p>
               </button>
             </div>
           </div>

@@ -24,6 +24,7 @@ const instructorRoutes = require("./routes/instructorRoutes");
 const certificateRoutes = require("./routes/certificateRoutes");
 const invitationRoutes = require("./routes/invitationRoutes");
 const progressRoutes = require("./routes/progressRoutes");
+const moduleRoutes = require("./routes/moduleRoutes");
 
 const app = express();
 
@@ -138,6 +139,9 @@ app.use("/api/instructor", instructorRoutes);
 app.use("/api/certificates", certificateRoutes);
 app.use("/api/invitations", invitationRoutes);
 app.use("/api/progress", progressRoutes);
+
+// Module routes - nested under courses
+app.use("/api/courses/:courseId/modules", moduleRoutes);
 
 // Global error handler - prevent sensitive info exposure
 app.use((err, req, res, next) => {

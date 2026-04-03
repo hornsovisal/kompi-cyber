@@ -30,7 +30,9 @@ export default function AdminLayout({ children }) {
           2: "/instructor/dashboard",
           4: "/coordinator/dashboard",
         };
-        navigate(redirectMap[instructorData.roleId] || "/instructor/login", { replace: true });
+        navigate(redirectMap[instructorData.roleId] || "/instructor/login", {
+          replace: true,
+        });
       }
     }
 

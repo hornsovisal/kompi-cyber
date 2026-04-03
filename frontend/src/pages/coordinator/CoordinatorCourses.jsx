@@ -1,7 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Layers3, Search, Users, Edit2, Plus, Trash2, AlertCircle } from "lucide-react";
+import {
+  BookOpen,
+  Layers3,
+  Search,
+  Users,
+  Edit2,
+  Plus,
+  Trash2,
+  AlertCircle,
+} from "lucide-react";
 import axios from "axios";
+import CourseModules from "./CourseModules";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
@@ -13,6 +23,7 @@ export default function CoordinatorCourses() {
   const [query, setQuery] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
+  const [selectedCourseForModules, setSelectedCourseForModules] = useState(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -35,7 +46,9 @@ export default function CoordinatorCourses() {
         "Content-Type": "application/json",
       };
 
-      const response = await axios.get(`${API_BASE}/api/instructor/courses`, { headers });
+      const response = await axios.get(`${API_BASE}/api/instructor/courses`, {
+        headers,
+      });
       setCourses(response.data.data || []);
       setError("");
     } catch (err) {
@@ -68,7 +81,7 @@ export default function CoordinatorCourses() {
           duration: Number(formData.duration),
           domain_id: Number(formData.domain_id),
         },
-        { headers }
+        { headers },
       );
 
       setCourses([...courses, response.data.data]);
@@ -109,13 +122,13 @@ export default function CoordinatorCourses() {
           duration: Number(formData.duration),
           domain_id: Number(formData.domain_id),
         },
-        { headers }
+        { headers },
       );
 
       setCourses(
         courses.map((course) =>
-          course.id === editingCourse.id ? response.data.data : course
-        )
+          course.id === editingCourse.id ? response.data.data : course,
+        ),
       );
       setEditingCourse(null);
       setFormData({
@@ -172,8 +185,8 @@ export default function CoordinatorCourses() {
       [course.title, course.description].some((value) =>
         String(value || "")
           .toLowerCase()
-          .includes(keyword)
-      )
+          .includes(keyword),
+      ),
     );
   }, [courses, query]);
 
@@ -183,7 +196,9 @@ export default function CoordinatorCourses() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Manage Courses</h1>
-          <p className="text-slate-600 mt-2">Create and manage courses for your programs</p>
+          <p className="text-slate-600 mt-2">
+            Create and manage courses for your programs
+          </p>
         </div>
         {!editingCourse && (
           <button
@@ -199,7 +214,10 @@ export default function CoordinatorCourses() {
       {/* Error Message */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-          <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle
+            size={20}
+            className="text-red-600 flex-shrink-0 mt-0.5"
+          />
           <p className="text-red-800">{error}</p>
         </div>
       )}
@@ -218,19 +236,25 @@ export default function CoordinatorCourses() {
               type="text"
               placeholder="Course Title *"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
               className="md:col-span-2 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600"
               required
             />
             <textarea
               placeholder="Course Description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               className="md:col-span-2 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 h-24"
             />
             <select
               value={formData.level}
-              onChange={(e) => setFormData({ ...formData, level: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, level: e.target.value })
+              }
               className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600"
             >
               <option value="beginner">Beginner</option>
@@ -242,7 +266,9 @@ export default function CoordinatorCourses() {
               type="number"
               placeholder="Duration (hours)"
               value={formData.duration}
-              onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, duration: e.target.value })
+              }
               className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600"
             />
 
@@ -304,7 +330,9 @@ export default function CoordinatorCourses() {
           <div className="text-center py-12">
             <BookOpen size={48} className="mx-auto text-slate-400 mb-4" />
             <p className="text-slate-600">
-              {courses.length === 0 ? "No courses yet. Create your first course!" : "No courses match your search"}
+              {courses.length === 0
+                ? "No courses yet. Create your first course!"
+                : "No courses match your search"}
             </p>
           </div>
         ) : (
@@ -320,10 +348,20 @@ export default function CoordinatorCourses() {
                       {course.title}
                     </h3>
                     <p className="text-xs text-slate-500 mt-1">
-                      Level: <span className="font-medium capitalize">{course.level}</span>
+                      Level:{" "}
+                      <span className="font-medium capitalize">
+                        {course.level}
+                      </span>
                     </p>
                   </div>
                   <div className="flex gap-2">
+                    <button
+                      onClick={() => setSelectedCourseForModules(course)}
+                      className="p-2 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg transition-colors"
+                      title="Manage modules"
+                    >
+                      <Layers3 size={16} />
+                    </button>
                     <button
                       onClick={() => handleEditCourse(course)}
                       className="p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors"
@@ -360,6 +398,14 @@ export default function CoordinatorCourses() {
           </div>
         )}
       </div>
-    </div>
-  );
+
+      {/* Course Modules Modal */}
+      {selectedCourseForModules && (
+        <CourseModules
+          courseId={selectedCourseForModules.id}
+          onClose={() => setSelectedCourseForModules(null)}
+        />
+      )}
+    </div>;
+  }
 }

@@ -1,14 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  Menu,
-  X,
-  LogOut,
-  Home,
-  Users,
-  BookOpen,
-  Settings,
-} from "lucide-react";
+import { Menu, X, LogOut, Home, Users, BookOpen, Settings } from "lucide-react";
 
 export default function CoordinatorLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -30,7 +22,9 @@ export default function CoordinatorLayout({ children }) {
           2: "/instructor/dashboard",
           3: "/admin/dashboard",
         };
-        navigate(redirectMap[instructorData.roleId] || "/instructor/login", { replace: true });
+        navigate(redirectMap[instructorData.roleId] || "/instructor/login", {
+          replace: true,
+        });
       }
     }
 
