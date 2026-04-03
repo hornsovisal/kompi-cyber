@@ -24,6 +24,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import CoordinatorDashboard from "./pages/coordinator/CoordinatorDashboard";
 import CoordinatorCourses from "./pages/coordinator/CoordinatorCourses";
+import CoordinatorCourseDetail from "./pages/coordinator/CoordinatorCourseDetail";
 import InstructorLogin from "./pages/instructor/InstructorLogin";
 import CreateQuiz from "./pages/instructor/CreateQuiz";
 import CreateCourse from "./pages/instructor/CreateCourse";
@@ -170,6 +171,14 @@ export default function App() {
           element={
             <CoordinatorLayout>
               <CoordinatorCourses />
+            </CoordinatorLayout>
+          }
+        />
+        <Route
+          path="/coordinator/courses/:courseId"
+          element={
+            <CoordinatorLayout>
+              <CoordinatorCourseDetail />
             </CoordinatorLayout>
           }
         />

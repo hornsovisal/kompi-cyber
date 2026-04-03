@@ -340,11 +340,12 @@ export default function CoordinatorCourses() {
             {filteredCourses.map((course) => (
               <div
                 key={course.id}
-                className="border border-slate-200 rounded-lg p-5 hover:shadow-lg transition-shadow"
+                className="border border-slate-200 rounded-lg p-5 hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => navigate(`/coordinator/courses/${course.id}`)}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-slate-900 line-clamp-2">
+                    <h3 className="text-lg font-bold text-slate-900 line-clamp-2 hover:text-blue-600 transition-colors">
                       {course.title}
                     </h3>
                     <p className="text-xs text-slate-500 mt-1">
@@ -354,7 +355,7 @@ export default function CoordinatorCourses() {
                       </span>
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => setSelectedCourseForModules(course)}
                       className="p-2 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg transition-colors"
