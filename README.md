@@ -4,6 +4,33 @@
 
 ---
 
+## 🔑 Test Accounts
+
+Use these credentials to test different user roles:
+
+| Role | Email | Password | Portal |
+|------|-------|----------|--------|
+| **Admin** | `admin@kompi.com` | `Admin@2026` | [/admin/dashboard](https://kompi-cyber2323.vercel.app/admin/dashboard) |
+| **Teacher** | `teacher@test.com` | `Teacher@123` | [/instructor/dashboard](https://kompi-cyber2323.vercel.app/instructor/dashboard) |
+| **Coordinator** | `coordinator@test.com` | `Coordinator@789` | [/coordinator/dashboard](https://kompi-cyber2323.vercel.app/coordinator/dashboard) |
+
+> **Admin Portal Features:**
+> - Manage all users (create, edit, delete)
+> - Add/remove teachers and coordinators
+> - View system analytics
+
+> **Teacher Portal Features:**
+> - Create and manage courses
+> - Create quizzes and exercises
+> - Track student performance
+
+> **Coordinator Portal Features:**
+> - Oversee programs and courses
+> - Monitor student progress
+> - Generate reports
+
+---
+
 ## 🎯 Project Purpose
 
 Kompi-Cyber was created to democratize cybersecurity education for CADT students by providing:
