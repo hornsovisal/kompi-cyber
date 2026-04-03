@@ -72,10 +72,13 @@ export default function InstructorLogin() {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/instructor/login`, {
-        email: email.trim().toLowerCase(),
-        password,
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/api/instructor/login`,
+        {
+          email: email.trim().toLowerCase(),
+          password,
+        },
+      );
 
       const { token, instructor } = response.data;
       // instructor = { id, name, email, department, employeeId } from LecturerModel
@@ -90,9 +93,12 @@ export default function InstructorLogin() {
 
       // If somehow isVerified is false — send OTP via backend
       try {
-        const otpResponse = await axios.post(`${API_BASE_URL}/api/instructor/send-otp`, {
-          email: instructor.email,
-        });
+        const otpResponse = await axios.post(
+          `${API_BASE_URL}/api/instructor/send-otp`,
+          {
+            email: instructor.email,
+          },
+        );
         // For demo purposes, if in development, show the OTP
         if (otpResponse.data.otp) {
           setGen(otpResponse.data.otp);
@@ -132,10 +138,13 @@ export default function InstructorLogin() {
 
     setLoading(true);
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/instructor/verify-otp`, {
-        email: pending.email,
-        otp: entered,
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/api/instructor/verify-otp`,
+        {
+          email: pending.email,
+          otp: entered,
+        },
+      );
 
       const { token, instructor } = response.data;
       loginSuccess({ ...instructor, token });
@@ -155,9 +164,12 @@ export default function InstructorLogin() {
     setError("");
     setLoading(true);
     try {
-      const otpResponse = await axios.post(`${API_BASE_URL}/api/instructor/send-otp`, {
-        email: pending.email,
-      });
+      const otpResponse = await axios.post(
+        `${API_BASE_URL}/api/instructor/send-otp`,
+        {
+          email: pending.email,
+        },
+      );
       setCd(OTP_EXPIRY_SECONDS);
       setExpiry(Date.now() + OTP_EXPIRY_SECONDS * 1000);
       setOtpDigits(["", "", "", "", "", ""]);
@@ -187,12 +199,23 @@ export default function InstructorLogin() {
       courses: inst.courses || [],
       employeeId: inst.employeeId,
       isVerified: inst.isVerified,
+      role: inst.role,
+      roleId: inst.roleId,
     };
     sessionStorage.setItem("instructor", JSON.stringify(instructorData));
     sessionStorage.setItem("user", JSON.stringify(instructorData));
     sessionStorage.setItem("sessionExpires", expiresAt.toString());
     setStep("success");
-    setTimeout(() => navigate("/instructor/dashboard", { replace: true }), 300);
+
+    // Route based on roleId
+    // 2 = instructor/teacher, 3 = admin, 4 = coordinator
+    const routeMap = {
+      2: "/instructor/dashboard",
+      3: "/admin/dashboard",
+      4: "/coordinator/dashboard",
+    };
+    const redirectPath = routeMap[inst.roleId] || "/instructor/dashboard";
+    setTimeout(() => navigate(redirectPath, { replace: true }), 300);
   };
 
   // ── OTP helpers

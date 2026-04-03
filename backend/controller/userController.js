@@ -280,6 +280,171 @@ class UserController {
       return res.status(500).json({ message: "Server error" });
     }
   };
+
+  getAllUsers = async (req, res) => {
+    try {
+      const db = require("../config/db");
+      const [users] = await db.execute(
+        `SELECT id, full_name, email, role_id, is_active, created_at FROM users ORDER BY created_at DESC`,
+      );
+
+      const roleMap = {
+        1: "student",
+        2: "teacher",
+        3: "admin",
+        4: "coordinator",
+      };
+      const usersWithRoles = users.map((user) => ({
+        ...user,
+        role: roleMap[user.role_id] || "unknown",
+      }));
+
+      return res.status(200).json({
+        success: true,
+        data: usersWithRoles,
+      });
+    } catch (error) {
+      console.error("getAllUsers error:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  };
+
+  getUsersByRole = async (req, res) => {
+    try {
+      const { role_id } = req.params;
+      const db = require("../config/db");
+
+      if (!role_id || isNaN(role_id)) {
+        return res.status(400).json({ message: "Invalid role_id" });
+      }
+
+      const [users] = await db.execute(
+        `SELECT id, full_name, email, role_id, is_active, created_at FROM users WHERE role_id = ? ORDER BY created_at DESC`,
+        [role_id],
+      );
+
+      const roleMap = {
+        1: "student",
+        2: "teacher",
+        3: "admin",
+        4: "coordinator",
+      };
+      const usersWithRoles = users.map((user) => ({
+        ...user,
+        role: roleMap[user.role_id] || "unknown",
+      }));
+
+      return res.status(200).json({
+        success: true,
+        data: usersWithRoles,
+      });
+    } catch (error) {
+      console.error("getUsersByRole error:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  };
+
+  updateUserAsAdmin = async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { role_id, is_active } = req.body;
+      const db = require("../config/db");
+
+      if (!userId) {
+        return res.status(400).json({ message: "userId is required" });
+      }
+
+      // Build update query
+      const updates = [];
+      const values = [];
+
+      if (role_id !== undefined) {
+        const validRoles = [1, 2, 3, 4];
+        if (!validRoles.includes(Number(role_id))) {
+          return res.status(400).json({ message: "Invalid role_id" });
+        }
+        updates.push("role_id = ?");
+        values.push(role_id);
+      }
+
+      if (is_active !== undefined) {
+        updates.push("is_active = ?");
+        values.push(is_active ? 1 : 0);
+      }
+
+      if (updates.length === 0) {
+        return res.status(400).json({ message: "No fields to update" });
+      }
+
+      updates.push("updated_at = NOW()");
+      values.push(userId);
+
+      const query = `UPDATE users SET ${updates.join(", ")} WHERE id = ?`;
+      await db.execute(query, values);
+
+      const [updated] = await db.execute(
+        `SELECT id, full_name, email, role_id, is_active FROM users WHERE id = ?`,
+        [userId],
+      );
+
+      if (!updated || updated.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const roleMap = {
+        1: "student",
+        2: "teacher",
+        3: "admin",
+        4: "coordinator",
+      };
+      const user = updated[0];
+      user.role = roleMap[user.role_id];
+
+      return res.status(200).json({
+        message: "User updated successfully",
+        user,
+      });
+    } catch (error) {
+      console.error("updateUserAsAdmin error:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  };
+
+  deleteUserAsAdmin = async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const db = require("../config/db");
+
+      if (!userId) {
+        return res.status(400).json({ message: "userId is required" });
+      }
+
+      // Prevent deleting self
+      if (userId === req.user?.sub || userId === req.user?.id) {
+        return res
+          .status(403)
+          .json({ message: "Cannot delete your own account" });
+      }
+
+      // Check if user exists
+      const [user] = await db.execute(`SELECT id FROM users WHERE id = ?`, [
+        userId,
+      ]);
+      if (!user || user.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Delete user
+      await db.execute(`DELETE FROM users WHERE id = ?`, [userId]);
+
+      return res.status(200).json({
+        message: "User deleted successfully",
+      });
+    } catch (error) {
+      console.error("deleteUserAsAdmin error:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  };
 }
 
 module.exports = new UserController(userModel);

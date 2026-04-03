@@ -19,6 +19,23 @@ router.put("/me", userController.updateMe);
 // DELETE /api/users/me
 router.delete("/me", userController.deleteMe);
 
+// ADMIN ROUTES
+// GET all users (admin only)
+router.get("/admin/all-users", authMiddleware.requireAdmin, userController.getAllUsers);
+
+// GET users by role (admin only)
+router.get("/admin/role/:role_id", authMiddleware.requireAdmin, userController.getUsersByRole);
+
+// POST - create new user (admin only)
+router.post("/admin/create", authMiddleware.requireAdmin, userController.createUserAsAdmin);
+
+// PUT - update user (admin only)
+router.put("/admin/:userId", authMiddleware.requireAdmin, userController.updateUserAsAdmin);
+
+// DELETE - delete user (admin only)
+router.delete("/admin/:userId", authMiddleware.requireAdmin, userController.deleteUserAsAdmin);
+
+// LEGACY/EXISTING ROUTES (keep for backward compatibility)
 // GET  /api/users (admin only)
 router.get("/", authMiddleware.requireAdmin, userController.getUsers);
 
