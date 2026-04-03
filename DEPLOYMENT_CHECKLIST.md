@@ -3,8 +3,9 @@
 ## Pre-Deployment Checklist
 
 ### Code Changes Implemented ✅
+
 - [x] Course cloning functionality added to `courseModel.js` and `courseController.js`
-- [x] Routes updated with `/api/courses/:id/clone` endpoint  
+- [x] Routes updated with `/api/courses/:id/clone` endpoint
 - [x] Input validation middleware created (`validationMiddleware.js`)
 - [x] Strong password validation implemented
 - [x] Rate limiting configured on auth endpoints
@@ -16,6 +17,7 @@
 - [x] CORS protection implemented
 
 ### Dependencies to Install
+
 ```bash
 cd backend
 npm install validator
@@ -24,12 +26,14 @@ npm install validator
 ### File Changes Summary
 
 #### New Files Created
+
 1. `/backend/middleware/validationMiddleware.js` - Input validation & rate limiting
 2. `/backend/controller/progressController.js` - Student progress tracking
 3. `/backend/routes/progressRoutes.js` - Progress API routes
 4. `/IMPLEMENTATION_GUIDE.md` - Complete documentation
 
 #### Files Modified
+
 1. `/backend/server.js` - Added validation middleware and progress routes
 2. `/backend/middleware/authMiddleware.js` - Updated coordinator role support
 3. `/backend/models/courseModel.js` - Added cloneCourse method
@@ -67,6 +71,7 @@ npm start
 ### 2. Test New Endpoints
 
 **Test Course Cloning**:
+
 ```bash
 curl -X POST http://localhost:5000/api/courses/1/clone \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
@@ -75,12 +80,14 @@ curl -X POST http://localhost:5000/api/courses/1/clone \
 ```
 
 **Test Progress Endpoint**:
+
 ```bash
 curl -X GET http://localhost:5000/api/progress/courses/1 \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 **Test Strong Password Validation**:
+
 ```bash
 # This should fail (weak password)
 curl -X POST http://localhost:5000/api/auth/register \
@@ -98,6 +105,7 @@ curl -X POST http://localhost:5000/api/auth/register \
 #### Railway/Vercel Deployment
 
 1. **Update Environment Variables**:
+
    ```bash
    NODE_ENV=production
    FRONTEND_URL=https://your-domain.com
@@ -106,6 +114,7 @@ curl -X POST http://localhost:5000/api/auth/register \
    ```
 
 2. **Push to Git**:
+
    ```bash
    git add .
    git commit -m "feat: Add course cloning, progress tracking, and security enhancements"
@@ -157,7 +166,7 @@ docker run -p 5000:5000 --env-file .env kompi-cyber-backend
 
 ```
 1. Try weak password: "password" - should fail
-2. Try 6 failed logins - should be rate limited  
+2. Try 6 failed logins - should be rate limited
 3. Try SQL injection in email: "'; DROP TABLE users; --" - should be sanitized
 4. Try XSS payload: "<script>alert('xss')</script>" - should be escaped
 5. Try access with expired token - should get 401
@@ -190,6 +199,7 @@ The database schema is backward compatible, as the new fields are optional.
 ## Monitoring After Deployment
 
 ### Key Metrics to Track
+
 - [ ] API response times (target: <200ms for GET, <500ms for POST)
 - [ ] Error rates (target: <0.1%)
 - [ ] Failed login attempts (monitor for attacks)
@@ -197,7 +207,9 @@ The database schema is backward compatible, as the new fields are optional.
 - [ ] Database query performance (check slow query log)
 
 ### Logging
+
 Check your application logs for:
+
 - Authentication failures
 - Database connection issues
 - Validation errors
@@ -207,14 +219,14 @@ Check your application logs for:
 
 ## Common Issues & Solutions
 
-| Issue | Solution |
-|-------|----------|
-| "ValidationMiddleware not found" | Run `npm install` in backend directory |
-| "validator is not defined" | Update package.json and run `npm install validator` |
-| Rate limiting too strict | Adjust `windowMs` and `max` values in validationMiddleware.js |
-| Course clone fails | Check if source course exists and all modules/lessons have IDs |
-| Progress shows 0% | Verify submissions table has data for the course |
-| Invitations not working | Check email service configuration in .env |
+| Issue                            | Solution                                                       |
+| -------------------------------- | -------------------------------------------------------------- |
+| "ValidationMiddleware not found" | Run `npm install` in backend directory                         |
+| "validator is not defined"       | Update package.json and run `npm install validator`            |
+| Rate limiting too strict         | Adjust `windowMs` and `max` values in validationMiddleware.js  |
+| Course clone fails               | Check if source course exists and all modules/lessons have IDs |
+| Progress shows 0%                | Verify submissions table has data for the course               |
+| Invitations not working          | Check email service configuration in .env                      |
 
 ---
 

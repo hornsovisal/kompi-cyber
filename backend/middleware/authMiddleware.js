@@ -109,6 +109,38 @@ class AuthMiddleware {
 
     next();
   };
+
+  // STRICT: Teacher/Instructor ONLY (roleId = 2, NOT admins)
+  requireTeacherOnly = (req, res, next) => {
+    const roleId = Number(req.user?.roleId);
+    const email = req.user?.email;
+
+    if (roleId !== 2) {
+      return res.status(403).json({
+        message: "Teacher/Instructor access required (roleId=2)",
+        email,
+        roleId,
+      });
+    }
+
+    next();
+  };
+
+  // STRICT: Coordinator ONLY (roleId = 4, NOT instructors or admins)
+  requireCoordinatorOnly = (req, res, next) => {
+    const roleId = Number(req.user?.roleId);
+    const email = req.user?.email;
+
+    if (roleId !== 4) {
+      return res.status(403).json({
+        message: "Coordinator access required (roleId=4)",
+        email,
+        roleId,
+      });
+    }
+
+    next();
+  };
 }
 
 const jwtSecret = process.env.JWT_SECRET;
