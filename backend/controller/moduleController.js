@@ -5,6 +5,9 @@ class ModuleController {
   getModulesByCourse = async (req, res) => {
     try {
       const courseId = Number(req.params.courseId);
+      console.log("getModulesByCourse called with courseId:", courseId);
+      console.log("req.params:", req.params);
+      
       if (!Number.isInteger(courseId) || courseId <= 0) {
         return res.status(400).json({ message: "Invalid course id" });
       }
@@ -24,7 +27,9 @@ class ModuleController {
         ORDER BY module_order ASC, id ASC
       `;
 
+      console.log("Executing query for courseId:", courseId);
       const [modules] = await db.execute(query, [courseId]);
+      console.log("Query result:", modules);
 
       res.json({
         success: true,
@@ -32,6 +37,8 @@ class ModuleController {
       });
     } catch (error) {
       console.error("Error fetching modules:", error);
+      console.error("Error message:", error.message);
+      console.error("Error code:", error.code);
       res.status(500).json({
         success: false,
         message: "Failed to fetch modules",
