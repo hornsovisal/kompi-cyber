@@ -252,22 +252,23 @@ Visit `http://localhost:5173` in your browser:
 ### For Students
 
 1. **Register Account**
+
    - Visit `http://localhost:5173`
    - Click "Sign Up"
    - Verify email
-
 2. **Enroll in Courses**
+
    - Browse course catalog
    - Join self-paced courses directly
    - Accept instructor invitations via email
-
 3. **Complete Lessons**
+
    - Read lesson content
    - Take quizzes
    - Submit exercises
    - Track progress
-
 4. **Earn Certificates**
+
    - Complete all modules
    - Pass final assessment
    - Download certificate
@@ -275,20 +276,21 @@ Visit `http://localhost:5173` in your browser:
 ### For Instructors
 
 1. **Login as Instructor**
+
    - Use instructor account (admin creates these)
    - Access instructor dashboard
-
 2. **Create a Course**
+
    - Click "Create New Course"
    - Select course type (Online-Led or Instructor-Led)
    - Add title, description, syllabus
-
 3. **Add Content**
+
    - Create modules (weeks)
    - Add lessons with markdown content
    - Create quizzes and exercises
-
 4. **Manage Students**
+
    - Copy invitation link or send via email
    - View enrolled students
    - Monitor progress and performance
@@ -503,44 +505,23 @@ node scripts/add-network-security-modules.js
 
 ## 🛡️ Security Features
 
-✅ **JWT Authentication** - Secure token-based user sessions
-✅ **Password Hashing** - bcryptjs (salted & hashed)
-✅ **Input Validation** - express-validator prevents XSS
-✅ **HTML Sanitization** - Prevent script injection
-✅ **CORS Protection** - Whitelist allowed origins
-✅ **Rate Limiting** - Prevent brute force attacks
-✅ **Security Headers** - Helmet.js for HTTP hardening
-✅ **SQL Injection Prevention** - Parameterized queries
-✅ **Email Verification** - Confirm user identity
+* **JWT Authentication** - Secure token-based user sessions
+* **Password Hashing** - bcryptjs (salted & hashed)
+* **Input Validation** - express-validator prevents XSS
+* **HTML Sanitization** - Prevent script injection
+* **CORS Protection** - Whitelist allowed origins
+* **Rate Limiting** - Prevent brute force attacks
+* **Security Headers** - Helmet.js for HTTP hardening
+* **SQL Injection Prevention** - Parameterized querier
+* Email Verification - Confirm user identity
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! Here's how to get involved:
+We welcome contributions!
 
-### Contribution Areas
-
-1. **Frontend Features**
-   - UI/UX improvements
-   - New student/instructor components
-   - Mobile responsiveness
-
-2. **Backend Features**
-   - New API endpoints
-   - Database optimizations
-   - Performance improvements
-
-3. **Documentation**
-   - API docs
-   - Setup guides
-   - Video tutorials
-
-4. **Bug Fixes**
-   - Report issues on GitHub
-   - Submit pull requests
-
-### How to Contribute
+How to Contribute
 
 ```bash
 # 1. Fork the repository
@@ -599,16 +580,6 @@ This project is licensed under the ISC License - see [LICENSE](LICENSE) file for
 🚧 Real-time code execution
 🚧 Peer review system
 🚧 Advanced analytics
-
-### V3.0 (Future)
-
-📅 Mobile app
-📅 LMS integration (Canvas, Moodle)
-📅 Gamification (badges, leaderboards)
-📅 Live instructor sessions
-📅 AI tutoring assistant
-
----
 
 ## 🎓 Getting Started Resources
 

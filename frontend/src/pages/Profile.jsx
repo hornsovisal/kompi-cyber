@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, NavLink } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 import axios from "axios";
 import logo from "../kompi-cyber-logo-slide.svg";
 import { safeGetLocalStorage, safeSetLocalStorage } from "../utils/safeStorage";
@@ -15,6 +16,7 @@ export default function Profile() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [enrollments, setEnrollments] = useState([]);
   const [courses, setCourses] = useState([]);
   const [certificates, setCertificates] = useState([]);
@@ -314,7 +316,7 @@ export default function Profile() {
     >
       {/* ── Top Nav ── */}
       <nav
-        className={`border-b px-6 py-4 shadow-xl backdrop-blur-sm ${
+        className={`border-b px-4 md:px-6 py-4 shadow-xl backdrop-blur-sm ${
           isDarkMode
             ? "border-[#1E3A5F]/60 bg-gradient-to-r from-[#0F172A] via-[#1A2840] to-[#0F172A]"
             : "border-gray-200/60 bg-gradient-to-r from-white via-gray-50 to-white"
@@ -326,16 +328,16 @@ export default function Profile() {
             to="/"
             className="group flex items-center gap-3 transition-transform hover:scale-105"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl border-2 border-[#FE9A00]/60 bg-gradient-to-br from-[#FE9A00]/15 to-[#FF6B35]/10 shadow-lg shadow-[#FE9A00]/20 transition-all group-hover:border-[#FE9A00] group-hover:shadow-[#FE9A00]/40">
+            <div className="flex h-10 md:h-12 w-10 md:w-12 items-center justify-center rounded-xl border-2 border-[#FE9A00]/60 bg-gradient-to-br from-[#FE9A00]/15 to-[#FF6B35]/10 shadow-lg shadow-[#FE9A00]/20 transition-all group-hover:border-[#FE9A00] group-hover:shadow-[#FE9A00]/40">
               <img
                 src={logo}
                 alt="KOMPI-CYBER"
-                className="h-10 w-10 object-contain"
+                className="h-8 md:h-10 w-8 md:w-10 object-contain"
               />
             </div>
             <div className="hidden flex-col sm:flex">
               <p
-                className={`text-lg font-black uppercase tracking-widest ${isDarkMode ? "text-white" : "text-gray-900"}`}
+                className={`text-base md:text-lg font-black uppercase tracking-widest ${isDarkMode ? "text-white" : "text-gray-900"}`}
               >
                 KOMPI
               </p>
@@ -347,7 +349,7 @@ export default function Profile() {
             </div>
           </Link>
 
-          {/* Nav links */}
+          {/* Nav links - hidden on mobile */}
           <div
             className={`hidden md:flex items-center gap-1 rounded-full p-1.5 border backdrop-blur-sm ${
               isDarkMode
@@ -387,10 +389,10 @@ export default function Profile() {
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`flex items-center gap-2 rounded-lg border px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all duration-200 hover:scale-105 ${
+              className={`hidden sm:flex items-center gap-2 rounded-lg border px-3 md:px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all duration-200 hover:scale-105 ${
                 isDarkMode
                   ? "bg-gradient-to-r from-[#FE9A00]/20 to-[#FF6B35]/20 text-[#FE9A00] border-[#FE9A00]/50 hover:shadow-lg hover:shadow-[#FE9A00]/40"
                   : "bg-gradient-to-r from-amber-100 to-amber-50 text-amber-900 border-amber-300 hover:shadow-lg hover:shadow-amber-400/40"
@@ -419,90 +421,154 @@ export default function Profile() {
                   />
                 </svg>
               )}
-              <span className="hidden sm:inline">
+              <span className="hidden md:inline">
                 {isDarkMode ? "Light" : "Dark"}
               </span>
+            </button>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setMobileNavOpen(!mobileNavOpen)}
+              className={`lg:hidden p-2 rounded-lg transition-all ${
+                isDarkMode
+                  ? "text-[#FE9A00] hover:bg-[#FE9A00]/10"
+                  : "text-amber-600 hover:bg-amber-100/40"
+              }`}
+              aria-label="Toggle navigation"
+            >
+              {mobileNavOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
       </nav>
 
       {/* ── Body ── */}
-      <div className="mx-auto flex w-full max-w-7xl flex-1 gap-6 px-4 py-8">
-        {/* ── Sidebar ── */}
-        <aside className="hidden w-64 flex-shrink-0 lg:block">
-          {/* Avatar card */}
+      <div className="mx-auto flex w-full max-w-7xl flex-1 gap-4 md:gap-6 px-4 py-6 md:py-8">
+        {/* Mobile Overlay */}
+        {mobileNavOpen && (
           <div
-            className={`mb-4 rounded-2xl border p-6 shadow-xl text-center ${
-              isDarkMode
-                ? "border-[#1E3A5F]/60 bg-gradient-to-br from-[#1A2840] to-[#0F172A]"
-                : "border-gray-200/50 bg-gradient-to-br from-white to-gray-50"
-            }`}
-          >
-            <div
-              className={`mx-auto h-20 w-20 rounded-full flex items-center justify-center text-2xl font-black border-4 shadow-lg ${
-                isDarkMode
-                  ? "border-[#FE9A00]/60 bg-gradient-to-br from-[#FE9A00]/30 to-[#FF6B35]/20 text-[#FE9A00] shadow-[#FE9A00]/20"
-                  : "border-amber-400/60 bg-gradient-to-br from-amber-100 to-orange-50 text-amber-600 shadow-amber-400/20"
-              }`}
-            >
-              {initials}
-            </div>
-            <h3
-              className={`mt-3 font-bold text-sm ${isDarkMode ? "text-white" : "text-gray-900"}`}
-            >
-              {displayName}
-            </h3>
-            <p
-              className={`text-xs mt-1 truncate ${isDarkMode ? "text-slate-400" : "text-gray-500"}`}
-            >
-              {user?.email}
-            </p>
-            <span
-              className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-bold border ${
-                user?.roleId === 3
-                  ? isDarkMode
-                    ? "bg-[#FE9A00]/20 border-[#FE9A00]/40 text-[#FE9A00]"
-                    : "bg-amber-100 border-amber-300 text-amber-700"
-                  : user?.roleId === 2
-                    ? isDarkMode
-                      ? "bg-blue-500/20 border-blue-500/40 text-blue-300"
-                      : "bg-blue-100 border-blue-300 text-blue-700"
-                    : isDarkMode
-                      ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300"
-                      : "bg-emerald-100 border-emerald-300 text-emerald-700"
-              }`}
-            >
-              {user?.roleId === 3
-                ? "Admin"
-                : user?.roleId === 2
-                  ? "Instructor"
-                  : "Student"}
-            </span>
-          </div>
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setMobileNavOpen(false)}
+          />
+        )}
 
-          {/* Nav items */}
-          <nav
-            className={`rounded-2xl border shadow-lg overflow-hidden ${
-              isDarkMode
-                ? "border-[#1E3A5F]/60 bg-gradient-to-br from-[#1A2840] to-[#0F172A]"
-                : "border-gray-200/50 bg-gradient-to-br from-white to-gray-50"
-            }`}
-          >
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveSection(item.id)}
-                className={`w-full flex items-center gap-3 px-5 py-3.5 text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b last:border-b-0 ${
-                  isDarkMode ? "border-[#1E3A5F]/40" : "border-gray-100"
-                } ${
-                  activeSection === item.id
+        {/* ── Sidebar ── */}
+        <aside
+          className={`fixed left-0 top-0 z-50 h-screen w-64 transform transition-transform duration-300 lg:static lg:transform-none lg:h-auto lg:w-64 lg:flex-shrink-0 lg:z-auto overflow-y-auto lg:overflow-visible ${
+            mobileNavOpen
+              ? "translate-x-0"
+              : "-translate-x-full lg:translate-x-0"
+          } ${
+            isDarkMode
+              ? "bg-[#0F172A] lg:bg-transparent"
+              : "bg-white lg:bg-transparent"
+          }`}
+          style={{
+            top: "var(--navbar-height, 0)",
+            marginTop: "65px",
+          }}
+        >
+          <div className="p-4 lg:p-0">
+            {/* Avatar card */}
+            <div
+              className={`mb-4 rounded-2xl border p-6 shadow-xl text-center ${
+                isDarkMode
+                  ? "border-[#1E3A5F]/60 bg-gradient-to-br from-[#1A2840] to-[#0F172A]"
+                  : "border-gray-200/50 bg-gradient-to-br from-white to-gray-50"
+              }`}
+            >
+              <div
+                className={`mx-auto h-20 w-20 rounded-full flex items-center justify-center text-2xl font-black border-4 shadow-lg ${
+                  isDarkMode
+                    ? "border-[#FE9A00]/60 bg-gradient-to-br from-[#FE9A00]/30 to-[#FF6B35]/20 text-[#FE9A00] shadow-[#FE9A00]/20"
+                    : "border-amber-400/60 bg-gradient-to-br from-amber-100 to-orange-50 text-amber-600 shadow-amber-400/20"
+                }`}
+              >
+                {initials}
+              </div>
+              <h3
+                className={`mt-3 font-bold text-sm ${isDarkMode ? "text-white" : "text-gray-900"}`}
+              >
+                {displayName}
+              </h3>
+              <p
+                className={`text-xs mt-1 truncate ${isDarkMode ? "text-slate-400" : "text-gray-500"}`}
+              >
+                {user?.email}
+              </p>
+              <span
+                className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-bold border ${
+                  user?.roleId === 3
                     ? isDarkMode
-                      ? "bg-[#FE9A00]/15 text-[#FE9A00] border-l-2 border-l-[#FE9A00]"
-                      : "bg-amber-50 text-amber-600 border-l-2 border-l-amber-500"
-                    : isDarkMode
-                      ? "text-slate-400 hover:text-[#FE9A00] hover:bg-[#FE9A00]/10"
-                      : "text-gray-500 hover:text-amber-600 hover:bg-amber-50"
+                      ? "bg-[#FE9A00]/20 border-[#FE9A00]/40 text-[#FE9A00]"
+                      : "bg-amber-100 border-amber-300 text-amber-700"
+                    : user?.roleId === 2
+                      ? isDarkMode
+                        ? "bg-blue-500/20 border-blue-500/40 text-blue-300"
+                        : "bg-blue-100 border-blue-300 text-blue-700"
+                      : isDarkMode
+                        ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300"
+                        : "bg-emerald-100 border-emerald-300 text-emerald-700"
+                }`}
+              >
+                {user?.roleId === 3
+                  ? "Admin"
+                  : user?.roleId === 2
+                    ? "Instructor"
+                    : "Student"}
+              </span>
+            </div>
+
+            {/* Nav items */}
+            <nav
+              className={`rounded-2xl border shadow-lg overflow-hidden ${
+                isDarkMode
+                  ? "border-[#1E3A5F]/60 bg-gradient-to-br from-[#1A2840] to-[#0F172A]"
+                  : "border-gray-200/50 bg-gradient-to-br from-white to-gray-50"
+              }`}
+            >
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveSection(item.id);
+                    setMobileNavOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-5 py-3.5 text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b last:border-b-0 ${
+                    isDarkMode ? "border-[#1E3A5F]/40" : "border-gray-100"
+                  } ${
+                    activeSection === item.id
+                      ? isDarkMode
+                        ? "bg-[#FE9A00]/15 text-[#FE9A00] border-l-2 border-l-[#FE9A00]"
+                        : "bg-amber-50 text-amber-600 border-l-2 border-l-amber-500"
+                      : isDarkMode
+                        ? "text-slate-400 hover:text-[#FE9A00] hover:bg-[#FE9A00]/10"
+                        : "text-gray-500 hover:text-amber-600 hover:bg-amber-50"
+                  }`}
+                >
+                  <svg
+                    className="h-4 w-4 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d={item.icon}
+                    />
+                  </svg>
+                  {item.label}
+                </button>
+              ))}
+
+              <button
+                onClick={handleLogout}
+                className={`w-full flex items-center gap-3 px-5 py-3.5 text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+                  isDarkMode
+                    ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                    : "text-red-500 hover:bg-red-50 hover:text-red-600"
                 }`}
               >
                 <svg
@@ -515,37 +581,13 @@ export default function Profile() {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d={item.icon}
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                   />
                 </svg>
-                {item.label}
+                Logout
               </button>
-            ))}
-
-            <button
-              onClick={handleLogout}
-              className={`w-full flex items-center gap-3 px-5 py-3.5 text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
-                isDarkMode
-                  ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
-                  : "text-red-500 hover:bg-red-50 hover:text-red-600"
-              }`}
-            >
-              <svg
-                className="h-4 w-4 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
-              Logout
-            </button>
-          </nav>
+            </nav>
+          </div>
         </aside>
 
         {/* ── Main Content ── */}

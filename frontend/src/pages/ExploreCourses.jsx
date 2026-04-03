@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
+import { Menu, X } from "lucide-react";
 import logo from "../assets/logos/logo-blue.svg";
 import { safeGetLocalStorage, safeSetLocalStorage } from "../utils/safeStorage";
 import { getCourseCoverUrl } from "../utils/courseImage";
@@ -52,6 +53,7 @@ export default function ExploreCourses() {
     const saved = safeGetLocalStorage("theme");
     return saved ? saved === "dark" : true;
   });
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [courses, setCourses] = useState([]);
   const [enrolledIds, setEnrolledIds] = useState(new Set());
@@ -222,26 +224,26 @@ export default function ExploreCourses() {
     >
       {/* Navigation */}
       <nav
-        className={`border-b px-6 py-4 transition-all duration-500 ${
+        className={`border-b px-4 md:px-6 py-4 transition-all duration-500 ${
           isDarkMode
             ? "border-[#1E3A5F]/40 bg-[#0F172A]"
             : "border-gray-200/40 bg-white"
         }`}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 md:gap-4">
           {/* Logo & Brand */}
           <Link
             to="/dashboard"
             className={`flex items-center gap-2 font-bold uppercase tracking-widest transition-colors hover:${
               isDarkMode ? "text-[#FE9A00]" : "text-amber-600"
-            } ${isDarkMode ? "text-white" : "text-gray-900"}`}
+            } ${isDarkMode ? "text-white" : "text-gray-900"} text-sm md:text-base`}
           >
-            <span className="text-xl">🔐</span>
-            KOMPI CYBER
+            <span className="text-lg md:text-xl">🔐</span>
+            <span className="hidden sm:inline">KOMPI CYBER</span>
           </Link>
 
-          {/* Center Title */}
-          <div className="flex-1 flex justify-center">
+          {/* Center Title - Hidden on mobile */}
+          <div className="hidden md:flex flex-1 flex justify-center">
             <h1
               className={`text-lg font-bold uppercase tracking-wider transition-colors ${
                 isDarkMode ? "text-white" : "text-gray-900"
@@ -252,10 +254,10 @@ export default function ExploreCourses() {
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             <Link
               to="/dashboard"
-              className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 border ${
+              className={`hidden sm:block px-3 md:px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 border ${
                 isDarkMode
                   ? "border-[#FE9A00]/50 text-[#FE9A00] hover:bg-[#FE9A00]/10"
                   : "border-amber-500/50 text-amber-600 hover:bg-amber-100/40"
@@ -265,102 +267,143 @@ export default function ExploreCourses() {
             </Link>
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider border transition-all duration-200 ${
+              className={`px-2 md:px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider border transition-all duration-200 ${
                 isDarkMode
                   ? "border-[#FE9A00]/50 text-[#FE9A00] hover:bg-[#FE9A00]/10"
                   : "border-amber-500/50 text-amber-600 hover:bg-amber-100/40"
               }`}
             >
-              {isDarkMode ? "☀️ Light" : "🌙 Dark"}
+              {isDarkMode ? "☀️" : "🌙"}
+              <span className="hidden sm:inline ml-1">
+                {isDarkMode ? "Light" : "Dark"}
+              </span>
+            </button>
+
+            {/* Mobile Filter Toggle */}
+            <button
+              onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
+              className={`md:hidden p-2 rounded-lg transition-all ${
+                isDarkMode
+                  ? "text-[#FE9A00] hover:bg-[#FE9A00]/10"
+                  : "text-amber-600 hover:bg-amber-100/40"
+              }`}
+              aria-label="Toggle filters"
+            >
+              {mobileFilterOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
       </nav>
 
       <main
-        className={`flex-1 px-4 py-12 transition-all duration-500 ${
+        className={`flex-1 px-4 py-8 md:py-12 transition-all duration-500 ${
           isDarkMode
             ? "bg-gradient-to-b from-[#0F172A] via-transparent to-[#0F172A]"
             : "bg-gradient-to-b from-white via-gray-50 to-white"
         }`}
       >
         <div className="mx-auto max-w-7xl">
-          <div className="flex gap-8">
+          <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+            {/* Mobile Filter Overlay */}
+            {mobileFilterOpen && (
+              <div
+                className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                onClick={() => setMobileFilterOpen(false)}
+              />
+            )}
+
             {/* Sidebar */}
-            <aside className="w-full md:w-64 flex-shrink-0">
-              {/* Search */}
-              <div className="mb-8">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search courses..."
-                  className={`w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-all ${
-                    isDarkMode
-                      ? "border-[#1E3A5F]/40 bg-[#1A2840]/50 text-white placeholder:text-slate-500 focus:border-[#FE9A00] focus:bg-[#1A2840]"
-                      : "border-gray-300/40 bg-white text-gray-900 placeholder:text-gray-400 focus:border-amber-500 focus:bg-white"
-                  }`}
-                />
-              </div>
+            <aside
+              className={`fixed left-0 top-0 z-50 h-screen w-64 transform transition-transform duration-300 md:static md:transform-none md:h-auto md:w-64 md:flex-shrink-0 md:z-auto overflow-y-auto md:overflow-visible ${
+                mobileFilterOpen
+                  ? "translate-x-0"
+                  : "-translate-x-full md:translate-x-0"
+              } ${
+                isDarkMode
+                  ? "bg-[#0F172A] md:bg-transparent"
+                  : "bg-white md:bg-transparent"
+              }`}
+              style={{
+                top: "var(--navbar-height, 0)",
+                marginTop: "60px",
+              }}
+            >
+              <div className="p-4 md:p-0">
+                {/* Sidebar Content */}
+                {/* Search */}
+                <div className="mb-8">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search courses..."
+                    className={`w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-all ${
+                      isDarkMode
+                        ? "border-[#1E3A5F]/40 bg-[#1A2840]/50 text-white placeholder:text-slate-500 focus:border-[#FE9A00] focus:bg-[#1A2840]"
+                        : "border-gray-300/40 bg-white text-gray-900 placeholder:text-gray-400 focus:border-amber-500 focus:bg-white"
+                    }`}
+                  />
+                </div>
 
-              {/* Sort */}
-              <div className="mb-8">
-                <label
-                  className={`block text-xs font-bold uppercase tracking-widest mb-3 ${
-                    isDarkMode ? "text-[#FE9A00]" : "text-amber-600"
-                  }`}
-                >
-                  Sort By
-                </label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className={`w-full rounded-lg border px-4 py-2 text-sm outline-none transition-all ${
-                    isDarkMode
-                      ? "border-[#1E3A5F]/40 bg-[#1A2840]/50 text-white focus:border-[#FE9A00]"
-                      : "border-gray-300/40 bg-white text-gray-900 focus:border-amber-500"
-                  }`}
-                >
-                  <option value="popular">Most Popular</option>
-                  <option value="newest">Newest</option>
-                  <option value="duration">Shortest Duration</option>
-                </select>
-              </div>
+                {/* Sort */}
+                <div className="mb-8">
+                  <label
+                    className={`block text-xs font-bold uppercase tracking-widest mb-3 ${
+                      isDarkMode ? "text-[#FE9A00]" : "text-amber-600"
+                    }`}
+                  >
+                    Sort By
+                  </label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className={`w-full rounded-lg border px-4 py-2 text-sm outline-none transition-all ${
+                      isDarkMode
+                        ? "border-[#1E3A5F]/40 bg-[#1A2840]/50 text-white focus:border-[#FE9A00]"
+                        : "border-gray-300/40 bg-white text-gray-900 focus:border-amber-500"
+                    }`}
+                  >
+                    <option value="popular">Most Popular</option>
+                    <option value="newest">Newest</option>
+                    <option value="duration">Shortest Duration</option>
+                  </select>
+                </div>
 
-              {/* Categories */}
-              <div>
-                <h3
-                  className={`text-xs font-bold uppercase tracking-widest mb-4 ${
-                    isDarkMode ? "text-[#FE9A00]" : "text-amber-600"
-                  }`}
-                >
-                  Subjects
-                </h3>
-                <div className="space-y-2">
-                  {COURSE_CATEGORIES.map((cat) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => setSelectedCategory(cat.id)}
-                      className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                        selectedCategory === cat.id
-                          ? isDarkMode
-                            ? "bg-[#FE9A00] text-[#0F172A]"
-                            : "bg-amber-500 text-white"
-                          : isDarkMode
-                            ? "text-slate-300 border border-[#1E3A5F]/40 hover:border-[#FE9A00]/60 hover:bg-[#1A2840]/40"
-                            : "text-gray-700 border border-gray-200/40 hover:border-amber-400/60 hover:bg-gray-100/40"
-                      }`}
-                    >
-                      <span className="mr-2">{cat.icon}</span>
-                      {cat.name}
-                    </button>
-                  ))}
+                {/* Categories */}
+                <div>
+                  <h3
+                    className={`text-xs font-bold uppercase tracking-widest mb-4 ${
+                      isDarkMode ? "text-[#FE9A00]" : "text-amber-600"
+                    }`}
+                  >
+                    Subjects
+                  </h3>
+                  <div className="space-y-2">
+                    {COURSE_CATEGORIES.map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setSelectedCategory(cat.id)}
+                        className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                          selectedCategory === cat.id
+                            ? isDarkMode
+                              ? "bg-[#FE9A00] text-[#0F172A]"
+                              : "bg-amber-500 text-white"
+                            : isDarkMode
+                              ? "text-slate-300 border border-[#1E3A5F]/40 hover:border-[#FE9A00]/60 hover:bg-[#1A2840]/40"
+                              : "text-gray-700 border border-gray-200/40 hover:border-amber-400/60 hover:bg-gray-100/40"
+                        }`}
+                      >
+                        <span className="mr-2">{cat.icon}</span>
+                        {cat.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </aside>
 
             {/* Main Content */}
-            <div className="flex-1">
+            <div className="w-full flex-1">
               {error && (
                 <div
                   className={`mb-8 rounded-lg border-l-4 px-4 py-3 text-sm ${
@@ -394,7 +437,7 @@ export default function ExploreCourses() {
               </div>
 
               {/* Course Grid */}
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 {filteredAndSortedCourses.map((course) => (
                   <div
                     key={course.id}
