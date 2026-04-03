@@ -360,10 +360,6 @@ kompi-cyber/
 ├── docs/                              # Documentation
 │   ├── SETUP_GUIDE.md                # Installation guide
 │   ├── API_FRONTEND.md                # API endpoints documentation
-│   ├── NETACAD_COURSE_SYSTEM.md      # Course invitation system
-│   ├── INSTRUCTOR_DASHBOARD_GUIDE.md  # Admin guide
-│   └── IMPLEMENTATION_SUMMARY.md      # Implementation details
-
 ├── upload/                            # File uploads directory
 │   └── lesson/                        # Lesson content uploads
 
@@ -580,6 +576,3 @@ This project is licensed under the ISC License - see [LICENSE](LICENSE) file for
 
 - 📖 [Setup Guide](docs/SETUP_GUIDE.md)
 - 🔌 [API Documentation](docs/API_FRONTEND.md)
-- 👨‍🏫 [Instructor Guide](docs/INSTRUCTOR_DASHBOARD_GUIDE.md)
-- 🎯 [Course System](docs/NETACAD_COURSE_SYSTEM.md)
-- 🔐 [Security Audit](SECURITY_AUDIT_2024.md)
