@@ -432,7 +432,7 @@ const getDashboardStats = async (req, res) => {
     // Get total courses
     const [coursesResult] = await db.execute(
       "SELECT COUNT(*) as count FROM courses WHERE created_by = ?",
-      [instructorId]
+      [instructorId],
     );
 
     // Get total students enrolled
@@ -441,7 +441,7 @@ const getDashboardStats = async (req, res) => {
        FROM enrollments e
        JOIN courses c ON e.course_id = c.id
        WHERE c.created_by = ?`,
-      [instructorId]
+      [instructorId],
     );
 
     // Get total quiz questions (as a proxy for quizzes)
@@ -452,7 +452,7 @@ const getDashboardStats = async (req, res) => {
        INNER JOIN modules m ON l.module_id = m.id
        INNER JOIN courses c ON m.course_id = c.id
        WHERE c.created_by = ?`,
-      [instructorId]
+      [instructorId],
     );
 
     res.json({
@@ -747,16 +747,25 @@ const loginInstructor = async (req, res) => {
       [email],
     );
 
+    console.log(
+      `[Instructor Login] Email: ${email}, Found: ${rows.length > 0}`,
+    );
+
     if (rows.length === 0) {
+      console.log(`[Instructor Login] No user found for email: ${email}`);
       return res.status(401).json({
         message: "Invalid email or password",
       });
     }
 
     const user = rows[0];
+    console.log(
+      `[Instructor Login] User found: ${user.full_name}, Role: ${user.role_id}, Active: ${user.is_active}`,
+    );
 
     // Check if account is active
     if (!user.is_active) {
+      console.log(`[Instructor Login] Account inactive for: ${email}`);
       return res.status(403).json({
         message: "Account is inactive. Please contact administrator.",
       });
@@ -764,6 +773,10 @@ const loginInstructor = async (req, res) => {
 
     // Check password
     const isPasswordMatch = await bcrypt.compare(password, user.password_hash);
+    console.log(
+      `[Instructor Login] Password match: ${isPasswordMatch} for user: ${email}`,
+    );
+
     if (!isPasswordMatch) {
       return res.status(401).json({
         message: "Invalid email or password",
@@ -786,6 +799,8 @@ const loginInstructor = async (req, res) => {
       process.env.JWT_SECRET || "dev_jwt_secret_change_me",
       { expiresIn: "24h" },
     );
+
+    console.log(`[Instructor Login] Login successful for: ${email}`);
 
     res.json({
       success: true,
