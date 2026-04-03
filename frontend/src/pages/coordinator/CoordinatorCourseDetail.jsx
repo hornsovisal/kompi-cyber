@@ -52,7 +52,10 @@ export default function CoordinatorCourseDetail() {
 
       console.log("Fetching course detail for:", courseId);
       console.log("API_BASE:", API_BASE);
-      console.log("Full URL:", `${API_BASE}/api/instructor/courses/${courseId}`);
+      console.log(
+        "Full URL:",
+        `${API_BASE}/api/instructor/courses/${courseId}`,
+      );
 
       const [courseRes, modulesRes] = await Promise.all([
         axios.get(`${API_BASE}/api/instructor/courses/${courseId}`, {

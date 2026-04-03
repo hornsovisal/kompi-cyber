@@ -23,7 +23,8 @@ export default function CoordinatorCourses() {
   const [query, setQuery] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
-  const [selectedCourseForModules, setSelectedCourseForModules] = useState(null);
+  const [selectedCourseForModules, setSelectedCourseForModules] =
+    useState(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -358,7 +359,10 @@ export default function CoordinatorCourses() {
                       </span>
                     </p>
                   </div>
-                  <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                  <div
+                    className="flex gap-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <button
                       onClick={() => setSelectedCourseForModules(course)}
                       className="p-2 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg transition-colors"
@@ -410,6 +414,6 @@ export default function CoordinatorCourses() {
           onClose={() => setSelectedCourseForModules(null)}
         />
       )}
-    </div>;
-  }
+    </div>
+  );
 }
