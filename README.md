@@ -23,11 +23,6 @@ Kompi-Cyber was created to democratize cybersecurity education for CADT students
 
 - **Dual Course Types:** Self-paced (online-led) and cohort-based (instructor-led) models
 - **Structured Content:** Courses → Modules → Lessons → Exercises & Quizzes
-- **Multiple Cybersecurity Courses:**
-  - 🔒 Network Security Basics (Week 1-6)
-  - 🖥️ Introduction to Cybersecurity
-  - 🚨 Web Security & Vulnerability Assessment
-  - 🔐 System Administration & Hardening
 
 ### 👥 User Roles & Management
 
