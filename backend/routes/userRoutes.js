@@ -22,6 +22,9 @@ router.delete("/me", userController.deleteMe);
 // GET  /api/users (admin only)
 router.get("/", authMiddleware.requireAdmin, userController.getUsers);
 
+// POST /api/users (admin only - create coordinator or teacher)
+router.post("/", authMiddleware.requireAdmin, userController.createUserAsAdmin);
+
 // PATCH /api/users/:id/status (admin only)
 router.patch(
   "/:id/status",

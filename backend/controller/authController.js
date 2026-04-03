@@ -292,6 +292,65 @@ class AuthController {
       res.status(500).json({ message: "Server error" });
     }
   };
+
+  createFirstAdmin = async (req, res) => {
+    try {
+      const { full_name, email, password } = req.body;
+
+      // Validate input
+      if (!full_name || !email || !password) {
+        return res.status(400).json({
+          message: "full_name, email, and password are required",
+        });
+      }
+
+      // Check if any admins already exist
+      const [admins] = await this.userModel.db.execute(
+        "SELECT id FROM users WHERE role_id = 3 LIMIT 1",
+      );
+
+      if (admins.length > 0) {
+        return res.status(409).json({
+          message:
+            "Admin account already exists. Use /api/users to create more users.",
+        });
+      }
+
+      // Check if email already exists
+      const existing = await this.userModel.findUserByEmail(email);
+      if (existing.length > 0) {
+        return res.status(409).json({ message: "Email already exists" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create admin user (role_id = 3, is_active = 1)
+      const { id: userId } = await this.userModel.createUser(
+        full_name,
+        email,
+        hashedPassword,
+        3, // admin role
+        1, // is_active = 1
+      );
+
+      // Get created user
+      const newUser = await this.userModel.findById(userId);
+
+      return res.status(201).json({
+        message: "Admin account created successfully",
+        user: {
+          id: newUser.id,
+          full_name: newUser.full_name,
+          email: newUser.email,
+          role_id: newUser.role_id,
+        },
+      });
+    } catch (error) {
+      console.error("createFirstAdmin error:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  };
 }
 
 module.exports = new AuthController(process.env.JWT_SECRET || "dev_jwt_secret");

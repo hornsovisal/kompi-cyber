@@ -229,6 +229,57 @@ class UserController {
       return res.status(500).json({ message: "Server error" });
     }
   };
+
+  createUserAsAdmin = async (req, res) => {
+    try {
+      const bcrypt = require("bcryptjs");
+      const { full_name, email, password, role_id } = req.body;
+
+      // Validate input
+      if (!full_name || !email || !password || !role_id) {
+        return res.status(400).json({
+          message: "full_name, email, password, and role_id are required",
+        });
+      }
+
+      // Only allow creating teacher (2) or coordinator (4)
+      const allowedRoles = [2, 4];
+      if (!allowedRoles.includes(Number(role_id))) {
+        return res.status(400).json({
+          message: "role_id must be 2 (teacher) or 4 (coordinator)",
+        });
+      }
+
+      // Check if email already exists
+      const existing = await this.userModel.findUserByEmail(email);
+      if (existing.length > 0) {
+        return res.status(409).json({ message: "Email already exists" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create user (is_active = 1, no email verification needed)
+      const { id: userId } = await this.userModel.createUser(
+        full_name,
+        email,
+        hashedPassword,
+        role_id,
+        1, // is_active = 1
+      );
+
+      // Get created user
+      const newUser = await this.userModel.findById(userId);
+
+      return res.status(201).json({
+        message: "User created successfully",
+        user: this.userModel.toSafeUser(newUser),
+      });
+    } catch (error) {
+      console.error("createUserAsAdmin error:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  };
 }
 
 module.exports = new UserController(userModel);

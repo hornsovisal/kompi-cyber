@@ -37,4 +37,9 @@ router.post("/reset-password", (req, res) =>
   authController.resetPassword(req, res),
 );
 
+// Create first admin account (only if no admins exist)
+router.post("/create-admin", (req, res) =>
+  authController.createFirstAdmin(req, res),
+);
+
 module.exports = router;
