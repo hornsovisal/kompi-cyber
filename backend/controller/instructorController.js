@@ -802,16 +802,19 @@ const loginInstructor = async (req, res) => {
 
     console.log(`[Instructor Login] Login successful for: ${email}`);
 
+    // Return response in format expected by frontend
     res.json({
-      success: true,
       token,
-      user: {
+      instructor: {
         id: user.id,
-        fullName: user.full_name,
+        name: user.full_name,
         email: user.email,
+        department: roleName,
+        employeeId: user.id,
+        isVerified: true,
+        courses: [],
         role: roleName,
         roleId: user.role_id,
-        isActive: user.is_active,
       },
     });
   } catch (error) {
