@@ -21,7 +21,24 @@
 > - Oversee programs and courses
 > - Monitor student progress
 > - Generate reports
+### For Students
 
+1. **Register Account**
+   - Click "Sign Up"
+   - Verify email
+
+2. **Enroll in Courses**
+
+3. **Complete Lessons**
+   - Read lesson content
+   - Take quizzes
+   - Submit exercises
+   - Track progress
+
+4. **Earn Certificates**
+   - Complete all modules
+   - Pass final assessment
+   - Download certificate
 ---
 
 ## 🎯 Project Purpose
@@ -286,29 +303,25 @@ Visit `http://localhost:5173` in your browser:
    - Complete all modules
    - Pass final assessment
    - Download certificate
+  
+ **Admin Portal Features:**
+>
+> - Manage all users (create, edit, delete)
+> - Add/remove teachers and coordinators
+> - View system analytics
 
-### For Instructors
+> **Teacher Portal Features:**
+>
+> - Create and manage courses
+> - Create quizzes and exercises
+> - Track student performance
 
-1. **Login as Instructor**
-   - Use instructor account (admin creates these)
-   - Access instructor dashboard
+> **Coordinator Portal Features:**
+>
+> - Oversee programs and courses
+> - Monitor student progress
+> - Generate reports
 
-2. **Create a Course**
-   - Click "Create New Course"
-   - Select course type (Online-Led or Instructor-Led)
-   - Add title, description, syllabus
-
-3. **Add Content**
-   - Create modules (weeks)
-   - Add lessons with markdown content
-   - Create quizzes and exercises
-
-4. **Manage Students**
-   - Copy invitation link or send via email
-   - View enrolled students
-   - Monitor progress and performance
-
----
 
 ## 📁 Project Structure
 
