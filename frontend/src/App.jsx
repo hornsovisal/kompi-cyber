@@ -17,7 +17,12 @@ import ViewCertificate from "./pages/ViewCertificate";
 import StudentInvitations from "./pages/StudentInvitations";
 import Profile from "./pages/Profile";
 import InstructorLayout from "./components/Layout/InstructorLayout";
+import AdminLayout from "./components/Layout/AdminLayout";
+import CoordinatorLayout from "./components/Layout/CoordinatorLayout";
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import CoordinatorDashboard from "./pages/coordinator/CoordinatorDashboard";
 import InstructorLogin from "./pages/instructor/InstructorLogin";
 import CreateQuiz from "./pages/instructor/CreateQuiz";
 import CreateCourse from "./pages/instructor/CreateCourse";
@@ -73,6 +78,8 @@ export default function App() {
         />
         <Route path="/instructor/login" element={<InstructorLogin />} />
         <Route path="/teacher/login" element={<InstructorLogin />} />
+
+        {/* INSTRUCTOR ROUTES (roleId = 2) */}
         <Route
           path="/instructor/dashboard"
           element={
@@ -98,14 +105,6 @@ export default function App() {
           }
         />
         <Route
-          path="/instructor/courses/:courseId"
-          element={
-            <InstructorLayout>
-              <CourseDetail />
-            </InstructorLayout>
-          }
-        />
-        <Route
           path="/instructor/quizzes"
           element={
             <InstructorLayout>
@@ -118,22 +117,6 @@ export default function App() {
           element={
             <InstructorLayout>
               <StudentPerformance />
-            </InstructorLayout>
-          }
-        />
-        <Route
-          path="/instructor/analytics"
-          element={
-            <InstructorLayout>
-              <Analytics />
-            </InstructorLayout>
-          }
-        />
-        <Route
-          path="/instructor/settings"
-          element={
-            <InstructorLayout>
-              <InstructorSettings />
             </InstructorLayout>
           }
         />
@@ -151,6 +134,34 @@ export default function App() {
             <InstructorLayout>
               <CreateCourse />
             </InstructorLayout>
+          }
+        />
+
+        {/* ADMIN ROUTES (roleId = 3) */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <AdminLayout>
+              <AdminDashboard />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminLayout>
+              <AdminUsers />
+            </AdminLayout>
+          }
+        />
+
+        {/* COORDINATOR ROUTES (roleId = 4) */}
+        <Route
+          path="/coordinator/dashboard"
+          element={
+            <CoordinatorLayout>
+              <CoordinatorDashboard />
+            </CoordinatorLayout>
           }
         />
       </Routes>

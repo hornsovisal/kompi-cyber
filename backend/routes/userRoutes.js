@@ -21,19 +21,39 @@ router.delete("/me", userController.deleteMe);
 
 // ADMIN ROUTES
 // GET all users (admin only)
-router.get("/admin/all-users", authMiddleware.requireAdmin, userController.getAllUsers);
+router.get(
+  "/admin/all-users",
+  authMiddleware.requireAdmin,
+  userController.getAllUsers,
+);
 
 // GET users by role (admin only)
-router.get("/admin/role/:role_id", authMiddleware.requireAdmin, userController.getUsersByRole);
+router.get(
+  "/admin/role/:role_id",
+  authMiddleware.requireAdmin,
+  userController.getUsersByRole,
+);
 
 // POST - create new user (admin only)
-router.post("/admin/create", authMiddleware.requireAdmin, userController.createUserAsAdmin);
+router.post(
+  "/admin/create",
+  authMiddleware.requireAdmin,
+  userController.createUserAsAdmin,
+);
 
 // PUT - update user (admin only)
-router.put("/admin/:userId", authMiddleware.requireAdmin, userController.updateUserAsAdmin);
+router.put(
+  "/admin/:userId",
+  authMiddleware.requireAdmin,
+  userController.updateUserAsAdmin,
+);
 
 // DELETE - delete user (admin only)
-router.delete("/admin/:userId", authMiddleware.requireAdmin, userController.deleteUserAsAdmin);
+router.delete(
+  "/admin/:userId",
+  authMiddleware.requireAdmin,
+  userController.deleteUserAsAdmin,
+);
 
 // LEGACY/EXISTING ROUTES (keep for backward compatibility)
 // GET  /api/users (admin only)
