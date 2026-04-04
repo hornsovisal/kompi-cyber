@@ -21,7 +21,8 @@ export default function ProfileDropdown() {
 
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isOpen]);
 
@@ -47,11 +48,10 @@ export default function ProfileDropdown() {
         title={userName}
       >
         <User size={20} />
-        <span className="profile-name" title={userName}>{userName}</span>
-        <ChevronDown 
-          size={16} 
-          className={`chevron ${isOpen ? "open" : ""}`}
-        />
+        <span className="profile-name" title={userName}>
+          {userName}
+        </span>
+        <ChevronDown size={16} className={`chevron ${isOpen ? "open" : ""}`} />
       </button>
 
       {isOpen && (
@@ -71,17 +71,11 @@ export default function ProfileDropdown() {
           <div className="menu-divider"></div>
 
           <div className="menu-items">
-            <button
-              className="menu-item"
-              onClick={handleProfileClick}
-            >
+            <button className="menu-item" onClick={handleProfileClick}>
               <Settings size={18} />
               <span>My Profile</span>
             </button>
-            <button
-              className="menu-item logout"
-              onClick={handleLogout}
-            >
+            <button className="menu-item logout" onClick={handleLogout}>
               <LogOut size={18} />
               <span>Logout</span>
             </button>

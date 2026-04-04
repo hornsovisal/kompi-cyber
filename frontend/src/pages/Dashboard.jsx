@@ -370,7 +370,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-3 sm:gap-4">
             <Link
               to="/profile"
-              className={`hidden sm:flex items-center gap-3 px-4 py-2 rounded-lg border transition-all duration-200 hover:scale-105 ${
+              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-lg border transition-all duration-200 hover:scale-105 ${
                 isDarkMode
                   ? "bg-[#1A2840]/40 border-[#1E3A5F]/50 hover:border-[#FE9A00]/50 hover:shadow-lg hover:shadow-[#FE9A00]/20"
                   : "bg-gray-100/40 border-gray-200/50 hover:border-amber-400/50 hover:shadow-lg hover:shadow-amber-400/20"
@@ -392,7 +392,7 @@ export default function Dashboard() {
                 </svg>
               </div>
               <span
-                className={`text-sm font-semibold uppercase tracking-wide transition-colors ${isDarkMode ? "text-slate-200" : "text-gray-700"}`}
+                className={`hidden sm:inline text-sm font-semibold uppercase tracking-wide transition-colors ${isDarkMode ? "text-slate-200" : "text-gray-700"}`}
               >
                 {currentUsername}
               </span>
