@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
+import ProfileDropdown from "./ProfileDropdown";
 import "./Navbar.css";
 
 export default function Navbar() {
@@ -73,7 +74,7 @@ export default function Navbar() {
 
           <div className="icons">
             <i className="fa-regular fa-bell"></i>
-            <i className="fa-regular fa-user"></i>
+            <ProfileDropdown />
           </div>
 
           {/* Mobile Menu Button */}
@@ -90,6 +91,9 @@ export default function Navbar() {
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
         <nav className="mobile-nav">
+          <div className="mobile-profile">
+            <ProfileDropdown />
+          </div>
           <ul>
             <li>
               <Link to="/" className={isActive("/")} onClick={closeMobileMenu}>

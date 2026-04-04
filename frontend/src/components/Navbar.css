@@ -169,6 +169,15 @@
   color: #667eea;
 }
 
+/* Mobile Profile Section */
+.mobile-profile {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: flex-start;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .navbar-container {
@@ -221,6 +230,7 @@
 
   .icons {
     gap: 12px;
+    display: none;
   }
 
   .icons i {
