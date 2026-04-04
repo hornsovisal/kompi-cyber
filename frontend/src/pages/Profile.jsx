@@ -133,7 +133,14 @@ export default function Profile() {
     try {
       const res = await axios.put(
         "/api/users/me",
-        { full_name: form.full_name, email: form.email },
+        {
+          full_name: form.full_name,
+          phone: form.phone,
+          program: form.program,
+          year_of_study: form.year_of_study,
+          student_id: form.student_id,
+          // Email is intentionally excluded - it cannot be changed by users
+        },
         {
           baseURL: API_BASE,
           headers: { Authorization: `Bearer ${token}` },
@@ -1301,6 +1308,8 @@ export default function Profile() {
                       key: "email",
                       placeholder: "your@email.com",
                       type: "email",
+                      readOnly: true,
+                      hint: "Contact support to change email",
                     },
                     {
                       label: "Phone Number",
@@ -1322,7 +1331,7 @@ export default function Profile() {
                       key: "student_id",
                       placeholder: "e.g. CADT-2024-001234",
                     },
-                  ].map(({ label, key, placeholder, type }) => (
+                  ].map(({ label, key, placeholder, type, readOnly, hint }) => (
                     <div key={key}>
                       <label
                         className={`mb-1.5 block text-xs font-bold uppercase tracking-wider ${isDarkMode ? "text-slate-400" : "text-gray-500"}`}
@@ -1333,15 +1342,28 @@ export default function Profile() {
                         type={type || "text"}
                         value={form[key]}
                         onChange={(e) =>
+                          !readOnly &&
                           setForm((f) => ({ ...f, [key]: e.target.value }))
                         }
                         placeholder={placeholder}
+                        readOnly={readOnly}
                         className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all duration-200 ${
-                          isDarkMode
-                            ? "border-[#1E3A5F]/60 bg-[#0F172A]/50 text-white placeholder:text-slate-600 focus:border-[#FE9A00]/60 focus:shadow-lg focus:shadow-[#FE9A00]/10"
-                            : "border-gray-200/60 bg-white text-gray-900 placeholder:text-gray-400 focus:border-amber-400/60 focus:shadow-lg focus:shadow-amber-400/10"
+                          readOnly
+                            ? isDarkMode
+                              ? "bg-[#0F172A]/30 border-[#1E3A5F]/40 text-slate-500 cursor-not-allowed"
+                              : "bg-gray-100/50 border-gray-200/40 text-gray-500 cursor-not-allowed"
+                            : isDarkMode
+                              ? "border-[#1E3A5F]/60 bg-[#0F172A]/50 text-white placeholder:text-slate-600 focus:border-[#FE9A00]/60 focus:shadow-lg focus:shadow-[#FE9A00]/10"
+                              : "border-gray-200/60 bg-white text-gray-900 placeholder:text-gray-400 focus:border-amber-400/60 focus:shadow-lg focus:shadow-amber-400/10"
                         }`}
                       />
+                      {hint && (
+                        <p
+                          className={`mt-1 text-xs ${isDarkMode ? "text-slate-500" : "text-gray-500"}`}
+                        >
+                          {hint}
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>
