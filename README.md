@@ -1,4 +1,4 @@
-# 🛡️ Kompi-Cyber: Cybersecurity Learning Management Platform
+# Kompi-Cyber: Cybersecurity Learning Management Platform
 
 **Kompi-Cyber** is a **comprehensive, interactive learning management system** designed to deliver **structured cybersecurity education** with hands-on labs, real-time feedback, and progress tracking. Built with a modern tech stack (React + Express + MySQL), it provides students with an engaging platform to learn cybersecurity concepts through courses, exercises, quizzes, and practical simulations.
 
@@ -56,18 +56,18 @@ Kompi-Cyber was created to democratize cybersecurity education for CADT students
 
 ## ✨ Key Features
 
-### 📚 Course Management
+###  Course Management
 
 - **Dual Course Types:** Self-paced (online-led) and cohort-based (instructor-led) models
 - **Structured Content:** Courses → Modules → Lessons → Exercises & Quizzes
 
-### 👥 User Roles & Management
+### User Roles & Management
 
 - **Student Accounts:** Registration, course enrollment, progress tracking
 - **Instructor Dashboard:** Create courses, invite students, monitor progress
 - **Role-Based Access Control:** Different permissions for students, instructors, and admins
 
-### 📖 Learning Features
+### Learning Features
 
 - **Lesson Content:** Rich markdown support with embedded code examples
 - **Quizzes:** Multiple-choice assessments with instant feedback
@@ -84,14 +84,14 @@ Kompi-Cyber was created to democratize cybersecurity education for CADT students
 - **Security Headers:** Helmet.js for HTTP security headers
 - **Rate Limiting:** Protection against brute force attacks
 
-### 📊 Enrollment Management
+### Enrollment Management
 
 - **Email Invitations:** Teachers invite students via email
 - **Pending/Accepted/Rejected Status Tracking:** Manage invitation workflows
 - **Auto-Enrollment:** Students automatically enrolled upon accepting invitations
 - **Bulk Operations:** Send multiple invitations at once
 
-### 🎓 Student Tools
+###  Student Tools
 
 - **Course Catalog:** Browse all available courses
 - **Invitation Dashboard:** View and respond to course invitations
@@ -99,7 +99,7 @@ Kompi-Cyber was created to democratize cybersecurity education for CADT students
 - **Exercise Submissions:** Submit solutions with automated grading
 - **Quiz Attempts:** Multiple attempts with score history
 
-### 👨‍🏫 Instructor Tools
+### Instructor Tools
 
 - **Course Creator:** Define course structure and add content
 - **Student Management:** View enrolled students, track progress
@@ -107,7 +107,7 @@ Kompi-Cyber was created to democratize cybersecurity education for CADT students
 - **Analytics:** See which students are struggling, completion rates
 - **Content Editor:** Update lesson content and exercises
 
-### 📄 Reporting & Certificates
+### Reporting & Certificates
 
 - **PDF Certificates:** Auto-generated upon course completion
 - **Performance Reports:** Detailed student performance analytics
@@ -138,8 +138,7 @@ Kompi-Cyber was created to democratize cybersecurity education for CADT students
 - **CSS Framework:** Tailwind CSS 3.3.7
 - **Animations:** Framer Motion
 - **Icons:** Lucide React
-- **Database Client:** Supabase JS
-
+- 
 ### Database
 
 - **Primary DB:** MySQL (Courses, Users, Enrollments, Exercises)
@@ -168,14 +167,14 @@ Kompi-Cyber was created to democratize cybersecurity education for CADT students
 
 ## 🚀 Installation & Setup
 
-### 1️⃣ Clone the Repository
+### 1.Clone the Repository
 
 ```bash
 git clone https://github.com/yourusername/kompi-cyber.git
 cd kompi-cyber
 ```
 
-### 2️⃣ Backend Setup
+### 2. Backend Setup
 
 #### Install Dependencies
 
@@ -239,7 +238,7 @@ npm start
 # ✅ Backend server running on http://localhost:5000
 ```
 
-### 3️⃣ Frontend Setup
+### 3. Frontend Setup
 
 #### Install Dependencies
 
@@ -268,18 +267,18 @@ npm run dev
 # ➜  press q to quit
 ```
 
-### 4️⃣ Verify Installation
+### 4. Verify Installation
 
 Visit `http://localhost:5173` in your browser:
 
-- ✅ Homepage loads
-- ✅ Can navigate to course catalog
-- ✅ Registration/login works
-- ✅ Backend API responds (check console for errors)
+- Homepage loads
+- Can navigate to course catalog
+- Registration/login works
+- Backend API responds (check console for errors)
 
 ---
 
-## 🎯 Quick Start
+##  Quick Start
 
 ### For Students
 
@@ -591,11 +590,11 @@ This project is licensed under the ISC License - see [LICENSE](LICENSE) file for
 
 ### V1.0 (Current)
 
-- ✅ Basic course management
-- ✅ Student enrollment
-- ✅ Quiz and exercise system
-- ✅ Instructor dashboard
-- ✅ Certificate generation
+- Basic course management
+- Student enrollment
+- Quiz and exercise system
+- Instructor dashboard
+- Certificate generation
 
 ### V2.0 (Planned)
 
@@ -603,7 +602,7 @@ This project is licensed under the ISC License - see [LICENSE](LICENSE) file for
 - 🚧 Virtual lab sandbox environment
 - 🚧 Real-time code execution
 
-## 🎓 Getting Started Resources
+## Getting Started Resources
 
 - 📖 [Setup Guide](docs/SETUP_GUIDE.md)
 - 🔌 [API Documentation](docs/API_FRONTEND.md)
